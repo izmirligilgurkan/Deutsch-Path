@@ -18,11 +18,13 @@ test('a new learner can start the course and answer a drill', async ({ page }) =
   await page.waitForFunction(() => location.hash === '#/', null, { timeout: 25_000 });
   await expect(page.getByRole('link', { name: /^Unit 1 ·/ })).toBeVisible();
 
-  // The course locks everything past unit 1.
+  // The course locks everything past unit 1. Counted over unit rows only —
+  // the list also carries a level test after the last unit of each level.
   await page.goto('./#/course');
   await expect(page.locator('.unit-row').first()).toBeVisible();
-  expect(await page.locator('.unit-row').count()).toBe(35);
-  expect(await page.locator('.unit-row[aria-disabled="true"]').count()).toBe(34);
+  const unitRows = page.locator('.unit-row').filter({ hasNotText: 'level test' });
+  expect(await unitRows.count()).toBe(35);
+  expect(await unitRows.and(page.locator('[aria-disabled="true"]')).count()).toBe(34);
 
   // Unit 1 lists its topics collapsed — three full articles inline was a wall
   // of text — and expanding one reveals the sourced explanation and licence.
@@ -111,4 +113,63 @@ test('deep links and the attributions page survive a reload', async ({ page }) =
 
   await page.goto('./#/no-such-route');
   await expect(page.getByRole('heading', { name: 'Page not found' })).toBeVisible();
+});
+
+test('the daily test runs and is reachable from home', async ({ page }) => {
+  await page.goto('./#/onboarding');
+  await page.getByRole('button', { name: /start from zero/i }).click();
+  await page.waitForFunction(() => location.hash === '#/', null, { timeout: 25_000 });
+
+  await page.locator('a[href="#/test/daily"]').click();
+  await expect(page.locator('.prompt-text')).toBeVisible({ timeout: 20_000 });
+  // 10 items, and strict test mode rather than practice.
+  await expect(page.locator('.session-bar')).toContainText('Test 1/10');
+});
+
+test('a level test draws 60 items across the level', async ({ page }) => {
+  await page.goto('./#/onboarding');
+  await page.getByRole('button', { name: /start from zero/i }).click();
+  await page.waitForFunction(() => location.hash === '#/', null, { timeout: 25_000 });
+
+  await page.goto('./#/test/level/A1');
+  await expect(page.locator('.prompt-text')).toBeVisible({ timeout: 20_000 });
+  await expect(page.locator('.session-bar')).toContainText('Test 1/60');
+});
+
+test('the course lists a level test after the last unit of each level', async ({ page }) => {
+  await page.goto('./#/course');
+  await expect(page.locator('.unit-row').first()).toBeVisible();
+  // 35 units plus one level test each for A1, A2 and B1.
+  expect(await page.locator('.unit-row').count()).toBe(38);
+  await expect(page.locator('.unit-row', { hasText: 'A1 level test' })).toBeVisible();
+});
+
+test('placement runs a round and places the learner', async ({ page }) => {
+  await page.goto('./#/onboarding');
+  await page.locator('a[href="#/placement"]').click();
+  await expect(page.locator('.prompt-text')).toBeVisible({ timeout: 20_000 });
+  await expect(page.locator('.session-bar')).toContainText('A1 1/10');
+
+  // Answer everything wrong: the round fails, so placement stops at A1.
+  for (let i = 0; i < 12; i++) {
+    if (await page.getByRole('heading', { name: 'Placement complete' }).count() > 0) break;
+    const choices = page.locator('button.choice, .gender-row button');
+    if (await choices.count() > 0) {
+      await choices.last().click();
+    } else {
+      const inputs = page.locator('input[type=text]');
+      const n = await inputs.count();
+      if (n === 0) break;
+      for (let k = 0; k < n; k++) await inputs.nth(k).fill('zzz');
+      await page.getByRole('button', { name: 'Check' }).click();
+    }
+    const cont = page.getByRole('button', { name: 'Continue' });
+    if (await cont.count() === 0) break;
+    await cont.click();
+  }
+
+  await expect(page.getByRole('heading', { name: 'Placement complete' })).toBeVisible();
+  await page.getByRole('button', { name: /start here/i }).click();
+  await page.waitForFunction(() => location.hash === '#/', null, { timeout: 25_000 });
+  await expect(page.getByRole('link', { name: /^Unit 1 ·/ })).toBeVisible();
 });

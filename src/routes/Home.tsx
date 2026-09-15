@@ -112,6 +112,7 @@ export function Home() {
         <a class="btn btn-block" href="#/review">
           Review · {data ? data.due : '…'}
         </a>
+        <a class="btn btn-block" href="#/test/daily">Daily test · 10</a>
         {data && data.leeches > 0 ? (
           <a class="btn btn-block" href="#/review/leeches">Difficult · {data.leeches}</a>
         ) : null}

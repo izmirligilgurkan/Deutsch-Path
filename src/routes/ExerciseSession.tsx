@@ -9,19 +9,31 @@ import { attributionFor, exerciseToQuestion } from '~/lib/exercise-question.ts';
 import { UNITS } from '~/lib/syllabus.ts';
 import { mulberry32, seedFrom, shuffled } from '~/lib/rng.ts';
 import { PASS_MARK, touchStreak } from '~/srs/session.ts';
-import type { Exercise, Lemma, Sentence } from '~/lib/content-types.ts';
+import { requeueFailedItems } from '~/srs/requeue.ts';
+import type { Exercise, Lemma, Level, Sentence } from '~/lib/content-types.ts';
 import type { Mistake, TestResult } from '~/db/types.ts';
 import { navigate } from '~/router/hash-router.ts';
 import { t } from '~/i18n/strings.ts';
 
-/** Spec §4.5: a unit test is 20 mixed items, scored at the end. */
-const TEST_LENGTH = 20;
+export type SessionKind = 'drill' | 'unit' | 'level' | 'daily';
 
-type Mode = 'drill' | 'test';
+export interface SessionSpec {
+  kind: SessionKind;
+  title: string;
+  /** Builds the item set. Seeded inside, so a reload keeps the same test. */
+  load: () => Promise<{ items: Exercise[]; level: Level }>;
+  /** Where Close and the finish screen return to. */
+  closeHref: string;
+  /** Set for a unit test, which records a best score against that unit. */
+  unit?: number;
+  /** Set for a level test. */
+  level?: Level;
+}
 
-export function ExerciseSession({ unit, mode }: { unit: number; mode: Mode }) {
+export function ExerciseSession({ spec }: { spec: SessionSpec }) {
   const { settings, ready } = useSettings();
-  const plan = UNITS.find((u) => u.unit === unit);
+  // Practice is forgiving; anything called a test is strict (spec §4.6).
+  const mode: 'drill' | 'test' = spec.kind === 'drill' ? 'drill' : 'test';
 
   const [items, setItems] = useState<Exercise[]>([]);
   const [sentences, setSentences] = useState<Map<number, Sentence>>(new Map());
@@ -35,22 +47,18 @@ export function ExerciseSession({ unit, mode }: { unit: number; mode: Mode }) {
   const [sessionStart] = useState(Date.now());
 
   useEffect(() => {
-    if (!ready || !plan) return;
+    if (!ready) return;
     let cancelled = false;
 
     void (async () => {
       try {
-        const [all, lexicon, levelSentences] = await Promise.all([
-          loadExercises(unit),
+        const [{ items: chosen, level }, lexicon] = await Promise.all([
+          spec.load(),
           loadLexicon(),
-          loadSentences(plan.level),
         ]);
+        // Sentences are only needed to attribute sentence-based items.
+        const levelSentences = await loadSentences(level);
         if (cancelled) return;
-
-        // A test is a fixed-length sample; a drill runs the whole unit.
-        // Seeding by unit keeps a test stable across a reload mid-session.
-        const rng = mulberry32(seedFrom(`${mode}:${unit}`));
-        const chosen = mode === 'test' ? shuffled(all, rng).slice(0, TEST_LENGTH) : shuffled(all, rng);
 
         setItems(chosen);
         setSentences(new Map(levelSentences.map((s) => [s.id, s])));
@@ -65,7 +73,7 @@ export function ExerciseSession({ unit, mode }: { unit: number; mode: Mode }) {
     })();
 
     return () => { cancelled = true; };
-  }, [ready, unit, mode]);
+  }, [ready, spec.kind, spec.unit, spec.level, spec.title]);
 
   const exercise = items[index];
   const question = useMemo(() => (exercise ? exerciseToQuestion(exercise) : null), [exercise]);
@@ -82,7 +90,7 @@ export function ExerciseSession({ unit, mode }: { unit: number; mode: Mode }) {
           const mistake: Mistake = {
             ts: Date.now(),
             topic: exercise.topic,
-            unit,
+            unit: exercise.unit,
             exerciseId: exercise.id,
             exerciseType: exercise.type,
             given,
@@ -93,7 +101,7 @@ export function ExerciseSession({ unit, mode }: { unit: number; mode: Mode }) {
         })();
       }
     },
-    [exercise, unit, mode],
+    [exercise, mode],
   );
 
   const finish = useCallback(async () => {
@@ -104,8 +112,9 @@ export function ExerciseSession({ unit, mode }: { unit: number; mode: Mode }) {
     if (mode === 'test') {
       const result: TestResult = {
         ts: Date.now(),
-        kind: 'unit',
-        unit,
+        kind: spec.kind === 'unit' ? 'unit' : spec.kind === 'level' ? 'level' : 'daily',
+        ...(spec.unit === undefined ? {} : { unit: spec.unit }),
+        ...(spec.level === undefined ? {} : { level: spec.level }),
         score: correctCount,
         total,
         durationMs: Date.now() - sessionStart,
@@ -113,20 +122,26 @@ export function ExerciseSession({ unit, mode }: { unit: number; mode: Mode }) {
       };
       await db.add('testResults', result);
 
-      const previous = await db.get('unitProgress', unit);
-      const best = Math.max(previous?.bestScore ?? 0, score);
-      await db.put('unitProgress', {
-        unit,
-        unlocked: true,
-        bestScore: best,
-        lastOpenedAt: Date.now(),
-        ...(best >= PASS_MARK ? { completedAt: Date.now() } : {}),
-      });
+      // A unit test is what unlocks the next unit.
+      if (spec.unit !== undefined) {
+        const previous = await db.get('unitProgress', spec.unit);
+        const best = Math.max(previous?.bestScore ?? 0, score);
+        await db.put('unitProgress', {
+          unit: spec.unit,
+          unlocked: true,
+          bestScore: best,
+          lastOpenedAt: Date.now(),
+          ...(best >= PASS_MARK ? { completedAt: Date.now() } : {}),
+        });
+      }
+
+      // Failed items come back through the review queue (spec §4.5).
+      await requeueFailedItems(wrong.map((w) => w.exercise));
     }
 
     await touchStreak(settings);
     setPhase('done');
-  }, [items.length, correctCount, mode, unit, wrong, settings, sessionStart]);
+  }, [items.length, correctCount, mode, spec.kind, spec.unit, spec.level, wrong, settings, sessionStart]);
 
   const onContinue = useCallback(() => {
     setStartedAt(Date.now());
@@ -134,23 +149,15 @@ export function ExerciseSession({ unit, mode }: { unit: number; mode: Mode }) {
     else setIndex(index + 1);
   }, [index, items.length, finish]);
 
-  if (!plan) {
-    return (
-      <Screen title="Unknown unit">
-        <a class="btn btn-primary btn-block" href="#/course">Back to the course</a>
-      </Screen>
-    );
-  }
-
   if (phase === 'loading' || !ready) {
-    return <Screen title={plan.title}><p class="muted">{t.common.loading}</p></Screen>;
+    return <Screen title={spec.title}><p class="muted">{t.common.loading}</p></Screen>;
   }
 
   if (phase === 'error') {
     return (
-      <Screen title={plan.title}>
+      <Screen title={spec.title}>
         <div class="notice" style="border-left-color:var(--bad)">
-          <p class="small" style="margin:0">Could not load this unit's exercises.</p>
+          <p class="small" style="margin:0">Could not load these exercises.</p>
           <p class="small mono muted" style="margin:6px 0 0">{error}</p>
         </div>
       </Screen>
@@ -167,11 +174,16 @@ export function ExerciseSession({ unit, mode }: { unit: number; mode: Mode }) {
         <div class="card" style="text-align:center">
           <div class="stat-value" style="font-size:2.4rem">{pct}%</div>
           <p class="muted small" style="margin:4px 0 0">{correctCount} of {total} correct</p>
-          {mode === 'test' ? (
+          {spec.unit !== undefined ? (
             <p class="small" style={`margin:10px 0 0;color:var(--${passed ? 'ok' : 'bad'})`}>
               {passed
                 ? 'Passed — the next unit is unlocked.'
                 : `${Math.round(PASS_MARK * 100)}% is needed to unlock the next unit.`}
+            </p>
+          ) : null}
+          {mode === 'test' && wrong.length > 0 ? (
+            <p class="small muted" style="margin:8px 0 0">
+              The words you missed are queued for review.
             </p>
           ) : null}
         </div>
@@ -189,15 +201,15 @@ export function ExerciseSession({ unit, mode }: { unit: number; mode: Mode }) {
                     {Array.isArray(ex.answer) ? ex.answer.join(' · ') : ex.answer}
                   </span>
                 </div>
-                <a class="small" href={`#/unit/${unit}`}>Explanation →</a>
+                <a class="small" href={`#/unit/${ex.unit}`}>Explanation →</a>
               </div>
             ))}
           </section>
         ) : null}
 
         <div class="stack">
-          <a class="btn btn-primary btn-block" href="#/course">Back to the course</a>
-          <a class="btn btn-block" href={`#/unit/${unit}`}>Unit overview</a>
+          <a class="btn btn-primary btn-block" href={spec.closeHref}>Done</a>
+          <a class="btn btn-block" href="#/course">Course</a>
         </div>
       </Screen>
     );
@@ -205,7 +217,7 @@ export function ExerciseSession({ unit, mode }: { unit: number; mode: Mode }) {
 
   if (!exercise || !question) {
     return (
-      <Screen title={plan.title}>
+      <Screen title={spec.title}>
         <div class="notice">
           <p class="small" style="margin:0">This item could not be rendered.</p>
           <button class="btn-block" style="margin-top:10px" onClick={onContinue}>Skip</button>
@@ -219,7 +231,7 @@ export function ExerciseSession({ unit, mode }: { unit: number; mode: Mode }) {
   return (
     <>
       <div class="session-bar">
-        <button class="icon-btn" onClick={() => { navigate(`/unit/${unit}`); }}>Close</button>
+        <button class="icon-btn" onClick={() => { navigate(spec.closeHref.replace(/^#/, '')); }}>Close</button>
         <div class="progressbar" aria-label="Session progress">
           <span style={`width:${((index / items.length) * 100).toFixed(1)}%`} />
         </div>

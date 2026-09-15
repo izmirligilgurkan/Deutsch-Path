@@ -1,5 +1,5 @@
 import { useState } from 'preact/hooks';
-import { Screen, Stub } from '~/components/Screen.tsx';
+import { Screen } from '~/components/Screen.tsx';
 import { navigate } from '~/router/hash-router.ts';
 import { updateSettings } from '~/db/settings-store.ts';
 import { ensureCardsForUnit } from '~/srs/session.ts';
@@ -30,15 +30,10 @@ export function Onboarding() {
           A1 unit 1 onwards. 80% on a unit test unlocks the next one.
         </p>
 
-        <details class="card topic">
-          <summary><span>Already know some German?</span></summary>
-          <div class="topic-body">
-            <p class="small muted" style="margin:0 0 10px">
-              Turn off the 80% gate in Settings, then jump to whichever unit matches you.
-            </p>
-            <Stub what="Placement test" phase="a later phase" />
-          </div>
-        </details>
+        <a class="btn btn-block" href="#/placement">Placement test</a>
+        <p class="small muted" style="margin:-4px 0 0">
+          Already know some German? About 30 items, then start where you actually are.
+        </p>
 
         <details class="card topic">
           <summary><span>What this is</span></summary>

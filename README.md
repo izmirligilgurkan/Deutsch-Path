@@ -6,11 +6,10 @@ testing only — no audio, no speaking, no accounts, no ads.
 
 It is a static site. There is no backend, no API key, and **no AI at runtime**.
 
-> **Status: phase 3–4 (usable).** The course runs end to end on a phone:
-> onboarding, 35 units with sourced explanations, drills, unit tests, an FSRS
-> vocabulary trainer, a dictionary and a progress view. Screens that are not
-> built yet — the placement test and level tests — say so rather than showing
-> placeholder German. See [Build phases](#build-phases).
+> **Status: phase 5 (course complete).** The whole course runs on a phone:
+> placement, 35 units with sourced explanations, drills and unit tests, level
+> tests, a daily quick test, an FSRS vocabulary trainer, a dictionary and a
+> progress view. See [Build phases](#build-phases).
 
 ## Using it on your phone
 
@@ -20,7 +19,8 @@ Nothing to install and no account. Open:
 
 Then:
 
-1. Tap **Get started** → **Start from zero**.
+1. Tap **Get started**, then **Start from zero** — or **Placement test** if you
+   already know some German, which unlocks units up to the level you show.
 2. Add it to your home screen so it opens full-screen and works offline —
    on iOS: **Share → Add to Home Screen**; on Android: **⋮ → Install app**.
    The app shows these steps for your device on the home screen.
@@ -38,6 +38,10 @@ A few things worth knowing:
   Turn that off in Settings if you would rather not.
 - **Importing a Goethe word list is optional and needs a computer.** Skip it —
   the app works fully without one.
+- **Four ways to study:** a unit's drills, the spaced-repetition review queue,
+  a 10-item daily test weighted toward your recent mistakes, and a 60-item
+  level test at the end of each level. Anything you get wrong in a test is
+  queued back into review.
 
 ## The content rule
 
@@ -190,7 +194,7 @@ phone.
 | 2 | Data pipeline, validation, licences | ✅ |
 | 3 | Vocabulary SRS: card types, FSRS, answer checking | ✅ |
 | 4 | Units: sourced explanations, drills, unit tests | ✅ |
-| 5 | Level tests and placement test | not yet |
+| 5 | Level tests, daily test, placement test | ✅ |
 | 6 | Dashboard, mistake log, weakness view, export/import, attributions | ✅ |
 | 7 | Test coverage, mobile smoke test, Lighthouse PWA pass | partly |
 

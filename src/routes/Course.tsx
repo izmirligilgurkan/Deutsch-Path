@@ -3,6 +3,7 @@ import { Screen } from '~/components/Screen.tsx';
 import { useSettings } from '~/db/settings-store.ts';
 import { getDB } from '~/db/index.ts';
 import { UNITS } from '~/lib/syllabus.ts';
+import type { Level } from '~/lib/content-types.ts';
 import { unlockedUnits } from '~/srs/session.ts';
 import type { UnitProgress } from '~/db/types.ts';
 import { t } from '~/i18n/strings.ts';
@@ -27,6 +28,14 @@ export function Course() {
   if (loading) return <Screen title={t.nav.course}><p class="muted">{t.common.loading}</p></Screen>;
 
   let currentLevel = '';
+
+  /** The level test sits after the last unit of its level. */
+  const lastUnitOfLevel = new Map<number, Level>();
+  for (const level of ['A1', 'A2', 'B1'] as Level[]) {
+    const units = UNITS.filter((u) => u.level === level);
+    const last = units[units.length - 1];
+    if (last) lastUnitOfLevel.set(last.unit, level);
+  }
 
   return (
     <Screen title={t.nav.course} subtitle="A1 → A2 → B1, 35 units">
@@ -59,13 +68,32 @@ export function Course() {
           </a>
         );
 
+        const levelTest = lastUnitOfLevel.get(unit.unit);
+        const withTest = levelTest ? (
+          <div key={`t${unit.unit}`}>
+            {row}
+            <a
+              class="unit-row"
+              href={isOpen ? `#/test/level/${levelTest}` : undefined}
+              aria-disabled={isOpen ? undefined : 'true'}
+              onClick={(e) => { if (!isOpen) e.preventDefault(); }}
+            >
+              <span class="unit-num">★</span>
+              <span style="flex:1;min-width:0">
+                <span style="display:block">{levelTest} level test</span>
+                <span class="small muted">60 items</span>
+              </span>
+            </a>
+          </div>
+        ) : row;
+
         return heading ? (
           <div key={`h${unit.unit}`}>
             <h2 style="margin:20px 0 8px">{heading}</h2>
-            {row}
+            {withTest}
           </div>
         ) : (
-          row
+          withTest
         );
       })}
     </Screen>
