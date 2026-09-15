@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'preact/hooks';
 import { Screen } from '~/components/Screen.tsx';
+import { SourceNote } from '~/components/SourceNote.tsx';
 import { CardView } from '~/components/CardView.tsx';
 import { useSettings } from '~/db/settings-store.ts';
 import { loadLexicon } from '~/lib/content.ts';
@@ -163,9 +164,7 @@ export function Review({ leechMode = false }: { leechMode?: boolean }) {
   return (
     <>
       <div class="session-bar">
-        <button class="small" style="min-height:36px;padding:6px 10px" onClick={() => { navigate('/'); }}>
-          Close
-        </button>
+        <button class="icon-btn" onClick={() => { navigate('/'); }}>Close</button>
         <div class="progressbar" aria-label="Session progress">
           <span style={`width:${((index / queue.length) * 100).toFixed(1)}%`} />
         </div>
@@ -185,11 +184,7 @@ export function Review({ leechMode = false }: { leechMode?: boolean }) {
       />
 
       {settings.showSourceAttribution && lemma ? (
-        <p class="attribution">
-          {lemma.lemma} — <a href={lemma.sourceUrl} target="_blank" rel="noopener noreferrer">
-            {lemma.source}
-          </a>, {lemma.license}
-        </p>
+        <SourceNote source={lemma.source} license={lemma.license} url={lemma.sourceUrl} />
       ) : null}
     </>
   );

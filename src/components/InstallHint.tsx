@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { updateSettings, useSettings } from '~/db/settings-store.ts';
 
 /**
  * Explains how to add the app to the home screen.
@@ -22,28 +22,28 @@ function isStandalone(): boolean {
 }
 
 export function InstallHint() {
-  const [dismissed, setDismissed] = useState(false);
-  if (dismissed || isStandalone()) return null;
+  const { settings, ready } = useSettings();
+  if (!ready || settings.installHintDismissed || isStandalone()) return null;
 
   return (
-    <div class="card">
-      <div class="row-between">
-        <h2 style="margin:0">Add it to your home screen</h2>
+    <div class="card" style="padding:12px">
+      <div class="row-between" style="gap:8px">
+        <p class="small" style="margin:0">
+          <strong>Add to home screen</strong> —{' '}
+          {isIOS() ? (
+            <>Share → Add to Home Screen.</>
+          ) : (
+            <>menu (⋮) → Install app.</>
+          )}{' '}
+          Opens full-screen and works offline.
+        </p>
         <button
           class="small" style="min-height:32px;padding:4px 10px"
-          onClick={() => { setDismissed(true); }}
+          onClick={() => { void updateSettings({ installHintDismissed: true }); }}
         >
           Hide
         </button>
       </div>
-      <p class="small muted" style="margin:8px 0 0">
-        {isIOS() ? (
-          <>Tap the <strong>Share</strong> button, then <strong>Add to Home Screen</strong>.</>
-        ) : (
-          <>Open the browser menu (⋮), then <strong>Add to Home screen</strong> or <strong>Install app</strong>.</>
-        )}{' '}
-        It then opens full-screen and works without a connection.
-      </p>
     </div>
   );
 }

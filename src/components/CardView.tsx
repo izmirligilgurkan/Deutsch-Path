@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { checkAnswer, type CheckOptions, type CheckResult } from '~/lib/answer-check.ts';
 import type { Question } from '~/srs/cards.ts';
+import { splitGloss } from '~/lib/gloss.ts';
 import { UmlautRow } from './UmlautRow.tsx';
 import { Verdict } from './AnswerFeedback.tsx';
 
@@ -11,6 +12,17 @@ import { Verdict } from './AnswerFeedback.tsx';
  * umlaut row attached. The card never grades itself — it reports the result and
  * the caller decides what that means for scheduling.
  */
+/** A choice is a gloss too: definition first, qualifier smaller beneath. */
+function ChoiceText({ text }: { text: string }) {
+  const { head, qualifier } = splitGloss(text);
+  return (
+    <span>
+      {head}
+      {qualifier ? <span class="choice-qualifier">{qualifier}</span> : null}
+    </span>
+  );
+}
+
 export function CardView({
   question,
   options,
@@ -86,9 +98,21 @@ export function CardView({
     <div>
       <div class="prompt-card">
         <div class="prompt-label">{question.label}</div>
-        <div class={`prompt-text ${question.promptLang === 'en' ? 'en' : ''}`} lang={question.promptLang}>
-          {question.prompt}
-        </div>
+        {/* An English prompt is a Wiktionary gloss: the definition leads, its
+            usage notes follow in smaller text so they do not compete. */}
+        {question.promptLang === 'en' ? (
+          (() => {
+            const { head, qualifier } = splitGloss(question.prompt);
+            return (
+              <>
+                <div class="prompt-text en" lang="en">{head}</div>
+                {qualifier ? <div class="prompt-qualifier">{qualifier}</div> : null}
+              </>
+            );
+          })()
+        ) : (
+          <div class="prompt-text" lang="de">{question.prompt}</div>
+        )}
         {question.hint && !answered ? (
           <div class="small muted" style="margin-top:8px">{question.hint}</div>
         ) : null}
@@ -123,7 +147,7 @@ export function CardView({
                 disabled={answered}
                 onClick={() => { choose(choice); }}
               >
-                {choice}
+                {isGender ? choice : <ChoiceText text={choice} />}
               </button>
             );
           })}

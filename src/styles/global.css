@@ -387,3 +387,90 @@ th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--bord
 .stat { background: var(--bg-raised); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; }
 .stat-value { font-size: 1.5rem; font-weight: 700; line-height: 1.1; }
 .stat-label { font-size: 0.75rem; color: var(--text-dim); margin-top: 2px; }
+
+/* ── Density: studying on a phone ───────────────────────────────────────── */
+
+/*
+ * Provenance collapses to one line. It stays visible, as the spec requires,
+ * without pushing the question off the screen.
+ */
+.source-note { margin-top: 10px; }
+.source-note > summary {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  cursor: pointer;
+  list-style: none;
+  padding: 4px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.source-note > summary::-webkit-details-marker { display: none; }
+.source-note > summary::before { content: 'ⓘ '; opacity: 0.7; }
+.source-note-body { font-size: 0.7rem; color: var(--text-dim); padding: 4px 0 0; }
+.source-note-body > div { margin-top: 3px; word-break: break-all; }
+
+/*
+ * Session focus: while answering, the tab bar is dead weight and its 60px
+ * matter on a small screen. The session's own Close button replaces it.
+ */
+.app-shell.in-session .tabbar { display: none; }
+.app-shell.in-session .app-main { padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
+
+/* Collapsible grammar: a unit should not open with three full articles. */
+.topic { padding: 0; }
+.topic > summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--tap);
+  padding: 12px var(--pad);
+  cursor: pointer;
+  font-weight: 600;
+  list-style: none;
+}
+.topic > summary::-webkit-details-marker { display: none; }
+.topic > summary::after {
+  content: '▸';
+  margin-left: auto;
+  color: var(--text-dim);
+  transition: transform 0.15s;
+}
+.topic[open] > summary::after { transform: rotate(90deg); }
+.topic > summary .topic-hint { font-weight: 400; font-size: 0.75rem; color: var(--text-dim); }
+.topic-body { padding: 0 var(--pad) var(--pad); }
+
+/* Compact rows for the home screen's level summary. */
+.level-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 0;
+  font-size: 0.8rem;
+}
+.level-row .progressbar { flex: 1; height: 6px; }
+.level-row .level-name { width: 22px; font-weight: 600; }
+.level-row .level-count { color: var(--text-dim); font-variant-numeric: tabular-nums; }
+
+.session-bar .icon-btn {
+  min-height: 36px;
+  min-width: 36px;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+}
+
+/* Wiktionary qualifiers: present, but not competing with the definition. */
+.prompt-qualifier {
+  margin-top: 6px;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: var(--text-dim);
+}
+.choice-qualifier {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.72rem;
+  line-height: 1.3;
+  color: var(--text-dim);
+  font-weight: 400;
+}

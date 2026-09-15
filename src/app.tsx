@@ -47,6 +47,10 @@ export function App() {
     if (ready) applyTheme(settings.theme);
   }, [ready, settings.theme]);
 
+  // While answering, the tab bar is dead weight and its height matters on a
+  // phone; the session's own Close button replaces it.
+  const inSession = /^\/review(\/|$)|^\/unit\/[^/]+\/(drill|test)$/.test(path);
+
   let screen: JSX.Element = <NotFound path={path} />;
   for (const route of ROUTES) {
     const params = matchRoute(route.pattern, path);
@@ -57,12 +61,12 @@ export function App() {
   }
 
   return (
-    <div class="app-shell">
+    <div class={`app-shell${inSession ? ' in-session' : ''}`}>
       <main class="app-main">
         {/* Keyed so a crash on one screen clears when the learner navigates away. */}
         <ErrorBoundary key={path}>{screen}</ErrorBoundary>
       </main>
-      <TabBar path={path} />
+      {inSession ? null : <TabBar path={path} />}
       <UpdatePrompt />
     </div>
   );

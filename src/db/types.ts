@@ -111,6 +111,8 @@ export interface Settings {
   streakCount: number;
   lastStudyDay: string | null;
   levelListImportedAt: number | null;
+  /** Dismissing the add-to-home-screen hint has to stick across reloads. */
+  installHintDismissed: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -129,4 +131,5 @@ export const DEFAULT_SETTINGS: Settings = {
   streakCount: 0,
   lastStudyDay: null,
   levelListImportedAt: null,
+  installHintDismissed: false,
 };

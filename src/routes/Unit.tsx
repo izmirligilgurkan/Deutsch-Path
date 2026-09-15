@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'preact/hooks';
 import { Screen } from '~/components/Screen.tsx';
 import { Markdown } from '~/components/Markdown.tsx';
+import { SourceNote } from '~/components/SourceNote.tsx';
 import { useSettings } from '~/db/settings-store.ts';
 import { getDB } from '~/db/index.ts';
 import { loadExercises, loadGrammar, type GrammarDoc } from '~/lib/content.ts';
@@ -84,42 +85,52 @@ export function Unit({ unit }: { unit: number }) {
     <Screen title={plan.title} subtitle={`Unit ${plan.unit} · ${plan.level}`}>
       <div class="stack" style="margin-bottom:20px">
         <a class="btn btn-primary btn-block" href={`#/unit/${unit}/drill`}>
-          Practise ({drillCount} items)
+          Practise · {drillCount}
         </a>
         <a class="btn btn-block" href={`#/unit/${unit}/test`}>
-          Unit test (20 items{best !== undefined ? ` · best ${Math.round(best * 100)}%` : ''})
+          Unit test{best !== undefined ? ` · best ${Math.round(best * 100)}%` : ''}
         </a>
       </div>
 
+      <h2 style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-dim);margin:0 0 8px">
+        Grammar
+      </h2>
+
+      {/*
+        Explanations stay collapsed. Three full articles inline turned this
+        screen into a wall of text, and the reason to open a unit on a phone is
+        usually to practise, not to read.
+      */}
       {docs.map((doc, i) => {
         const topic = plan.topics[i]!;
+        const title = doc.meta['title'] ?? TOPIC_TITLES[topic] ?? topic;
         return (
-          <section class="card" key={topic}>
-            <h2>{doc.meta['title'] ?? TOPIC_TITLES[topic] ?? topic}</h2>
-            {doc.stub ? (
-              <div class="notice">
-                <p class="small" style="margin:0">
+          <details class="card topic" key={topic}>
+            <summary>
+              <span>{title}</span>
+              {doc.stub ? <span class="topic-hint">no source</span> : null}
+            </summary>
+            <div class="topic-body">
+              {doc.stub ? (
+                <p class="small muted" style="margin:0">
                   No openly licensed explanation of this topic was available to bundle, so none is
                   shown rather than an invented one. The drills still use real sentences and
                   Wiktionary forms.
                 </p>
-              </div>
-            ) : null}
-            <Markdown source={stripTitle(doc.body)} />
-            <p class="attribution">
-              {doc.stub ? 'No source text.' : (
+              ) : (
                 <>
-                  Adapted from{' '}
-                  <a href={doc.meta['sourceUrl'] ?? '#'} target="_blank" rel="noopener noreferrer">
-                    {doc.meta['source']}
-                  </a>
-                  {doc.meta['sourceRevision'] ? ` (rev ${doc.meta['sourceRevision']})` : ''}
-                  {' · '}{doc.meta['license']}
-                  {doc.meta['modified'] ? ` · ${doc.meta['modified']}` : ''}
+                  <Markdown source={stripTitle(doc.body)} />
+                  <SourceNote
+                    source={`${doc.meta['source'] ?? 'Wikibooks'}${
+                      doc.meta['sourceRevision'] ? ` (rev ${doc.meta['sourceRevision']})` : ''
+                    }`}
+                    license={doc.meta['license'] ?? 'CC-BY-SA-4.0'}
+                    {...(doc.meta['sourceUrl'] ? { url: doc.meta['sourceUrl'] } : {})}
+                  />
                 </>
               )}
-            </p>
-          </section>
+            </div>
+          </details>
         );
       })}
     </Screen>

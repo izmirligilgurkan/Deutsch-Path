@@ -27,6 +27,14 @@ export function UpdatePrompt() {
     });
   }, []);
 
+  // "Ready to work offline" is a one-off confirmation, not something to
+  // dismiss by hand — left up it covers the Continue button during a drill.
+  useEffect(() => {
+    if (!offlineReady) return;
+    const t = setTimeout(() => { setOfflineReady(false); }, 4000);
+    return () => { clearTimeout(t); };
+  }, [offlineReady]);
+
   if (needRefresh) {
     return (
       <div class="toast row-between" role="status">

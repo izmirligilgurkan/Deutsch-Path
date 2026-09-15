@@ -107,52 +107,40 @@ export function Home() {
 
       <div class="stack" style="margin-bottom:20px">
         <a class="btn btn-primary btn-block" href={`#/unit/${data?.currentUnit ?? 1}`}>
-          {t.home.continueUnit}: {unitPlan ? `${unitPlan.unit}. ${unitPlan.title}` : '1'}
+          Unit {unitPlan?.unit ?? 1} · {unitPlan?.title ?? ''}
         </a>
         <a class="btn btn-block" href="#/review">
-          {t.home.reviewsDue} ({data ? data.due : '…'})
+          Review · {data ? data.due : '…'}
         </a>
         {data && data.leeches > 0 ? (
-          <a class="btn btn-block" href="#/review/leeches">Difficult cards ({data.leeches})</a>
+          <a class="btn btn-block" href="#/review/leeches">Difficult · {data.leeches}</a>
         ) : null}
-        <a class="btn btn-block" href="#/progress">{t.nav.progress}</a>
       </div>
 
-      <div class="stat-grid" style="margin-bottom:20px">
-        <div class="stat">
-          <div class="stat-value">{settings.streakCount}</div>
-          <div class="stat-label">day streak</div>
-        </div>
-        <div class="stat">
-          <div class="stat-value">
-            {data?.retention === null || data?.retention === undefined
-              ? '—'
-              : `${Math.round(data.retention * 100)}%`}
-          </div>
-          <div class="stat-label">retention</div>
-        </div>
-      </div>
-
-      <InstallHint />
-
-      <section class="card">
-        <h2>Words known</h2>
+      {/* Compact level rows: three bars, no explanatory paragraph. The detail
+          lives on the Progress screen, which is where you go to read numbers. */}
+      <section class="card" style="padding:12px">
         {(data?.knownByLevel ?? []).map((row) => (
-          <div key={row.level} style="margin-bottom:12px">
-            <div class="row-between small">
-              <span>{row.level}</span>
-              <span class="muted">{row.known}/{row.total}</span>
-            </div>
-            <div class="progressbar" style="margin-top:4px">
+          <div class="level-row" key={row.level}>
+            <span class="level-name">{row.level}</span>
+            <div class="progressbar">
               <span style={`width:${row.total ? ((row.known / row.total) * 100).toFixed(1) : 0}%`} />
             </div>
+            <span class="level-count">{row.known}/{row.total}</span>
           </div>
         ))}
-        <p class="small muted" style="margin:0">
-          Levels are approximate, from corpus frequency.{' '}
-          <a href="#/import-level-list">Import a Goethe list</a> to use the official ones.
-        </p>
+        <div class="level-row" style="margin-top:4px">
+          <span class="level-count">{settings.streakCount}d streak</span>
+          <span class="level-count" style="margin-left:auto">
+            {data?.retention === null || data?.retention === undefined
+              ? ''
+              : `${Math.round(data.retention * 100)}% retention`}
+          </span>
+          <a class="small" href="#/progress">Details</a>
+        </div>
       </section>
+
+      <InstallHint />
     </Screen>
   );
 }
