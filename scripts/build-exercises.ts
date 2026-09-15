@@ -1,15 +1,127 @@
 /**
- * templates x lexicon x sentences -> data/exercises/<unit>.json.
+ * templates × lexicon × sentences → data/exercises/<unit>.json
  *
- * Phase 2 of the build plan. Not implemented yet — this stub exists so the
- * pipeline's shape is fixed and scripts/validate-data.ts has something to
- * validate against.
+ * Nothing here writes German. Each generator selects from a Wiktionary form
+ * table or a Tatoeba sentence and records which rule produced the item, so
+ * every exercise traces back to a source record. Generation is seeded, so a
+ * rebuild produces identical files and shows up as an empty diff.
  *
- * Every generated item records the id of the deterministic generator that
- * produced it, so any exercise can be traced back to a rule and a source.
- * */
-console.error(
-  'build-exercises.ts is not implemented yet (phase 2: data pipeline).\n' +
-    'See README.md "Data pipeline" for what it will do.',
-);
-process.exit(1);
+ *   npm run data:exercises
+ */
+import { readFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+import type { Exercise, Lemma, Level, Sentence } from '../src/lib/content-types.ts';
+import { UNITS } from '../src/lib/syllabus.ts';
+import { DATA_DIR, writeJson } from './lib/io.ts';
+import {
+  genArticleCase,
+  genChooseForm,
+  genCloze,
+  genConjugationTable,
+  genDeclensionTable,
+  genErrorSpotting,
+  genGender,
+  genPlural,
+  genPrincipalParts,
+  genVocabMc,
+  genVocabTyped,
+  genWordOrder,
+  type GenContext,
+} from './lib/generators.ts';
+
+/** Spec §4.2: a unit introduces 8–25 lemmas. The rest arrive through the SRS. */
+const LEMMAS_PER_UNIT = 25;
+
+const LEVEL_ORDER: Record<Level, number> = { A1: 0, A2: 1, B1: 2 };
+
+function needed(path: string, how: string): string {
+  if (!existsSync(path)) {
+    console.error(`missing ${path}\nRun: ${how}`);
+    process.exit(1);
+  }
+  return path;
+}
+
+const lexicon = JSON.parse(
+  await readFile(needed(join(DATA_DIR, 'lexicon.json'), 'npm run data:lexicon'), 'utf8'),
+) as Lemma[];
+const sentences = JSON.parse(
+  await readFile(needed(join(DATA_DIR, 'sentences.json'), 'npm run data:sentences'), 'utf8'),
+) as Sentence[];
+
+console.log(`lexicon ${lexicon.length}, sentences ${sentences.length}`);
+
+/**
+ * Each unit introduces a slice of its level's vocabulary, in frequency order,
+ * biased towards the part of speech its grammar topic drills: the nouns unit
+ * gets nouns, the verb units get verbs.
+ */
+const POS_BIAS: Record<number, string> = {
+  3: 'noun', 4: 'noun', 6: 'verb', 7: 'verb', 9: 'verb', 11: 'noun',
+  12: 'verb', 13: 'verb', 16: 'adj', 17: 'adj', 19: 'verb', 21: 'verb',
+  24: 'verb', 25: 'verb', 26: 'verb', 28: 'noun', 32: 'noun', 33: 'verb',
+};
+
+const byLevel = new Map<Level, Lemma[]>();
+for (const level of ['A1', 'A2', 'B1'] as Level[]) {
+  byLevel.set(
+    level,
+    lexicon.filter((l) => l.level === level).sort((a, b) => (a.freqRank ?? 0) - (b.freqRank ?? 0)),
+  );
+}
+
+const assigned = new Set<string>();
+let totalExercises = 0;
+const perUnitCounts: string[] = [];
+
+for (const plan of UNITS) {
+  const levelLemmas = byLevel.get(plan.level) ?? [];
+  const bias = POS_BIAS[plan.unit];
+
+  // Take the most frequent unassigned lemmas, preferring the unit's word class.
+  const available = levelLemmas.filter((l) => !assigned.has(l.id));
+  const preferred = bias ? available.filter((l) => l.pos === bias) : [];
+  const unitLemmas = [...preferred, ...available.filter((l) => !preferred.includes(l))].slice(
+    0,
+    LEMMAS_PER_UNIT,
+  );
+  for (const l of unitLemmas) assigned.add(l.id);
+
+  // Distractors and examples may use anything up to this unit's level.
+  const pool = lexicon.filter((l) => LEVEL_ORDER[l.level ?? 'B1'] <= LEVEL_ORDER[plan.level]);
+  const levelSentences = sentences.filter(
+    (s) => LEVEL_ORDER[s.level] <= LEVEL_ORDER[plan.level],
+  );
+
+  const ctx: GenContext = {
+    unit: plan.unit,
+    topic: plan.topics[0] ?? 'general',
+    lemmas: unitLemmas,
+    pool,
+    sentences: levelSentences,
+  };
+
+  const exercises: Exercise[] = [
+    ...genGender(ctx),
+    ...genPlural(ctx),
+    ...genPrincipalParts(ctx),
+    ...genVocabMc(ctx),
+    ...genVocabTyped(ctx),
+    ...genCloze(ctx),
+    ...genWordOrder(ctx),
+    ...genArticleCase(ctx),
+    ...genErrorSpotting(ctx),
+    ...genConjugationTable(ctx),
+    ...genDeclensionTable(ctx),
+    ...genChooseForm(ctx),
+  ];
+
+  await writeJson(join(DATA_DIR, 'exercises', `${plan.unit}.json`), exercises);
+  totalExercises += exercises.length;
+  perUnitCounts.push(`${plan.unit}:${exercises.length}`);
+}
+
+console.log(`\n✓ data/exercises/ — ${totalExercises.toLocaleString()} items across ${UNITS.length} units`);
+console.log(`  per unit: ${perUnitCounts.join(' ')}`);
+console.log(`  unit vocabulary assigned: ${assigned.size.toLocaleString()} lemmas`);

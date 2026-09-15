@@ -6,10 +6,12 @@ testing only — no audio, no speaking, no accounts, no ads.
 
 It is a static site. There is no backend, no API key, and **no AI at runtime**.
 
-> **Status: phase 1 of 7 (scaffold).** The app shell, routing, storage layer,
-> PWA and deployment are in place. Course content, the SRS trainer and the
-> grammar units come in later phases — see [Build phases](#build-phases).
-> Screens that are not built yet say so rather than showing placeholder German.
+> **Status: phase 2 of 7 (data pipeline).** The app shell and the content
+> pipeline are both in place: `data/` now holds 3,000 sourced lemmas, 8,286
+> Tatoeba sentences, 69 grammar topics and 4,139 generated exercises. The
+> trainer that puts them on screen comes next — see
+> [Build phases](#build-phases). Screens that are not built yet say so rather
+> than showing placeholder German.
 
 ## The content rule
 
@@ -74,15 +76,33 @@ The pipeline runs **locally, never in the browser**. Raw dumps land in `raw/`
 
 ```
 scripts/
-  fetch-sources.ts     downloads raw dumps, records URL + date     [phase 2]
-  build-lexicon.ts     kaikki JSONL → data/lexicon.json            [phase 2]
-  build-sentences.ts   Tatoeba CSV → data/sentences.json           [phase 2]
-  build-grammar.ts     Wikibooks → data/grammar/<topic>.md         [phase 2]
-  build-exercises.ts   templates × lexicon × sentences             [phase 2]
+  fetch-sources.ts     downloads raw dumps, records URL + SHA-256  ✅
+  build-lexicon.ts     kaikki JSONL → data/lexicon.json            ✅
+  build-sentences.ts   Tatoeba → data/sentences.json               ✅
+  build-grammar.ts     Wikibooks → data/grammar/<topic>.md         ✅
+  build-exercises.ts   templates × lexicon × sentences             ✅
+  validate-data.ts     fails CI if any sourcing rule is broken     ✅
+  make-icons.mjs       regenerates public/icons/*.png              ✅
   import-goethe.ts     learner-only, local; → goethe-levels.json   [phase 6]
-  validate-data.ts     fails CI if any sourcing rule is broken     ✅ done
-  make-icons.mjs       regenerates public/icons/*.png              ✅ done
 ```
+
+Run the whole thing (the kaikki dump is ~1 GB, so the fetch takes a while):
+
+```bash
+npm run data:fetch     # → raw/ (gitignored) + raw/MANIFEST.json
+npm run data:build     # lexicon → sentences → grammar → exercises → validate
+```
+
+What it currently produces:
+
+| Output | Contents |
+|---|---|
+| `data/lexicon.json` | 3,000 lemmas with gender, plural, forms, glosses, provenance |
+| `data/sentences.json` | 8,286 sentences, 99.8% native-authored, 100% lemma coverage |
+| `data/grammar/*.md` | 69 topics — 42 excerpted from Wikibooks, 27 honest stubs |
+| `data/exercises/*.json` | 4,139 items across 35 units, 12 exercise types |
+
+Total 10.6 MB, against the 15 MB budget.
 
 Sources: [kaikki.org](https://kaikki.org/dictionary/German/) (Wiktionary,
 CC BY-SA), [Tatoeba](https://tatoeba.org/en/downloads) (CC BY 2.0 FR / CC0),
@@ -111,9 +131,12 @@ Nothing Goethe-derived is committed to this repository or served from Pages.
 `.gitignore` blocks the filenames and `validate-data.ts` fails the build if a
 committed lemma carries `levelSource: "goethe-import"`.
 
-**Without a list**, vocabulary is ordered by corpus frequency and the app
-labels levels **approximate**. The licence of the frequency list is still an
-open question — see the note at the end of DATA_LICENSES.md.
+**Without a list**, vocabulary is ordered by frequency over the Tatoeba German
+corpus — CC BY data already bundled here — and the app labels levels
+**approximate**. No openly licensed German frequency list was found whose
+terms clearly permit redistribution, so none is bundled. The scoring method
+and its one known artefact are written up in
+[DATA_LICENSES.md](DATA_LICENSES.md#how-levels-were-decided-and-how-good-they-are).
 
 ## Your data
 
@@ -138,8 +161,8 @@ phone.
 | Phase | Scope | Status |
 |---|---|---|
 | 1 | Scaffold: app, PWA, routing, IndexedDB, Pages deploy | ✅ |
-| 2 | Data pipeline, validation, licences | next |
-| 3 | Vocabulary SRS: card types, FSRS, answer checking | |
+| 2 | Data pipeline, validation, licences | ✅ |
+| 3 | Vocabulary SRS: card types, FSRS, answer checking | next |
 | 4 | A1 units: sourced explanations, drills, unit tests | |
 | 5 | A2 and B1 units, level tests, placement test | |
 | 6 | Dashboard, mistake log, weakness view, export/import, attributions | partly |

@@ -48,6 +48,8 @@ export interface Lemma extends Provenance {
   plural?: string;
   /** True when Wiktionary explicitly marks the noun as having no plural. */
   noPlural?: boolean;
+  /** Pluralia tantum (Eltern, Leute): the lemma itself is the plural. */
+  pluralOnly?: boolean;
   forms: Form[];
   glosses: string[];
   /** Verb principal parts, when Wiktionary provides them. */
@@ -74,6 +76,10 @@ export interface Sentence {
   author: string;
   license: string;
   tatoebaId: number;
+  /** Highest level among the lemmas used, so an A1 sentence stays within A1. */
+  level: Level;
+  source: string;
+  sourceUrl: string;
   /** Tatoeba id of the English translation, for its own attribution. */
   enTatoebaId?: number;
   enAuthor?: string;

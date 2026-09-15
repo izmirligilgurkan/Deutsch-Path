@@ -29,7 +29,7 @@ export const SOURCES: SourceEntry[] = [
     licenseUrl: 'https://en.wiktionary.org/wiki/Wiktionary:Copyrights',
     used: 'Lemmas, part of speech, gender, plural, inflection tables, English glosses.',
     modifications:
-      'Filtered to the lemmas used by this course; fields trimmed to those the app needs; no text rewritten.',
+      'Filtered from 371,261 entries to the 3,000 this course teaches; form tables trimmed to the forms the drills use. No text rewritten.',
     bundled: true,
   },
   {
@@ -40,7 +40,7 @@ export const SOURCES: SourceEntry[] = [
     licenseUrl: 'https://creativecommons.org/licenses/by/2.0/fr/',
     used: 'German example sentences with English translations, used verbatim in cloze and word-order drills.',
     modifications:
-      'Selected by vocabulary range; sentence text is never edited. Per-sentence id and author are kept for attribution.',
+      'Selected by vocabulary range and length; sentence text is never edited. Each sentence keeps its own licence, id and author for attribution.',
     bundled: true,
   },
   {
@@ -49,9 +49,9 @@ export const SOURCES: SourceEntry[] = [
     url: 'https://en.wikibooks.org/wiki/German',
     license: 'CC BY-SA 4.0',
     licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
-    used: 'Grammar explanations for each unit.',
+    used: 'Grammar explanations — 42 of the 69 topics.',
     modifications:
-      'Excerpted and shortened for a phone screen; each topic links back to the source page and records that it was modified.',
+      'Excerpted and converted to Markdown; headings shifted. The 27 topics Wikibooks does not cover are shown as stubs with reference links, never filled in.',
     bundled: true,
   },
   {

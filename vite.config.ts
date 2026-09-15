@@ -1,7 +1,10 @@
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import preact from '@preact/preset-vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { fileURLToPath } from 'node:url';
+import { cp, stat } from 'node:fs/promises';
+import { createReadStream } from 'node:fs';
+import { join, normalize } from 'node:path';
 
 /**
  * GitHub Pages serves this project from https://<user>.github.io/Deutsch-Path/,
@@ -9,6 +12,48 @@ import { fileURLToPath } from 'node:url';
  * which keeps deep links working without Pages 404 rewrites.
  */
 const BASE = '/Deutsch-Path/';
+
+const DATA_SRC = fileURLToPath(new URL('./data', import.meta.url));
+
+/**
+ * Serves and ships the built course data.
+ *
+ * `data/` is written by the pipeline at the repo root rather than in
+ * `public/`, so Vite does not pick it up on its own. This serves it in dev and
+ * copies it into `dist/data/` on build — without it the deployed site would
+ * load with no content at all. The service worker runtime-caches this path,
+ * which is what makes the course work offline.
+ */
+function courseData(): Plugin {
+  const prefix = `${BASE}data/`;
+  return {
+    name: 'deutsch-path:course-data',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const url = req.url ?? '';
+        if (!url.startsWith(prefix)) return next();
+        // normalize() collapses any ../ before it can escape data/.
+        const rel = normalize(decodeURIComponent(url.slice(prefix.length).split('?')[0] ?? ''));
+        if (rel.startsWith('..')) return next();
+        const file = join(DATA_SRC, rel);
+        void stat(file)
+          .then((s) => {
+            if (!s.isFile()) return next();
+            res.setHeader(
+              'content-type',
+              file.endsWith('.json') ? 'application/json' : 'text/plain; charset=utf-8',
+            );
+            createReadStream(file).pipe(res);
+          })
+          .catch(() => next());
+      });
+    },
+    async writeBundle(options) {
+      const outDir = options.dir ?? fileURLToPath(new URL('./dist', import.meta.url));
+      await cp(DATA_SRC, join(outDir, 'data'), { recursive: true });
+    },
+  };
+}
 
 export default defineConfig({
   base: BASE,
@@ -21,6 +66,7 @@ export default defineConfig({
   },
   plugins: [
     preact(),
+    courseData(),
     VitePWA({
       registerType: 'prompt',
       injectRegister: null,

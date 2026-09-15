@@ -83,14 +83,18 @@ async function validateLexicon(): Promise<Map<string, AnyRecord>> {
     }
     checkProvenance(where, lemma);
 
-    // Every noun needs a gender and a plural, or an explicit no-plural flag.
+    // Every noun needs a gender and a plural, or an explicit flag from
+    // Wiktionary saying why it has neither. Pluralia tantum (Eltern, Leute,
+    // Ferien) are the real exception: German gives them no singular and so no
+    // gender, and Wiktionary tags them `plural-only`.
     if (lemma['pos'] === 'noun') {
-      if (!['m', 'f', 'n'].includes(String(lemma['gender']))) {
-        fail(where, 'noun without a gender');
+      const pluralOnly = lemma['pluralOnly'] === true;
+      if (!['m', 'f', 'n'].includes(String(lemma['gender'])) && !pluralOnly) {
+        fail(where, 'noun without a gender and not marked pluralOnly');
       }
       const hasPlural = typeof lemma['plural'] === 'string' && (lemma['plural'] as string).length > 0;
-      if (!hasPlural && lemma['noPlural'] !== true) {
-        fail(where, 'noun without a plural or an explicit noPlural flag');
+      if (!hasPlural && lemma['noPlural'] !== true && !pluralOnly) {
+        fail(where, 'noun without a plural, a noPlural flag or a pluralOnly flag');
       }
     }
 
