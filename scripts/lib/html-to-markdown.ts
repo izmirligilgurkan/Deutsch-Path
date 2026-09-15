@@ -28,6 +28,12 @@ const DROP_SELECTORS = [
   '.catlinks',
   '.mw-references-wrap',
   'table.messagebox',
+  // Wikibooks puts the book's chapter navigation in a table.top banner at the
+  // head and foot of every page.
+  'table.top',
+  'table.navigation',
+  '.navigation',
+  '.sidebar',
 ];
 
 function textOf(node: Node): string {
@@ -67,7 +73,27 @@ function cellText(cell: HTMLElement): string {
   return inline(cell).replace(/\s+/g, ' ').trim().replace(/\|/g, '\\|');
 }
 
+/**
+ * Navigation dressed as content: nearly all of its text sits inside links.
+ *
+ * Wikibooks puts chapter navigation in ordinary tables and paragraphs, so
+ * naming templates is not enough. A real grammar table (declensions,
+ * conjugations) is mostly plain word forms with few or no links, and a real
+ * paragraph is mostly prose, so link density separates them reliably.
+ */
+function isNavigation(el: HTMLElement): boolean {
+  const links = el.querySelectorAll('a');
+  if (links.length === 0) return false;
+  const linkText = links.map((a) => a.text.trim()).join('').length;
+  const raw = el.text.replace(/\s+/g, '');
+  if (raw.length === 0 || linkText / raw.length <= 0.8) return false;
+  // Either a long run of links, or a fragment that is nothing but a link and
+  // has no sentence in it — explanatory prose always ends a sentence.
+  return links.length >= 5 || !/[.!?:]/.test(el.text);
+}
+
 function tableToMarkdown(table: HTMLElement): string {
+  if (isNavigation(table)) return '';
   const rows = table.querySelectorAll('tr');
   if (rows.length === 0) return '';
 
@@ -128,8 +154,8 @@ function blockToMarkdown(el: HTMLElement, depth = 0): string {
       return text ? `${'#'.repeat(Math.min(level + 1, 6))} ${text}` : '';
     }
     case 'p': {
-      const text = inline(el).replace(/\s+/g, ' ').trim();
-      return text;
+      if (isNavigation(el)) return '';
+      return inline(el).replace(/\s+/g, ' ').trim();
     }
     case 'ul':
       return listToMarkdown(el, false, depth);

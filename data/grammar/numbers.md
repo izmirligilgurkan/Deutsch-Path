@@ -16,24 +16,6 @@ retrieved: 2026-09-15
 
 # Numbers
 
-| Appendices |
-| --- |
-| Alphabet |
-| Vocabulary |
-| Phrasebook |
-| Resources |
-| Names |
-| German History |
-| Nations of the World |
-| False Friends |
-| Numbers |
-| Keyboard Layout |
-| Exercises |
-
-Lessons**:** Level I • Level II • Level III Level IV Level V Grammar • Appendices • About (including print versions) • Q&A •
-
-Planning
-
 ### Cardinal numbers
 
 When referring to a single cardinal number, the article "die" is used - for example, "die zwei". When a number is used with a noun, the article of the noun is used, such as "der erste Computer". Numbers are not capitalised. Zero is "null".
@@ -124,12 +106,4 @@ Decimals are the same as in English. The comma (das "Komma") is used instead of 
 
 - 1/2 = 0,25
 - 7 3/4= 7,75
-
-| () | **Appendices** | (discussion) |
-| --- | --- | --- |
-| Alphabet • Vocabulary • Phrasebook • Resources • Names • German History • Nations of the World • False Friends • Numbers • Keyboard Layout Exercises • |  |  |
-
-| () |  | **German –** Lessons: Level I • Level II • Level III • Level IV • Level V |  | (discussion) |
-| --- | --- | --- | --- | --- |
-|  |  | Grammar • Appendices • About (including print versions) • Q&A • Planning |  |  |
 

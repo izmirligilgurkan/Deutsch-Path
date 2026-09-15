@@ -16,24 +16,6 @@ retrieved: 2026-09-15
 
 # Alphabet and pronunciation
 
-| Appendices |
-| --- |
-| Alphabet |
-| Vocabulary |
-| Phrasebook |
-| Resources |
-| Names |
-| German History |
-| Nations of the World |
-| False Friends |
-| Numbers |
-| Keyboard Layout |
-| Exercises |
-
-Lessons**:** Level I • Level II • Level III Level IV Level V Grammar • Appendices • About (including print versions) • Q&A •
-
-Planning
-
 ### The Alphabet
 
 Like English, the German alphabet consists of 26 basic letters. However, there are also combined letters and three umlauted forms. An *umlaut* is the pair of dots placed over certain vowels; in German, *Umlaut* describes the dotted letter, not just the dots.
@@ -83,4 +65,10 @@ Reading down this column and pronouncing the "English" words will recite the alp
 | Ü | (ü), /yː/ or (u Umlaut), /uː 'ʊmlaʊt/ | No English equivalent sound (see below). Long ü /yː/: similar to 'ew' as in 'stew' or 'new', but with lips rounded. Short ü /ʏ/: similar to 'u' as in 'cute'. |
 
 ##### The ss-Ligature, ß
+
+| Pronunciation: ß-ligature — Eszett (missing file: File:German Pronunciation - ß-ligature.ogg, how to upload audio) |  |  |
+| --- | --- | --- |
+| ß | (es-zet or scharfes es) /ɛsˈtsɛt/ | Pronounced like 's' in 'set' or 'c' in 'nice'; see below for uses. |
+
+##### Combined Letters
 

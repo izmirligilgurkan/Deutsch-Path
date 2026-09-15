@@ -104,10 +104,3 @@ As in English, this type of phrase is highly susceptible to regional variation, 
 
 There are, of course, technical terms for this kind of thing, but since both the mechanism and meaning should be familiar to English speakers already, there is no need to go into the jargon here.
 
-| ()(discussion) **Grammar** Introduction and overview • Basic terminology • Personal pronouns, formal and informal you, introduction to gender • Intransitive verbs, verb conjugation, present tense • Adverbs, V2 word order, Negation of verbs, Sentence adverbs • Stem-changing verbs, Weak vs. Strong verbs • Polar questions, V1 word order, Pre- and postambles • Noun gender • Noun plurals • Noun phrases, Articles • Transitive verbs, Accusative case, word order • Pronomial possessives, Possessive determiners, Possessive pronouns, Negation with *kein* • Irregular verbs, Past-like present verbs • Uninflected adjectives, Predicate phrases, Copulative verbs • Interrogatives, *der* words • Future tense, The sentence bracket • Ditransitive verbs, Dative case • Coordinating conjunctions, Ellipses, Adverbial conjunctions, Multipart conjunctions • Prepositions with accusative and dative, Prepositional verbs • Prefixed verbs, Separable verbs, Separable and inseparable prefixes • Imperatives, The imperative mood, The impersonal imperative • Impersonal verbs, Impersonal pronouns, the Point-of-view dative • Dative prepositions • Possessives and the genitive case • Modal auxiliary verbs, Compound verbs, Modal adverbs • Demonstratives • The simple past tense • Reflexive pronouns and reflexive verbs • Subordinating conjunctions • Declining adjectives Adjectives and Adverbs • Alphabet • Cases • Nouns • Prepositions and Postpositions • Pronouns • Sentences • Verbs |
-| --- |
-
-| () |  | **German –** Lessons: Level I • Level II • Level III • Level IV • Level V |  | (discussion) |
-| --- | --- | --- | --- | --- |
-|  |  | Grammar • Appendices • About (including print versions) • Q&A • Planning |  |  |
-
