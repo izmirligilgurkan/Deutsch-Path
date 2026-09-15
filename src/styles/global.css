@@ -1,0 +1,254 @@
+/*
+ * Mobile-first, ~380px portrait as the design target (spec §2).
+ * Plain CSS + custom properties, no UI framework.
+ */
+
+:root {
+  color-scheme: light dark;
+
+  --bg: #ffffff;
+  --bg-raised: #f5f6f8;
+  --bg-sunken: #eceef2;
+  --border: #d8dbe2;
+  --text: #16181d;
+  --text-dim: #5c6270;
+  --accent: #2f5fd0;
+  --accent-text: #ffffff;
+  --ok: #1a7f4b;
+  --bad: #c2352b;
+  --warn: #9a6400;
+
+  --radius: 10px;
+  --tap: 44px; /* minimum tap target, spec §9 */
+  --gap: 12px;
+  --pad: 16px;
+  --maxw: 640px;
+
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #0f1115;
+    --bg-raised: #171a21;
+    --bg-sunken: #0a0c10;
+    --border: #2a2f3a;
+    --text: #e8eaee;
+    --text-dim: #9aa2b1;
+    --accent: #6d9bff;
+    --accent-text: #0f1115;
+    --ok: #4cc38a;
+    --bad: #f2736a;
+    --warn: #e0a800;
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #0f1115;
+  --bg-raised: #171a21;
+  --bg-sunken: #0a0c10;
+  --border: #2a2f3a;
+  --text: #e8eaee;
+  --text-dim: #9aa2b1;
+  --accent: #6d9bff;
+  --accent-text: #0f1115;
+  --ok: #4cc38a;
+  --bad: #f2736a;
+  --warn: #e0a800;
+}
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.5 var(--font);
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior-y: none;
+}
+
+#app { min-height: 100%; }
+
+a { color: var(--accent); }
+
+h1, h2, h3 { line-height: 1.25; margin: 0 0 8px; }
+h1 { font-size: 1.45rem; }
+h2 { font-size: 1.15rem; }
+h3 { font-size: 1rem; }
+
+p { margin: 0 0 12px; }
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  max-width: var(--maxw);
+  margin: 0 auto;
+}
+
+.app-main {
+  flex: 1;
+  padding: var(--pad);
+  padding-bottom: calc(var(--tap) + 28px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Bottom tab bar: thumb-reachable on a phone, still fine on desktop. */
+.tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+  background: var(--bg-raised);
+  border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.tabbar a {
+  flex: 1 1 0;
+  max-width: 120px;
+  min-height: var(--tap);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 2px;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  text-decoration: none;
+}
+
+.tabbar a[aria-current='page'] { color: var(--accent); font-weight: 600; }
+.tabbar .tab-icon { font-size: 1.15rem; line-height: 1; }
+
+.card {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--pad);
+  margin-bottom: var(--gap);
+}
+
+.stack { display: flex; flex-direction: column; gap: var(--gap); }
+.row { display: flex; align-items: center; gap: var(--gap); flex-wrap: wrap; }
+.row-between { display: flex; align-items: center; justify-content: space-between; gap: var(--gap); }
+
+button, .btn {
+  min-height: var(--tap);
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-sunken);
+  color: var(--text);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-primary, button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.btn-block { display: flex; width: 100%; }
+
+input[type='text'], input[type='number'], select, textarea {
+  min-height: var(--tap);
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+
+input[type='checkbox'] { width: 22px; height: 22px; accent-color: var(--accent); }
+
+label.setting {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--gap);
+  min-height: var(--tap);
+  padding: 6px 0;
+}
+
+.muted { color: var(--text-dim); }
+.small { font-size: 0.8rem; }
+.attribution { font-size: 0.72rem; color: var(--text-dim); margin-top: 6px; }
+.mono { font-family: var(--mono); }
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.progressbar {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--bg-sunken);
+  overflow: hidden;
+}
+.progressbar > span { display: block; height: 100%; background: var(--accent); }
+
+.notice {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--warn);
+  border-radius: var(--radius);
+  padding: 12px;
+  background: var(--bg-raised);
+}
+
+.toast {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(var(--tap) + 12px + env(safe-area-inset-bottom, 0px));
+  z-index: 20;
+  max-width: calc(var(--maxw) - 24px);
+  margin: 0 auto;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  box-shadow: 0 6px 24px rgb(0 0 0 / 0.18);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--border); }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}

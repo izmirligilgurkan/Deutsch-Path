@@ -1,0 +1,27 @@
+The contents of this directory are licensed under
+
+    Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+    https://creativecommons.org/licenses/by-sa/4.0/
+
+They are derived from openly licensed sources, principally:
+
+  * Wiktionary (English), obtained via the kaikki.org machine-readable extract
+    produced by wiktextract — CC BY-SA 4.0 / GFDL.
+    https://kaikki.org/dictionary/German/
+
+  * The Tatoeba Project — CC BY 2.0 FR, with some sentences under CC0 1.0.
+    Per-sentence ids and authors are retained in sentences.json.
+    https://tatoeba.org/en/downloads
+
+  * Wikibooks: German — CC BY-SA 4.0.
+    https://en.wikibooks.org/wiki/German
+
+Share-alike applies: a redistribution of this directory, modified or not, must
+carry the same licence and the attributions above.
+
+Each record carries its own `source`, `sourceUrl`/`sourceId` and `license`
+fields. See DATA_LICENSES.md in the repository root for the full register and
+the modifications made to each source.
+
+NOT INCLUDED: the Goethe-Institut Wortlisten are copyrighted compilations and
+are never redistributed here, in any form. See DATA_LICENSES.md.

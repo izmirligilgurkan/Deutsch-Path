@@ -1,0 +1,25 @@
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Raw source dumps: large, and re-fetchable from their dated manifest.
+raw/
+
+# Goethe word lists are copyrighted. Neither the PDFs nor anything derived
+# from them may ever be committed (spec §3.1).
+goethe-levels.json
+**/goethe-levels.json
+*Wortliste*.pdf
+*wortliste*.pdf
+
+# Test output
+playwright-report/
+test-results/
+coverage/
+
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.log
