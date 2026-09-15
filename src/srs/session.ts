@@ -1,5 +1,5 @@
 import { getDB } from '~/db/index.ts';
-import type { Card, Mistake, PracticeMode, ReviewLog, Settings } from '~/db/types.ts';
+import type { Card, Mistake, PracticeMode, ReviewLog, Settings, UnitProgress } from '~/db/types.ts';
 import type { Lemma, Level } from '~/lib/content-types.ts';
 import { loadLexicon } from '~/lib/content.ts';
 import { updateSettings } from '~/db/settings-store.ts';
@@ -216,22 +216,40 @@ export async function touchStreak(settings: Settings, now = Date.now()): Promise
   return streak;
 }
 
-/** Unlock state per unit: linear, gated on the unit test unless turned off. */
-export async function unlockedUnits(settings: Settings): Promise<Set<number>> {
-  const db = await getDB();
-  const progress = await db.getAll('unitProgress');
+/** A unit test at or above this score unlocks the next unit (spec §4.2). */
+export const PASS_MARK = 0.8;
+
+/**
+ * Unlock state per unit: linear, gated on the unit test unless the learner
+ * turns the gate off. Pure, so the progression rule can be tested directly.
+ */
+export function computeUnlocked(
+  progress: UnitProgress[],
+  requireUnitTest: boolean,
+): Set<number> {
   const byUnit = new Map(progress.map((p) => [p.unit, p]));
 
+  // Unit 1 is always available; there is nothing to pass before it.
   const unlocked = new Set<number>([1]);
   for (const plan of UNITS) {
     const p = byUnit.get(plan.unit);
     if (p?.unlocked) unlocked.add(plan.unit);
-    const passed = (p?.bestScore ?? 0) >= 0.8;
-    if (passed || !settings.requireUnitTestToUnlock) unlocked.add(plan.unit + 1);
+
+    // Only a unit that is itself reachable can unlock the next one, or turning
+    // the gate off would open the whole course at once from unit 1.
+    if (!unlocked.has(plan.unit)) continue;
+    const passed = (p?.bestScore ?? 0) >= PASS_MARK;
+    if (passed || !requireUnitTest) unlocked.add(plan.unit + 1);
   }
+
   // Never offer a unit past the end of the course.
   unlocked.delete(UNITS.length + 1);
   return unlocked;
+}
+
+export async function unlockedUnits(settings: Settings): Promise<Set<number>> {
+  const db = await getDB();
+  return computeUnlocked(await db.getAll('unitProgress'), settings.requireUnitTestToUnlock);
 }
 
 export function levelAtOrBelow(level: Level, other: Level): boolean {

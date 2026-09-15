@@ -7,15 +7,14 @@ import { loadExercises, loadLexicon, loadSentences } from '~/lib/content.ts';
 import { attributionFor, exerciseToQuestion } from '~/lib/exercise-question.ts';
 import { UNITS } from '~/lib/syllabus.ts';
 import { mulberry32, seedFrom, shuffled } from '~/lib/rng.ts';
-import { touchStreak } from '~/srs/session.ts';
+import { PASS_MARK, touchStreak } from '~/srs/session.ts';
 import type { Exercise, Lemma, Sentence } from '~/lib/content-types.ts';
 import type { Mistake, TestResult } from '~/db/types.ts';
 import { navigate } from '~/router/hash-router.ts';
 import { t } from '~/i18n/strings.ts';
 
-/** Spec §4.5: a unit test is 20 mixed items, scored at the end, ≥80% to pass. */
+/** Spec §4.5: a unit test is 20 mixed items, scored at the end. */
 const TEST_LENGTH = 20;
-const PASS_MARK = 0.8;
 
 type Mode = 'drill' | 'test';
 
