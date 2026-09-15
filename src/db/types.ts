@@ -20,6 +20,8 @@ export interface Card {
   reps: number;
   lapses: number;
   state: 0 | 1 | 2 | 3;
+  /** ts-fsrs tracks position in the learning/relearning step sequence. */
+  learningSteps: number;
   lastReview?: number;
   /** Cards with >= 4 lapses go to the leech queue (spec §4.3). */
   suspended?: boolean;
@@ -36,6 +38,7 @@ export interface ReviewLog {
   state: 0 | 1 | 2 | 3;
   elapsedDays: number;
   scheduledDays: number;
+  learningSteps: number;
   /** ms the learner took to answer. */
   durationMs?: number;
 }

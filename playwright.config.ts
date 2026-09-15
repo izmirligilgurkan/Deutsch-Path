@@ -13,6 +13,8 @@ export default defineConfig({
   reporter: process.env.CI ? 'list' : 'html',
   use: {
     baseURL: 'http://localhost:4173/Deutsch-Path/',
+    // Each test starts from a clean IndexedDB.
+    storageState: undefined,
     trace: 'on-first-retry',
   },
   projects: [

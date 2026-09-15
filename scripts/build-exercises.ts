@@ -8,12 +8,10 @@
  *
  *   npm run data:exercises
  */
-import { readFile } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Exercise, Lemma, Level, Sentence } from '../src/lib/content-types.ts';
 import { UNITS } from '../src/lib/syllabus.ts';
-import { DATA_DIR, writeJson } from './lib/io.ts';
+import { DATA_DIR, loadAllSentences, loadFullLexicon, writeJson } from './lib/io.ts';
 import {
   genArticleCase,
   genChooseForm,
@@ -35,20 +33,15 @@ const LEMMAS_PER_UNIT = 25;
 
 const LEVEL_ORDER: Record<Level, number> = { A1: 0, A2: 1, B1: 2 };
 
-function needed(path: string, how: string): string {
-  if (!existsSync(path)) {
-    console.error(`missing ${path}\nRun: ${how}`);
-    process.exit(1);
-  }
-  return path;
+let lexicon: Lemma[];
+let sentences: Sentence[];
+try {
+  lexicon = await loadFullLexicon();
+  sentences = await loadAllSentences();
+} catch {
+  console.error('missing built data\nRun: npm run data:lexicon && npm run data:sentences');
+  process.exit(1);
 }
-
-const lexicon = JSON.parse(
-  await readFile(needed(join(DATA_DIR, 'lexicon.json'), 'npm run data:lexicon'), 'utf8'),
-) as Lemma[];
-const sentences = JSON.parse(
-  await readFile(needed(join(DATA_DIR, 'sentences.json'), 'npm run data:sentences'), 'utf8'),
-) as Sentence[];
 
 console.log(`lexicon ${lexicon.length}, sentences ${sentences.length}`);
 

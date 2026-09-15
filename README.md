@@ -6,12 +6,38 @@ testing only — no audio, no speaking, no accounts, no ads.
 
 It is a static site. There is no backend, no API key, and **no AI at runtime**.
 
-> **Status: phase 2 of 7 (data pipeline).** The app shell and the content
-> pipeline are both in place: `data/` now holds 3,000 sourced lemmas, 8,286
-> Tatoeba sentences, 69 grammar topics and 4,139 generated exercises. The
-> trainer that puts them on screen comes next — see
-> [Build phases](#build-phases). Screens that are not built yet say so rather
-> than showing placeholder German.
+> **Status: phase 3–4 (usable).** The course runs end to end on a phone:
+> onboarding, 35 units with sourced explanations, drills, unit tests, an FSRS
+> vocabulary trainer, a dictionary and a progress view. Screens that are not
+> built yet — the placement test and level tests — say so rather than showing
+> placeholder German. See [Build phases](#build-phases).
+
+## Using it on your phone
+
+Nothing to install and no account. Open:
+
+**<https://izmirligilgurkan.github.io/Deutsch-Path/>**
+
+Then:
+
+1. Tap **Get started** → **Start from zero**.
+2. Add it to your home screen so it opens full-screen and works offline —
+   on iOS: **Share → Add to Home Screen**; on Android: **⋮ → Install app**.
+   The app shows these steps for your device on the home screen.
+3. Tap **Continue unit** to read the explanation and start drilling.
+
+A few things worth knowing:
+
+- **Everything stays on your phone.** Progress lives in the browser's own
+  storage. There is no server and no sign-in, so clearing site data erases it —
+  use **Settings → Export progress** for a backup.
+- **It works offline** after the first visit, including on a plane.
+- **The umlaut row** above the keyboard types ä ö ü ß. In practice you can also
+  write `ae oe ue ss` and it is accepted; tests are strict.
+- **Answers are case-sensitive** by default, because German capitalises nouns.
+  Turn that off in Settings if you would rather not.
+- **Importing a Goethe word list is optional and needs a computer.** Skip it —
+  the app works fully without one.
 
 ## The content rule
 
@@ -162,10 +188,10 @@ phone.
 |---|---|---|
 | 1 | Scaffold: app, PWA, routing, IndexedDB, Pages deploy | ✅ |
 | 2 | Data pipeline, validation, licences | ✅ |
-| 3 | Vocabulary SRS: card types, FSRS, answer checking | next |
-| 4 | A1 units: sourced explanations, drills, unit tests | |
-| 5 | A2 and B1 units, level tests, placement test | |
-| 6 | Dashboard, mistake log, weakness view, export/import, attributions | partly |
+| 3 | Vocabulary SRS: card types, FSRS, answer checking | ✅ |
+| 4 | Units: sourced explanations, drills, unit tests | ✅ |
+| 5 | Level tests and placement test | not yet |
+| 6 | Dashboard, mistake log, weakness view, export/import, attributions | ✅ |
 | 7 | Test coverage, mobile smoke test, Lighthouse PWA pass | partly |
 
 See [SYLLABUS.md](SYLLABUS.md) for the 35 units and their grammar topic ids.

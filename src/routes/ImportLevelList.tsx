@@ -65,6 +65,14 @@ export function ImportLevelList() {
 
   return (
     <Screen title={t.settings.importLevelList} subtitle="Stays on this device">
+      <div class="notice">
+        <p class="small" style="margin:0">
+          <strong>Optional, and it needs a computer.</strong> The app works fully without it —
+          levels are then ordered by corpus frequency and labelled approximate. Skip this unless
+          you want the official Goethe levels.
+        </p>
+      </div>
+
       <div class="card">
         <p class="small">
           The Goethe-Institut Wortlisten are the best public standard for which words belong to

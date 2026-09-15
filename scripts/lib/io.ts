@@ -74,3 +74,50 @@ export function progress(label: string, every = 100_000) {
     },
   };
 }
+
+/**
+ * Re-joins the split lexicon for build steps that need inflection tables.
+ *
+ * The app loads `core.json` plus only the level it needs; a build script runs
+ * on a laptop, so it just takes everything.
+ */
+export async function loadFullLexicon(): Promise<import('../../src/lib/content-types.ts').Lemma[]> {
+  const { readFile } = await import('node:fs/promises');
+  const { join } = await import('node:path');
+  type Lemma = import('../../src/lib/content-types.ts').Lemma;
+  type Form = import('../../src/lib/content-types.ts').Form;
+
+  const core = JSON.parse(
+    await readFile(join(DATA_DIR, 'lexicon', 'core.json'), 'utf8'),
+  ) as Lemma[];
+
+  const forms: Record<string, Form[]> = {};
+  for (const level of ['A1', 'A2', 'B1'] as const) {
+    Object.assign(
+      forms,
+      JSON.parse(await readFile(join(DATA_DIR, 'lexicon', `forms-${level}.json`), 'utf8')) as Record<
+        string,
+        Form[]
+      >,
+    );
+  }
+  return core.map((l) => ({ ...l, forms: forms[l.id] ?? [] }));
+}
+
+/** Every selected sentence, across levels. */
+export async function loadAllSentences(): Promise<
+  import('../../src/lib/content-types.ts').Sentence[]
+> {
+  const { readFile } = await import('node:fs/promises');
+  const { join } = await import('node:path');
+  type Sentence = import('../../src/lib/content-types.ts').Sentence;
+  const out: Sentence[] = [];
+  for (const level of ['A1', 'A2', 'B1'] as const) {
+    out.push(
+      ...(JSON.parse(
+        await readFile(join(DATA_DIR, 'sentences', `${level}.json`), 'utf8'),
+      ) as Sentence[]),
+    );
+  }
+  return out;
+}

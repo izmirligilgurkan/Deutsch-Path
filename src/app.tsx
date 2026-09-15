@@ -16,6 +16,8 @@ import { Onboarding } from '~/routes/Onboarding.tsx';
 import { Progress } from '~/routes/Progress.tsx';
 import { Review } from '~/routes/Review.tsx';
 import { Settings } from '~/routes/Settings.tsx';
+import { Unit } from '~/routes/Unit.tsx';
+import { ExerciseSession } from '~/routes/ExerciseSession.tsx';
 
 import type { JSX } from 'preact';
 import type { RouteParams } from '~/router/hash-router.ts';
@@ -25,6 +27,10 @@ const ROUTES: { pattern: string; render: (params: RouteParams) => JSX.Element }[
   { pattern: '/', render: () => <Home /> },
   { pattern: '/onboarding', render: () => <Onboarding /> },
   { pattern: '/course', render: () => <Course /> },
+  { pattern: '/unit/:unit/drill', render: (p) => <ExerciseSession unit={Number(p['unit'])} mode="drill" /> },
+  { pattern: '/unit/:unit/test', render: (p) => <ExerciseSession unit={Number(p['unit'])} mode="test" /> },
+  { pattern: '/unit/:unit', render: (p) => <Unit unit={Number(p['unit'])} /> },
+  { pattern: '/review/leeches', render: () => <Review leechMode /> },
   { pattern: '/review', render: () => <Review /> },
   { pattern: '/dictionary', render: () => <Dictionary /> },
   { pattern: '/progress', render: () => <Progress /> },

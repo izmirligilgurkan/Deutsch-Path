@@ -338,7 +338,24 @@ const lexicon: Lemma[] = ranked.map((c, i) => {
   return lemma;
 });
 
-await writeJson(join(DATA_DIR, 'lexicon.json'), lexicon);
+/**
+ * Output is split so a phone downloads only what it needs.
+ *
+ * `core.json` carries every field the app uses on most screens — headword,
+ * gender, plural, glosses, principal parts — but not the inflection tables,
+ * which are 80% of the bytes and are only needed by the declension and
+ * conjugation drills. Those load per level, on demand.
+ */
+const core: Lemma[] = lexicon.map(({ forms: _forms, ...rest }) => ({ ...rest, forms: [] }));
+await writeJson(join(DATA_DIR, 'lexicon', 'core.json'), core);
+
+for (const level of ['A1', 'A2', 'B1'] as const) {
+  const forms: Record<string, Form[]> = {};
+  for (const l of lexicon) {
+    if (l.level === level) forms[l.id] = l.forms;
+  }
+  await writeJson(join(DATA_DIR, 'lexicon', `forms-${level}.json`), forms);
+}
 
 // The form index is an intermediate for build-sentences, not shipped content:
 // it is large and fully derivable from lexicon.json plus the kaikki dump.

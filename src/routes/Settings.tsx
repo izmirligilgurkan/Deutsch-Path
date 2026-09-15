@@ -158,6 +158,7 @@ export function Settings() {
           </label>
 
           <a class="btn btn-block" href="#/import-level-list">{t.settings.importLevelList}</a>
+          <a class="btn btn-block" href="#/progress">{t.nav.progress}</a>
           <a class="btn btn-block" href="#/attributions">{t.attributions.title}</a>
 
           <button

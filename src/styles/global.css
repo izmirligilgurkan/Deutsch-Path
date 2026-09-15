@@ -252,3 +252,138 @@ th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--bord
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+
+/* ── Drills ─────────────────────────────────────────────────────────────── */
+
+.umlaut-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.umlaut-row::-webkit-scrollbar { display: none; }
+
+.umlaut-key {
+  flex: 1 1 0;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 6px 4px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  background: var(--bg-sunken);
+}
+
+.prompt-card {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px var(--pad);
+  margin-bottom: var(--gap);
+  text-align: center;
+}
+
+.prompt-label {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 10px;
+}
+
+.prompt-text {
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.prompt-text.en { font-size: 1.25rem; font-weight: 500; }
+
+.choice {
+  display: flex;
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+  margin-bottom: 8px;
+}
+.choice-correct { border-color: var(--ok); color: var(--ok); font-weight: 600; }
+.choice-wrong { border-color: var(--bad); color: var(--bad); }
+
+.gender-row { display: flex; gap: 8px; }
+.gender-row > button { flex: 1; font-size: 1.05rem; font-weight: 600; }
+
+.verdict {
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 12px;
+  margin-bottom: var(--gap);
+}
+.verdict-ok { border-left: 3px solid var(--ok); }
+.verdict-bad { border-left: 3px solid var(--bad); }
+
+.diff-same { opacity: 0.75; }
+.diff-removed { background: color-mix(in srgb, var(--bad) 25%, transparent); text-decoration: line-through; }
+.diff-added { background: color-mix(in srgb, var(--ok) 25%, transparent); font-weight: 700; }
+
+.grade-row { display: flex; gap: 6px; }
+.grade-row > button { flex: 1; flex-direction: column; gap: 2px; padding: 8px 4px; font-size: 0.85rem; }
+.grade-row .grade-interval { font-size: 0.68rem; color: var(--text-dim); font-weight: 400; }
+
+.session-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  margin-bottom: var(--gap);
+}
+.session-bar .progressbar { flex: 1; }
+
+.token-chip {
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-sunken);
+  min-height: 40px;
+  font-size: 0.95rem;
+}
+.token-tray { display: flex; flex-wrap: wrap; gap: 6px; min-height: 48px; }
+.token-answer {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  min-height: 52px; padding: 8px;
+  border: 1px dashed var(--border); border-radius: var(--radius);
+  margin-bottom: var(--gap);
+}
+
+.unit-row {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  padding: 12px var(--pad);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-raised);
+  margin-bottom: 8px;
+  text-decoration: none;
+  color: var(--text);
+  min-height: var(--tap);
+}
+.unit-row[aria-disabled='true'] { opacity: 0.55; }
+.unit-num {
+  flex: 0 0 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 999px; background: var(--bg-sunken);
+  font-size: 0.85rem; font-weight: 700;
+}
+.unit-done .unit-num { background: var(--ok); color: var(--bg); }
+
+.grammar-body { font-size: 0.95rem; line-height: 1.6; }
+.grammar-body table { margin: 12px 0; font-size: 0.85rem; }
+.grammar-body th { background: var(--bg-sunken); }
+.grammar-body h2 { margin-top: 20px; font-size: 1.05rem; }
+.grammar-body h3 { margin-top: 16px; font-size: 0.95rem; }
+.grammar-body code { background: var(--bg-sunken); padding: 1px 4px; border-radius: 4px; }
+.table-scroll { overflow-x: auto; }
+
+.stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--gap); }
+.stat { background: var(--bg-raised); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; }
+.stat-value { font-size: 1.5rem; font-weight: 700; line-height: 1.1; }
+.stat-label { font-size: 0.75rem; color: var(--text-dim); margin-top: 2px; }

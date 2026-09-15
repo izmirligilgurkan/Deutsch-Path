@@ -57,18 +57,30 @@ function checkProvenance(where: string, rec: AnyRecord): void {
 
 async function validateLexicon(): Promise<Map<string, AnyRecord>> {
   const byId = new Map<string, AnyRecord>();
-  const lexicon = await readJson<AnyRecord[]>(join(DATA_DIR, 'lexicon.json'));
+  // The lexicon ships split: core.json for every screen, forms-<level>.json
+  // for the drills that need inflection tables.
+  const lexicon = await readJson<AnyRecord[]>(join(DATA_DIR, 'lexicon', 'core.json'));
   if (!lexicon) {
-    notes.push('data/lexicon.json not present yet (built in phase 2).');
+    notes.push('data/lexicon/core.json not present yet — run npm run data:lexicon.');
     return byId;
   }
   if (!Array.isArray(lexicon)) {
-    fail('lexicon.json', 'expected a JSON array');
+    fail('lexicon/core.json', 'expected a JSON array');
     return byId;
   }
 
+  // Every lemma must have its forms in the file for its level.
+  const formsByLevel = new Map<string, Record<string, unknown>>();
+  for (const level of ['A1', 'A2', 'B1']) {
+    const forms = await readJson<Record<string, unknown>>(
+      join(DATA_DIR, 'lexicon', `forms-${level}.json`),
+    );
+    if (forms) formsByLevel.set(level, forms);
+    else fail(`lexicon/forms-${level}.json`, 'missing');
+  }
+
   lexicon.forEach((lemma, i) => {
-    const where = `lexicon[${i}] (${String(lemma['lemma'] ?? '?')})`;
+    const where = `lexicon/core[${i}] (${String(lemma['lemma'] ?? '?')})`;
     const id = lemma['id'];
     if (typeof id !== 'string' || id.length === 0) {
       fail(where, 'missing "id"');
@@ -102,6 +114,12 @@ async function validateLexicon(): Promise<Map<string, AnyRecord>> {
     if (lemma['levelSource'] === 'goethe-import') {
       fail(where, 'Goethe-derived level found in committed data — this must stay on-device only');
     }
+
+    const level = String(lemma['level']);
+    const forms = formsByLevel.get(level);
+    if (forms && typeof id === 'string' && !(id in forms)) {
+      fail(where, `has no entry in lexicon/forms-${level}.json`);
+    }
   });
 
   return byId;
@@ -109,14 +127,25 @@ async function validateLexicon(): Promise<Map<string, AnyRecord>> {
 
 async function validateSentences(): Promise<Map<number, AnyRecord>> {
   const byId = new Map<number, AnyRecord>();
-  const sentences = await readJson<AnyRecord[]>(join(DATA_DIR, 'sentences.json'));
-  if (!sentences) {
-    notes.push('data/sentences.json not present yet (built in phase 2).');
-    return byId;
-  }
-  if (!Array.isArray(sentences)) {
-    fail('sentences.json', 'expected a JSON array');
-    return byId;
+  const sentences: AnyRecord[] = [];
+  for (const level of ['A1', 'A2', 'B1']) {
+    const rows = await readJson<AnyRecord[]>(join(DATA_DIR, 'sentences', `${level}.json`));
+    if (!rows) {
+      notes.push(`data/sentences/${level}.json not present yet — run npm run data:sentences.`);
+      continue;
+    }
+    if (!Array.isArray(rows)) {
+      fail(`sentences/${level}.json`, 'expected a JSON array');
+      continue;
+    }
+    // A sentence must sit in the file for its own level, or the app would
+    // load a level and silently miss it.
+    for (const row of rows) {
+      if (row['level'] !== level) {
+        fail(`sentences/${level}.json`, `sentence #${String(row['id'])} is level ${String(row['level'])}`);
+      }
+    }
+    sentences.push(...rows);
   }
 
   sentences.forEach((s, i) => {

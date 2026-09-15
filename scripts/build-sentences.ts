@@ -48,9 +48,9 @@ function need(path: string): string {
 
 // ── Inputs ─────────────────────────────────────────────────────────────────
 
-const lexiconPath = join(DATA_DIR, 'lexicon.json');
+const lexiconPath = join(DATA_DIR, 'lexicon', 'core.json');
 if (!existsSync(lexiconPath)) {
-  console.error('missing data/lexicon.json\nRun: npm run data:lexicon');
+  console.error('missing data/lexicon/core.json\nRun: npm run data:lexicon');
   process.exit(1);
 }
 const lexicon = JSON.parse(await readFile(lexiconPath, 'utf8')) as Lemma[];
@@ -236,7 +236,14 @@ for (const c of candidates) {
 }
 
 chosen.sort((a, b) => a.id - b.id);
-await writeJson(join(DATA_DIR, 'sentences.json'), chosen);
+
+// Split per level so a unit loads only the sentences it can use.
+for (const level of ['A1', 'A2', 'B1'] as const) {
+  await writeJson(
+    join(DATA_DIR, 'sentences', `${level}.json`),
+    chosen.filter((s) => s.level === level),
+  );
+}
 
 // ── Report ─────────────────────────────────────────────────────────────────
 
