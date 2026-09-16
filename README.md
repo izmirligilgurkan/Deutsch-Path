@@ -43,6 +43,9 @@ A few things worth knowing:
   tagged A1 / A2 / B1 from the official exam lists; the rest are estimated from
   corpus frequency and labelled *approximate*. Nothing to import — it ships
   with the app.
+- **A practice session is saved as you go.** Stop at item 20 of 125 and the
+  unit offers *Continue practice · 20 of 125* when you come back. Tests are not
+  saved — those are meant to be one sitting.
 - **Four ways to study:** a unit's drills, the spaced-repetition review queue,
   a 10-item daily test weighted toward your recent mistakes, and a 60-item
   level test at the end of each level. Anything you get wrong in a test is

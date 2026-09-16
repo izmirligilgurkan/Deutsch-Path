@@ -13,6 +13,7 @@ const ALL_STORES = [
   'testResults',
   'seenLemmas',
   'levelList',
+  'sessionState',
 ] as const satisfies readonly (keyof DeutschPathDB)[];
 
 type StoreName = (typeof ALL_STORES)[number];
@@ -62,6 +63,12 @@ export function getDB(): Promise<IDBPDatabase<DeutschPathDB>> {
         const seen = db.createObjectStore('seenLemmas', { keyPath: 'lemmaId' });
         seen.createIndex('by-last-seen', 'lastSeenAt');
       }
+
+      // v2: an unfinished practice session is kept, so closing the app mid-way
+      // through a hundred items does not throw them away.
+      if (oldVersion < 2) {
+        db.createObjectStore('sessionState', { keyPath: 'key' });
+      }
     },
     blocked() {
       console.warn('[db] upgrade blocked by another open tab');
@@ -103,7 +110,7 @@ export async function resetAll(keepLevelList = true): Promise<void> {
 /** Drops progress for one unit only, leaving the rest of the course alone. */
 export async function resetUnit(unit: number): Promise<void> {
   const db = await getDB();
-  const tx = db.transaction(['cards', 'unitProgress', 'mistakes'], 'readwrite');
+  const tx = db.transaction(['cards', 'unitProgress', 'mistakes', 'sessionState'], 'readwrite');
   const cards = tx.objectStore('cards');
   for (const key of await cards.index('by-unit').getAllKeys(unit)) {
     await cards.delete(key);
@@ -113,6 +120,8 @@ export async function resetUnit(unit: number): Promise<void> {
     await mistakes.delete(key);
   }
   await tx.objectStore('unitProgress').delete(unit);
+  // A reset unit starts its practice from the beginning too.
+  await tx.objectStore('sessionState').delete(`drill:${unit}`);
   await tx.done;
 }
 

@@ -289,3 +289,46 @@ test('the whole course works with the network off', async ({ page, context }) =>
   expect(failures).toEqual([]);
   await context.setOffline(false);
 });
+
+test('practice picks up where it stopped', async ({ page }) => {
+  await page.goto('./#/onboarding');
+  await page.getByRole('button', { name: /start from zero/i }).click();
+  await page.waitForFunction(() => location.hash === '#/', null, { timeout: 25_000 });
+
+  await page.goto('./#/unit/1/drill');
+  await expect(page.locator('.meet-word, .prompt-text').first()).toBeVisible({ timeout: 15_000 });
+
+  // Work a few items in, then leave the way a phone leaves: close the session.
+  for (let i = 0; i < 6; i += 1) {
+    const gotIt = page.getByRole('button', { name: 'Got it' });
+    if ((await gotIt.count()) > 0) {
+      await gotIt.click();
+    } else {
+      const choices = page.locator('button.choice, .gender-row button');
+      if ((await choices.count()) > 0) await choices.first().click();
+      else {
+        await page.locator('input[type=text]').first().fill('x');
+        await page.getByRole('button', { name: 'Check' }).click();
+      }
+      await page.getByRole('button', { name: 'Continue' }).click();
+    }
+    await expect(page.locator('.meet-word, .prompt-text').first()).toBeVisible();
+  }
+  const stopped = await page.locator('.session-bar').innerText();
+  const position = /(\d+)\//.exec(stopped)?.[1];
+  expect(Number(position)).toBeGreaterThan(1);
+
+  // The unit screen offers to continue, and says where from.
+  await page.goto('./#/unit/1');
+  const resume = page.getByRole('link', { name: /Continue practice/ });
+  await expect(resume).toBeVisible({ timeout: 15_000 });
+  await expect(resume).toContainText(`${Number(position) - 1} of`);
+
+  await resume.click();
+  await expect(page.locator('.session-bar')).toContainText(`${position}/`);
+
+  // Starting over is available, and does start over.
+  await page.goto('./#/unit/1');
+  await page.getByRole('button', { name: 'Start practice over' }).click();
+  await expect(page.locator('.session-bar')).toContainText('1/');
+});

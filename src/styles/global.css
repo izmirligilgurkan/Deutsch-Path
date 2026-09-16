@@ -550,3 +550,12 @@ th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--bord
 .meet-example { padding: 14px 16px; }
 .meet-example-de { margin: 0; font-size: 1rem; }
 .meet-example-en { margin: 6px 0 0; font-size: 0.9rem; color: var(--text-dim); }
+
+/* A second line inside a primary action: where the unit's practice stopped. */
+.btn-note {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 400;
+  opacity: 0.75;
+  margin-top: 2px;
+}

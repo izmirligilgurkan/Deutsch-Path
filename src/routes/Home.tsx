@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
+import { savedProgress, sessionKey } from '~/db/session-state.ts';
 import { Screen } from '~/components/Screen.tsx';
 import { InstallHint } from '~/components/InstallHint.tsx';
 import { useSettings } from '~/db/settings-store.ts';
@@ -11,6 +12,8 @@ import { t } from '~/i18n/strings.ts';
 
 interface Dashboard {
   due: number;
+  /** An unfinished practice session on the current unit, if there is one. */
+  practice: { index: number; total: number } | null;
   newAvailable: number;
   leeches: number;
   currentUnit: number;
@@ -60,9 +63,11 @@ export function Home() {
           progress.filter((p) => (p.bestScore ?? 0) >= 0.8).map((p) => p.unit),
         );
         const current = UNITS.find((u) => unlocked.has(u.unit) && !passed.has(u.unit))?.unit ?? 1;
+        const practice = await savedProgress(sessionKey(current));
 
         setData({
           due: session.queue.length,
+          practice,
           newAvailable: session.newCount,
           leeches: session.leeches,
           currentUnit: current,
@@ -108,6 +113,9 @@ export function Home() {
       <div class="stack" style="margin-bottom:20px">
         <a class="btn btn-primary btn-block" href={`#/unit/${data?.currentUnit ?? 1}`}>
           Unit {unitPlan?.unit ?? 1} · {unitPlan?.title ?? ''}
+          {data?.practice ? (
+            <span class="btn-note">practice at {data.practice.index} of {data.practice.total}</span>
+          ) : null}
         </a>
         <a class="btn btn-block" href="#/review">
           Review · {data ? data.due : '…'}

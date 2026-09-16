@@ -11,6 +11,7 @@ import { UNITS } from '~/lib/syllabus.ts';
 import { mulberry32, seedFrom, shuffled } from '~/lib/rng.ts';
 import { PASS_MARK, touchStreak } from '~/srs/session.ts';
 import { requeueFailedItems } from '~/srs/requeue.ts';
+import { clearSessionState, loadSessionState, resumeFrom, saveSessionState } from '~/db/session-state.ts';
 import type { Exercise, Lemma, Level, Sentence } from '~/lib/content-types.ts';
 import type { Mistake, TestResult } from '~/db/types.ts';
 import { navigate } from '~/router/hash-router.ts';
@@ -29,6 +30,12 @@ export interface SessionSpec {
   unit?: number;
   /** Set for a level test. */
   level?: Level;
+  /**
+   * Set for a session that can be picked up where it stopped. Practice only:
+   * a test is meant to be one sitting, and resuming one would turn a closed
+   * tab into extra thinking time.
+   */
+  resumeKey?: string;
 }
 
 export function ExerciseSession({ spec }: { spec: SessionSpec }) {
@@ -61,9 +68,27 @@ export function ExerciseSession({ spec }: { spec: SessionSpec }) {
         const levelSentences = await loadSentences(level);
         if (cancelled) return;
 
+        // A practice session left half-finished resumes exactly where it
+        // stopped, as long as the items are still the same ones.
+        const resumed = spec.resumeKey
+          ? resumeFrom(await loadSessionState(spec.resumeKey), chosen)
+          : null;
+        if (cancelled) return;
+
         setItems(chosen);
         setSentences(new Map(levelSentences.map((s) => [s.id, s])));
         setLemmas(new Map(lexicon.map((l) => [l.id, l])));
+        if (resumed) {
+          const byId = new Map(chosen.map((e) => [e.id, e]));
+          setIndex(resumed.index);
+          setCorrectCount(resumed.correct);
+          setWrong(
+            resumed.wrong.flatMap(({ id, given }) => {
+              const exercise = byId.get(id);
+              return exercise ? [{ exercise, given }] : [];
+            }),
+          );
+        }
         setPhase(chosen.length === 0 ? 'done' : 'running');
         setStartedAt(Date.now());
       } catch (err) {
@@ -74,7 +99,7 @@ export function ExerciseSession({ spec }: { spec: SessionSpec }) {
     })();
 
     return () => { cancelled = true; };
-  }, [ready, spec.kind, spec.unit, spec.level, spec.title]);
+  }, [ready, spec.kind, spec.unit, spec.level, spec.title, spec.resumeKey]);
 
   const exercise = items[index];
   /** Presentation cards have no answer, so they are not part of the score. */
@@ -145,15 +170,32 @@ export function ExerciseSession({ spec }: { spec: SessionSpec }) {
       await requeueFailedItems(wrong.map((w) => w.exercise));
     }
 
+    // Finished: there is nothing left to come back to.
+    if (spec.resumeKey) await clearSessionState(spec.resumeKey);
+
     await touchStreak(settings);
     setPhase('done');
-  }, [scoredTotal, correctCount, mode, spec.kind, spec.unit, spec.level, wrong, settings, sessionStart]);
+  }, [scoredTotal, correctCount, mode, spec.kind, spec.unit, spec.level, spec.resumeKey, wrong, settings, sessionStart]);
 
   const onContinue = useCallback(() => {
     setStartedAt(Date.now());
-    if (index + 1 >= items.length) void finish();
-    else setIndex(index + 1);
-  }, [index, items.length, finish]);
+    const next = index + 1;
+    if (next >= items.length) {
+      void finish();
+      return;
+    }
+    setIndex(next);
+    // Saved on the way forward, so the stored index is always the next
+    // unanswered item. An answer given but not confirmed is not counted twice
+    // on a resume; that one card comes round again.
+    if (spec.resumeKey) {
+      void saveSessionState(spec.resumeKey, items, {
+        index: next,
+        correct: correctCount,
+        wrong: wrong.map((w) => ({ id: w.exercise.id, given: w.given })),
+      });
+    }
+  }, [index, items, finish, spec.resumeKey, correctCount, wrong]);
 
   if (phase === 'loading' || !ready) {
     return <Screen title={spec.title}><p class="muted">{t.common.loading}</p></Screen>;

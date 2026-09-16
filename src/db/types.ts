@@ -133,3 +133,24 @@ export const DEFAULT_SETTINGS: Settings = {
   levelListImportedAt: null,
   installHintDismissed: false,
 };
+
+/**
+ * Where a practice session got to, so closing the app is not the same as
+ * throwing the session away.
+ *
+ * The item ids are stored in the order the session deals them, which is what
+ * makes a resume exact rather than approximate — and what detects a session
+ * saved against course data that has since been rebuilt.
+ */
+export interface SessionState {
+  /** One saved place per session: "drill:1". */
+  key: string;
+  itemIds: string[];
+  /** How many items are finished, which is the index of the next one. */
+  index: number;
+  correct: number;
+  /** Items answered wrongly, kept so a resumed session still reports them. */
+  wrong: { id: string; given: string }[];
+  startedAt: number;
+  updatedAt: number;
+}

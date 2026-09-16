@@ -5,13 +5,14 @@ import type {
   Mistake,
   ReviewLog,
   SeenLemma,
+  SessionState,
   Settings,
   TestResult,
   UnitProgress,
 } from './types.ts';
 
 export const DB_NAME = 'deutsch-path';
-export const DB_VERSION = 1;
+export const DB_VERSION = 2;
 
 export interface DeutschPathDB extends DBSchema {
   settings: {
@@ -56,5 +57,10 @@ export interface DeutschPathDB extends DBSchema {
     key: string;
     value: SeenLemma;
     indexes: { 'by-last-seen': number };
+  };
+  /** An unfinished practice session, so it can be picked up where it stopped. */
+  sessionState: {
+    key: string;
+    value: SessionState;
   };
 }

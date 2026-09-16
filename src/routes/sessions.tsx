@@ -16,6 +16,7 @@ import {
   TEST_LENGTHS,
 } from '~/lib/test-builder.ts';
 import { dayKey } from '~/srs/scheduler.ts';
+import { sessionKey } from '~/db/session-state.ts';
 import type { Level } from '~/lib/content-types.ts';
 
 /**
@@ -32,6 +33,7 @@ export function UnitDrill({ unit }: { unit: number }) {
             kind: 'drill',
             title: plan.title,
             closeHref: `#/unit/${unit}`,
+            resumeKey: sessionKey(unit),
             load: async () => {
               const [exercises, lexicon, sentences] = await Promise.all([
                 loadExercises(unit),

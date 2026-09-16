@@ -5,6 +5,8 @@ import { SourceNote } from '~/components/SourceNote.tsx';
 import { useSettings } from '~/db/settings-store.ts';
 import { getDB } from '~/db/index.ts';
 import { loadExercises, loadGrammar, type GrammarDoc } from '~/lib/content.ts';
+import { navigate } from '~/router/hash-router.ts';
+import { clearSessionState, savedProgress, sessionKey } from '~/db/session-state.ts';
 import { UNITS } from '~/lib/syllabus.ts';
 import { TOPIC_TITLES } from '~/lib/topic-titles.ts';
 import { ensureCardsForUnit } from '~/srs/session.ts';
@@ -18,6 +20,8 @@ export function Unit({ unit }: { unit: number }) {
   const [docs, setDocs] = useState<GrammarDoc[]>([]);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [best, setBest] = useState<number | undefined>(undefined);
+  /** Where an unfinished practice session stopped, if there is one. */
+  const [saved, setSaved] = useState<{ index: number; total: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -43,10 +47,13 @@ export function Unit({ unit }: { unit: number }) {
           ...(progress?.completedAt === undefined ? {} : { completedAt: progress.completedAt }),
         });
 
+        const inProgress = await savedProgress(sessionKey(unit));
+
         if (cancelled) return;
         setDocs(loadedDocs);
         setExercises(loadedExercises);
         setBest(progress?.bestScore);
+        setSaved(inProgress);
         setLoading(false);
       } catch (err) {
         if (cancelled) return;
@@ -85,8 +92,23 @@ export function Unit({ unit }: { unit: number }) {
     <Screen title={plan.title} subtitle={`Unit ${plan.unit} · ${plan.level}`}>
       <div class="stack" style="margin-bottom:20px">
         <a class="btn btn-primary btn-block" href={`#/unit/${unit}/drill`}>
-          Practise · {drillCount}
+          {saved ? `Continue practice · ${saved.index} of ${saved.total}` : `Practise · ${drillCount}`}
         </a>
+        {saved ? (
+          // Starting over is a deliberate choice, not the default: the point
+          // of saving the session is that reopening continues it.
+          <button
+            class="btn-block"
+            onClick={() => {
+              void clearSessionState(sessionKey(unit)).then(() => {
+                setSaved(null);
+                navigate(`/unit/${unit}/drill`);
+              });
+            }}
+          >
+            Start practice over
+          </button>
+        ) : null}
         <a class="btn btn-block" href={`#/unit/${unit}/test`}>
           Unit test{best !== undefined ? ` · best ${Math.round(best * 100)}%` : ''}
         </a>
