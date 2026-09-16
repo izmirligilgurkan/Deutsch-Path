@@ -124,3 +124,58 @@ describe('breakDownSentence', () => {
     expect(second?.lemma?.id).toBe('wissen|verb');
   });
 });
+
+describe('prepositions', () => {
+  const prep = (id: string, word: string, gloss: string): Lemma =>
+    lemma(id, word, 'prep', gloss);
+  const der = lemma('der|det', 'der', 'det', 'the');
+  const article: Record<string, Form[]> = {
+    'der|det': [
+      { form: 'dem', tags: ['dative', 'masculine', 'neuter', 'singular'] },
+      { form: 'den', tags: ['accusative', 'masculine', 'singular'] },
+      { form: 'die', tags: ['nominative', 'accusative', 'feminine', 'singular'] },
+    ],
+  };
+
+  it('says which case the preposition is used with here', () => {
+    const inP = prep('in|prep', 'in', 'in, inside');
+    const words = breakDownSentence('Er ist in dem Haus.', [inP, der], article);
+    expect(words.find((w) => w.surface === 'in')?.role).toBe('with the dative here');
+  });
+
+  it('reads the case off this sentence, not off a rule', () => {
+    // *auf* is two-way, and Wiktionary calls it dative. The sentence decides.
+    const auf = prep('auf|prep', 'auf', 'on, upon');
+    const words = breakDownSentence('Er legt es auf den Tisch.', [auf, der], article);
+    expect(words.find((w) => w.surface === 'auf')?.role).toBe('with the accusative here');
+  });
+
+  it('says nothing when the following form is ambiguous', () => {
+    const fuer = prep('für|prep', 'für', 'for');
+    // "die" is nominative or accusative; claiming either would be a guess.
+    const words = breakDownSentence('Das ist für die Frau.', [fuer, der], article);
+    expect(words.find((w) => w.surface === 'für')?.role).toBeUndefined();
+  });
+
+  it('says nothing when the following word has two cases at once', () => {
+    // *den* is accusative singular masculine and also dative plural.
+    const mit = prep('mit|prep', 'mit', 'with');
+    const both: Record<string, Form[]> = {
+      'der|det': [
+        { form: 'den', tags: ['accusative', 'masculine', 'singular'] },
+        { form: 'den', tags: ['dative', 'plural'] },
+      ],
+    };
+    const words = breakDownSentence('Er spricht mit den Leuten.', [mit, der], both);
+    expect(words.find((w) => w.surface === 'den')?.role).toBe(
+      'accusative singular masculine or dative plural',
+    );
+    expect(words.find((w) => w.surface === 'mit')?.role).toBeUndefined();
+  });
+
+  it('says nothing when no case-marked word follows', () => {
+    const nach = prep('nach|prep', 'nach', 'after, to');
+    const words = breakDownSentence('Ich gehe nach Hause.', [nach, der], article);
+    expect(words.find((w) => w.surface === 'nach')?.role).toBeUndefined();
+  });
+});

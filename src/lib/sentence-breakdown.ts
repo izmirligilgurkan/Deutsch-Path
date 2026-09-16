@@ -188,6 +188,53 @@ function rolesOf(forms: readonly Form[], pos?: string): string {
   return `${heads.join(' or ')} ${tail}`;
 }
 
+/**
+ * Which case a preposition is used with *in this sentence*.
+ *
+ * The obvious thing would be a preposition → case table, and the obvious place
+ * to get one is Wiktionary. It is not there: of the 36 prepositions this course
+ * teaches, four state a case in a gloss, and one of those four calls `auf`
+ * dative when it is a two-way preposition. A table built from that would be
+ * mostly silent and sometimes wrong.
+ *
+ * So this claims nothing about the language. It reports what the sentence in
+ * front of the learner does: the next case-marked word after the preposition
+ * is in this case. That is true by construction, and it is the connection a
+ * learner needs to notice — the case is not arbitrary, it belongs to the word
+ * in front of it. An ambiguous form ("nominative/accusative") says nothing.
+ */
+const CASES = ['nominative', 'accusative', 'dative', 'genitive'] as const;
+
+/** How far after a preposition its phrase may start: "in dem Haus", "in Berlin". */
+const PHRASE_REACH = 2;
+
+function unambiguousCase(role: string | undefined): string | undefined {
+  if (!role) return undefined;
+  // *den* is accusative singular and also dative plural; *die* is nominative
+  // or accusative. Naming the first of them would be a coin toss.
+  const found = CASES.filter((c) => role.includes(c));
+  if (found.length !== 1) return undefined;
+  // A nominative is the subject of the clause, not the preposition's object.
+  return found[0] === 'nominative' ? undefined : found[0];
+}
+
+function annotatePrepositions(words: BrokenWord[]): void {
+  for (const [i, word] of words.entries()) {
+    // A preposition has no form of its own to report, so the row is free.
+    if (word.lemma?.pos !== 'prep' || word.role) continue;
+    for (let j = i + 1; j <= i + PHRASE_REACH && j < words.length; j += 1) {
+      const found = unambiguousCase(words[j]?.role);
+      if (found) {
+        word.role = `with the ${found} here`;
+        break;
+      }
+      // A word that carries a form but no clear case ends the search rather
+      // than letting it run into the next phrase.
+      if (words[j]?.role) break;
+    }
+  }
+}
+
 export function breakDownSentence(
   text: string,
   lemmas: readonly Lemma[],
@@ -195,7 +242,7 @@ export function breakDownSentence(
   /** The rest of the course, for function words the sentence record omits. */
   fallback: readonly Lemma[] = [],
 ): BrokenWord[] {
-  return tokenize(text).map(({ text: surface }) => {
+  const words = tokenize(text).map(({ text: surface }) => {
     const match =
       resolve(surface, lemmas, formsByLemma) ?? resolve(surface, fallback, formsByLemma);
     if (!match) return { surface };
@@ -206,4 +253,7 @@ export function breakDownSentence(
     if (match.forms.length === 0) word.isLemma = true;
     return word;
   });
+
+  annotatePrepositions(words);
+  return words;
 }

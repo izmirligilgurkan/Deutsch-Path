@@ -98,6 +98,19 @@ ambiguous form shows every reading it has, up to three, and drops none of them
 silently. 96% of the words in the corpus resolve; a name or a loanword that has
 no entry is left blank.
 
+A preposition's row says which case it is used with **in this sentence** —
+*über* → "with the accusative here" in *Gehen Sie über den Platz!*, *aus* →
+"with the dative here" in *Sie kam aus dem Zimmer*. The obvious way to do that
+would be a preposition → case table, and Wiktionary does not have one: of the
+36 prepositions this course teaches, four state a case in a gloss, and one of
+those four calls *auf* dative when it is a two-way preposition. So the app
+claims nothing about the language and reports what the sentence does — the
+next case-marked word after the preposition is in this case, which is true by
+construction and is the connection a learner needs to notice. It fires on a
+quarter of the prepositions in the corpus; where the following form is
+ambiguous (*den* is accusative singular and dative plural, *die* is nominative
+or accusative) it says nothing.
+
 Function words needed a fix of their own to get there. Wiktionary gives `der`
 no declension table: *die*, *das*, *den*, *dem* and *des* are separate entries
 saying which form of `der` they are, and the personal pronouns are built the
@@ -127,11 +140,27 @@ word in a sentence is how reading works. The breakdown explains that word.
 
 ## What is still missing
 
-Listed so the gaps are visible rather than implied.
+Listed so the gaps are visible rather than implied. These are what is known to
+be wrong or thin, not a wish list.
 
-- **No "why" in the breakdown.** It names the case a word is in but not what
-  put it there. Preposition case government is a closed, sourceable set, so
-  "dative, because *mit* takes the dative" is derivable — it is not derived yet.
+- **4% of words in the corpus do not resolve** in a breakdown — proper names
+  and loanwords with no Wiktionary entry the course carries. They show a dash
+  rather than a guess.
+- **Case government is reported for a quarter of prepositions.** The rest are
+  followed by an ambiguous article or a bare noun, where naming a case would be
+  a coin toss.
+- **A few function words have a gloss that fits one use only.** Wiktionary's
+  single sense for `sich` is "reciprocal pronoun of the third person plural:
+  each other", which is not how a learner meets it in *Was bringt das mit
+  sich?*. There is no better sense in the data to promote.
+- **Multiple-choice distractors are random within a part of speech.** They
+  should be near misses — words confusable with the answer — so that choosing
+  correctly means something. Right now three unrelated verbs make the answer
+  findable by elimination.
+- **A drill is one pass.** Spacing happens between sessions, through FSRS in
+  the review queue; a word answered wrongly early in a drill does not come back
+  later in the same drill.
+
 
 ## Sources
 
