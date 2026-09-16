@@ -76,29 +76,74 @@ export function firstToken(line: string): string {
   return line.trim().split(/\s+/)[0] ?? '';
 }
 
+/** German collation, built once: it is called a lot inside the search below. */
+const collator = new Intl.Collator('de', { sensitivity: 'base' });
+
+/**
+ * Indices of the longest strictly increasing run of words, in document order.
+ *
+ * This is what actually recovers the headwords. A column in these lists is not
+ * a clean list of them: an entry occupies several lines at the same position
+ * and in the same face — the headword, then its principal parts, then an
+ * example ("abschreiben", "schrieb", "hat", "das", "Matura"). Only the first
+ * line of each entry is a headword, and nothing local distinguishes it.
+ *
+ * What does distinguish it is global: the headwords ascend through the whole
+ * document and the continuation lines do not, so the headwords are the longest
+ * increasing subsequence and the rest is noise around it.
+ *
+ * Strictly increasing, so a column of one repeated word cannot score.
+ */
+export function longestIncreasingSubsequence(words: string[]): number[] {
+  if (words.length === 0) return [];
+
+  const tails: number[] = [];
+  const parent = new Array<number>(words.length).fill(-1);
+
+  for (let i = 0; i < words.length; i++) {
+    // First tail whose word is not less than this one.
+    let lo = 0;
+    let hi = tails.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (collator.compare(words[tails[mid]!]!, words[i]!) < 0) lo = mid + 1;
+      else hi = mid;
+    }
+    if (lo > 0) parent[i] = tails[lo - 1]!;
+    if (lo === tails.length) tails.push(i);
+    else tails[lo] = i;
+  }
+
+  const out: number[] = [];
+  let k = tails.length > 0 ? tails[tails.length - 1]! : -1;
+  while (k !== -1) {
+    out.push(k);
+    k = parent[k]!;
+  }
+  return out.reverse();
+}
+
 export interface ColumnGroup {
-  /** Rounded x of the column margin. */
   x: number;
-  /** PDF font name. */
   font: string;
   lines: number;
-  /** Lines in this group whose first token looks like a headword at all. */
+  /** Lines whose first token could be a headword at all. */
   words: number;
-  /** Share of consecutive words in alphabetical order. The real signal. */
-  alphabetical: number;
-  /** Share of the words that are distinct, which rejects repeated prose. */
-  distinct: number;
-  /** Share that are lemmas the course knows. Informational only. */
+  /** Length of the ascending run — the headwords this column yields. */
+  headwords: number;
+  /** headwords / words. Near 0.5 for a real column, near 0.02 for prose. */
+  ratio: number;
+  /** Share of the headwords the course knows. Informational only. */
   knownRate: number;
+  /** The headwords themselves, in document order. */
+  extracted: string[];
   sample: string[];
 }
 
 export interface ColumnChoice {
-  /** Accepted groups, as `${x}|${font}` keys. */
   keys: Set<string>;
-  /** Weighted alphabetical rate across the accepted groups. */
-  alphabetical: number;
-  /** Every candidate, best first, for the report. */
+  /** Headwords found across the accepted columns. */
+  headwords: number;
   diagnostics: ColumnGroup[];
 }
 
@@ -107,69 +152,26 @@ export function groupKey(x: number, font: string): string {
 }
 
 /**
- * Share of consecutive words in alphabetical order.
- *
- * A column of headwords approaches 1: a Wortliste is alphabetical, and the
- * alphabet runs forward through the whole document, so one column of it is a
- * subsequence of an increasing sequence and stays increasing. A column of
- * example sentences sits near 0.5, because their first words are in no
- * particular order.
- *
- * Non-decreasing rather than strictly increasing, because a real list repeats
- * words legitimately — an entry split across lines, a word listed for two
- * parts of speech, an umlaut variant that German collation treats as equal to
- * its base letter. Requiring a strict increase penalised all of those. The
- * degenerate case this leaves open — a column whose lines all begin with the
- * same word — is caught by `distinctRatio` instead.
- */
-export function alphabeticalRate(words: string[]): number {
-  if (words.length < 2) return 0;
-  let ordered = 0;
-  for (let i = 1; i < words.length; i++) {
-    if (words[i - 1]!.localeCompare(words[i]!, 'de', { sensitivity: 'base' }) <= 0) ordered += 1;
-  }
-  return ordered / (words.length - 1);
-}
-
-/**
- * Share of the words that are distinct.
- *
- * Running prose is trivially "in order" when every line opens with the same
- * word ("Die …", "Die …"), and so is a repeated label or a page header. A word
- * list is mostly distinct entries; those are not.
- */
-export function distinctRatio(words: string[]): number {
-  if (words.length === 0) return 0;
-  return new Set(words.map((w) => w.toLocaleLowerCase('de-DE'))).size / words.length;
-}
-
-/**
  * Picks the columns the headwords are in.
  *
- * Scoring is by alphabetical order, not by how many words the course already
- * knows. The published lists run to thousands of words, most of them outside a
- * 3,000-lemma course vocabulary, so a genuine headword column matches the
- * course only about a third of the time — measuring that picked example
- * sentences instead, whose first words are common and therefore "known".
+ * Scoring is by how long an ascending run the column contains, not by how much
+ * of it the course knows and not by how well sorted it is overall. The lists
+ * run to thousands of entries, most outside a 3,000-lemma course vocabulary,
+ * so overlap picked example sentences instead; and because entries span
+ * several lines, even a true headword column is only about 60% ordered, which
+ * is too close to the 50% that sentences reach by chance.
  *
- * Being sorted is the property that actually distinguishes a word list from
- * running text, and it does not depend on how much of the list we happen to
- * teach.
+ * An ascending run separates them cleanly: a headword column of 1,567 lines
+ * yields around 780 ascending words, while an example column of 1,940 yields
+ * about 24 — the square-root behaviour of a random sequence.
  */
 export function chooseHeadwordColumns(
   lines: PdfLine[],
   isKnownLemma: (word: string) => boolean,
   {
-    // A published Wortliste holds hundreds of entries per column. Requiring a
-    // substantial column is itself most of the filter.
-    minWords = 100,
-    // Example sentences sit near 0.5, the rate you get by chance; a real list
-    // is far above it. The gap is wide, so the threshold does not need to be
-    // near-perfect — and demanding that rejected real columns whose extraction
-    // is slightly noisy.
-    minAlphabetical = 0.7,
-    minDistinct = 0.5,
-  }: { minWords?: number; minAlphabetical?: number; minDistinct?: number } = {},
+    minHeadwords = 100,
+    minRatio = 0.15,
+  }: { minHeadwords?: number; minRatio?: number } = {},
 ): ColumnChoice {
   const groups = new Map<string, PdfLine[]>();
   for (const line of lines) {
@@ -189,53 +191,54 @@ export function chooseHeadwordColumns(
     }
     if (words.length === 0) continue;
 
-    const matched = words.filter((w) => isKnownLemma(w)).length;
+    const extracted = longestIncreasingSubsequence(words).map((i) => words[i]!);
+    const matched = extracted.filter((w) => isKnownLemma(w)).length;
+
     diagnostics.push({
       x: Number(xPart),
       font: fontParts.join('|'),
       lines: group.length,
       words: words.length,
-      alphabetical: alphabeticalRate(words),
-      distinct: distinctRatio(words),
-      knownRate: matched / words.length,
-      sample: words.slice(0, 6),
+      headwords: extracted.length,
+      ratio: extracted.length / words.length,
+      knownRate: extracted.length > 0 ? matched / extracted.length : 0,
+      extracted,
+      sample: extracted.slice(0, 6),
     });
   }
-  // Ranked by size, not by score. A word list is long, and a two-word group
-  // that happens to be in order scores a meaningless 100% — sorting by score
-  // buried the real columns under dozens of those.
-  diagnostics.sort((a, b) => b.words - a.words);
+
+  // Ranked by how many headwords they yield, which is the thing being looked
+  // for; ranking by rate buried the real columns under tiny perfect groups.
+  diagnostics.sort((a, b) => b.headwords - a.headwords);
 
   const accepted = diagnostics.filter(
-    (d) => d.words >= minWords && d.alphabetical >= minAlphabetical && d.distinct >= minDistinct,
+    (d) => d.headwords >= minHeadwords && d.ratio >= minRatio,
   );
-
-  const totalWords = accepted.reduce((n, d) => n + d.words, 0);
-  const weighted = accepted.reduce((n, d) => n + d.alphabetical * d.words, 0);
 
   return {
     keys: new Set(accepted.map((d) => groupKey(d.x, d.font))),
-    alphabetical: totalWords > 0 ? weighted / totalWords : 0,
+    headwords: accepted.reduce((n, d) => n + d.headwords, 0),
     diagnostics,
   };
 }
 
-/** Headwords found in the chosen groups, deduplicated, in document order. */
+/** Merges the accepted columns' headwords, deduplicated, in document order. */
 export function extractHeadwords(
-  lines: PdfLine[],
-  keys: Set<string>,
+  choice: ColumnChoice,
   isKnownLemma: (word: string) => boolean,
 ): { known: string[]; unknown: string[] } {
   const known: string[] = [];
   const unknown: string[] = [];
   const seen = new Set<string>();
 
-  for (const line of lines) {
-    if (keys.size > 0 && !keys.has(groupKey(line.x, line.font))) continue;
-    const word = normalizeHeadword(firstToken(line.text));
-    if (!word || seen.has(word)) continue;
-    seen.add(word);
-    (isKnownLemma(word) ? known : unknown).push(word);
+  for (const group of choice.diagnostics) {
+    if (!choice.keys.has(groupKey(group.x, group.font))) continue;
+    for (const word of group.extracted) {
+      const key = word.toLocaleLowerCase('de-DE');
+      if (seen.has(key)) continue;
+      seen.add(key);
+      (isKnownLemma(word) ? known : unknown).push(word);
+    }
   }
 
   return { known, unknown };

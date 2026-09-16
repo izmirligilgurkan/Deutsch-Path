@@ -176,15 +176,15 @@ for (const file of files) {
   if (choice.keys.size === 0) {
     sawTrouble = true;
     console.error(
-      '  ✗ no column looked like an alphabetical word list, so nothing was\n' +
-        '    taken from this file. The largest columns in the document were:',
+      '  ✗ no column yielded a long ascending run of words, so nothing was\n' +
+        '    taken from this file. The columns with the longest runs were:',
     );
-    console.error('      x     font           words   a-z  uniq  known  sample');
+    console.error('      x     font           lines  words  headw  ratio  known  sample');
     for (const d of choice.diagnostics.slice(0, 12)) {
       console.error(
         `      ${String(d.x).padStart(4)}  ${d.font.padEnd(13)} ` +
-          `${String(d.words).padStart(5)}  ${(d.alphabetical * 100).toFixed(0).padStart(3)}%  ` +
-          `${(d.distinct * 100).toFixed(0).padStart(3)}%  ` +
+          `${String(d.lines).padStart(5)}  ${String(d.words).padStart(5)}  ` +
+          `${String(d.headwords).padStart(5)}  ${(d.ratio * 100).toFixed(0).padStart(4)}%  ` +
           `${(d.knownRate * 100).toFixed(0).padStart(4)}%  ${d.sample.slice(0, 5).join(', ')}`,
       );
     }
@@ -195,15 +195,13 @@ for (const file of files) {
     continue;
   }
 
-  const { known, unknown } = extractHeadwords(lines, choice.keys, isKnownLemma);
-  console.log(
-    `  ${choice.keys.size} headword column(s), ` +
-      `${(choice.alphabetical * 100).toFixed(0)}% alphabetically ordered`,
-  );
+  const { known, unknown } = extractHeadwords(choice, isKnownLemma);
+  console.log(`  ${choice.keys.size} headword column(s), ${choice.headwords} headwords`);
   for (const d of choice.diagnostics.filter((g) => choice.keys.has(groupKey(g.x, g.font)))) {
     console.log(
-      `    x=${String(d.x).padStart(4)} ${d.font.padEnd(12)} ${String(d.words).padStart(5)} words  ` +
-        `${(d.alphabetical * 100).toFixed(0)}% a-z  ${d.sample.slice(0, 4).join(', ')}`,
+      `    x=${String(d.x).padStart(4)} ${d.font.padEnd(12)} ` +
+        `${String(d.headwords).padStart(5)} of ${String(d.words).padStart(5)} lines  ` +
+        `${d.sample.slice(0, 4).join(', ')}`,
     );
   }
   console.log(`  ${known.length.toLocaleString()} words matched the course vocabulary`);
