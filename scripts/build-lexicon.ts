@@ -20,6 +20,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { Form, Lemma } from '../src/lib/content-types.ts';
 import { formKey, words } from '../src/lib/tokenize.ts';
+import { orderGlosses } from '../src/lib/gloss.ts';
 import {
   extractForms,
   extractGlosses,
@@ -337,14 +338,14 @@ const lexicon: Lemma[] = ranked.map((c, i) => {
     lemma: c.word,
     pos: c.pos,
     forms: c.forms,
-    glosses: c.glosses,
+    glosses: orderGlosses(c.glosses),
     level: goetheLevelFor(c.word) ?? bandFor(rank),
     levelSource: goetheLevelFor(c.word) ? 'goethe-wortliste' : 'frequency-approx',
     freqRank: rank,
     source: SOURCE_NAME,
     sourceUrl: wiktionaryUrl(c.word),
     license: LICENSE,
-    modified: 'Filtered to this course; fields trimmed. No text rewritten.',
+    modified: 'Filtered to this course; fields trimmed; the teachable sense moved to the front of the sense list. No text rewritten.',
   };
 
   if (c.noun) {

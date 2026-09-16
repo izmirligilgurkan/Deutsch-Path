@@ -4,6 +4,8 @@ import type { Question } from '~/srs/cards.ts';
 import { splitGloss } from '~/lib/gloss.ts';
 import { UmlautRow } from './UmlautRow.tsx';
 import { Verdict } from './AnswerFeedback.tsx';
+import { SentenceBreakdown } from './SentenceBreakdown.tsx';
+import type { Sentence } from '~/lib/content-types.ts';
 
 /**
  * Renders one question and collects the answer.
@@ -26,11 +28,14 @@ function ChoiceText({ text }: { text: string }) {
 export function CardView({
   question,
   options,
+  sentence,
   onAnswered,
   onContinue,
 }: {
   question: Question;
   options: CheckOptions;
+  /** The sentence this question came from, if it came from one. */
+  sentence?: Sentence;
   /** `correct` drives scheduling; `given` is kept for the mistake log. */
   onAnswered: (correct: boolean, given: string) => void;
   onContinue: () => void;
@@ -126,6 +131,9 @@ export function CardView({
           ? { onTypo: () => { setResult({ ...result, correct: true, verdict: 'correct' }); onAnswered(true, given); } }
           : {})}
       /> : null}
+
+      {/* Right or wrong, the sentence is only useful once you can read it. */}
+      {answered && sentence ? <SentenceBreakdown sentence={sentence} /> : null}
 
       {isChoice ? (
         <div class={isGender ? 'gender-row' : ''}>

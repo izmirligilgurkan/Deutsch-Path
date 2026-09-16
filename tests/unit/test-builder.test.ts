@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest';
 import {
   buildDailyTest,
   buildLevelTest,
+  ladderOrder,
   placementResult,
   sample,
   unitsForLevel,
   unitsUpToLevel,
+  stageOf,
   TEST_LENGTHS,
 } from '~/lib/test-builder.ts';
 import type { Exercise } from '~/lib/content-types.ts';
@@ -131,5 +133,78 @@ describe('unitsUpToLevel', () => {
     expect(a2).toContain(1);
     expect(a2).toContain(Math.max(...unitsForLevel('A2')));
     expect(a2).not.toContain(Math.max(...unitsForLevel('B1')));
+  });
+});
+
+describe('ladderOrder', () => {
+  const item = (id: string, type: Exercise['type'], word?: string): Exercise =>
+    ({
+      id,
+      unit: 1,
+      topic: 't',
+      type,
+      prompt: id,
+      answer: 'a',
+      refs: word ? { lemmaIds: [word] } : {},
+      generator: 'g',
+    }) as Exercise;
+
+  /** Two words, each with a card at every stage, plus a wordless sentence item. */
+  const pool = [
+    item('type-haus', 'type-en-de', 'Haus|noun'),
+    item('mc-haus', 'mc-de-en', 'Haus|noun'),
+    item('cloze-haus', 'cloze', 'Haus|noun'),
+    item('type-gehen', 'type-en-de', 'gehen|verb'),
+    item('mc-gehen', 'mc-de-en', 'gehen|verb'),
+    item('conj-gehen', 'conjugation-table', 'gehen|verb'),
+    item('order1', 'word-order'),
+  ];
+
+  const stages = ['recognise', 'complete', 'produce'];
+
+  it('never asks a learner to produce a word before they have recognised it', () => {
+    // Regression: a drill dealt the unit at random, so "write this in German"
+    // could be the first thing after the explanation.
+    const order = ladderOrder(pool, 'drill:1');
+    for (const word of ['Haus|noun', 'gehen|verb']) {
+      const positions = order
+        .map((e, i) => ({ i, word: e.refs.lemmaIds?.[0], stage: stageOf(e.type) }))
+        .filter((x) => x.word === word);
+      const recognise = positions.find((x) => x.stage === 'recognise')!.i;
+      const produce = positions.find((x) => x.stage === 'produce')!.i;
+      expect(recognise).toBeLessThan(produce);
+    }
+  });
+
+  it('runs each stage in turn inside a cycle', () => {
+    const order = ladderOrder(pool, 'drill:1').map((e) => stages.indexOf(stageOf(e.type)));
+    // Two words fit one cycle, so this pool is a single ladder pass.
+    for (let i = 1; i < order.length; i += 1) {
+      expect(order[i]).toBeGreaterThanOrEqual(order[i - 1]!);
+    }
+  });
+
+  it('cycles rather than running one long block of each stage', () => {
+    // Thirty-five multiple-choice cards before anything else is not a lesson.
+    const many = Array.from({ length: 12 }, (_, w) => [
+      item(`mc${w}`, 'mc-de-en', `w${w}`),
+      item(`type${w}`, 'type-en-de', `w${w}`),
+    ]).flat();
+    const order = ladderOrder(many, 'drill:1').map((e) => stageOf(e.type));
+    // 12 words at 5 per cycle is three cycles, so production comes round more
+    // than once.
+    const returns = order.filter((s, i) => i > 0 && s === 'recognise' && order[i - 1] === 'produce');
+    expect(returns.length).toBeGreaterThan(0);
+  });
+
+  it('keeps every item', () => {
+    const ids = ladderOrder(pool, 'drill:1').map((e) => e.id).sort();
+    expect(ids).toEqual(pool.map((e) => e.id).sort());
+  });
+
+  it('is the same every time for the same unit', () => {
+    expect(ladderOrder(pool, 'drill:1').map((e) => e.id)).toEqual(
+      ladderOrder(pool, 'drill:1').map((e) => e.id),
+    );
   });
 });

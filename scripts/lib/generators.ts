@@ -10,6 +10,7 @@
 import type { Exercise, Form, Lemma, Sentence } from '../../src/lib/content-types.ts';
 import { formKey, tokenize } from '../../src/lib/tokenize.ts';
 import { mulberry32, pick, seedFrom, shuffled } from './random.ts';
+import { shortGloss } from '../../src/lib/gloss.ts';
 
 export interface GenContext {
   unit: number;
@@ -125,14 +126,21 @@ export function genPrincipalParts(ctx: GenContext): Exercise[] {
 export function genVocabMc(ctx: GenContext): Exercise[] {
   const out: Exercise[] = [];
   for (const l of ctx.lemmas) {
-    const gloss = l.glosses[0];
-    if (!gloss) continue;
+    const full = l.glosses[0];
+    if (!full) continue;
+    // The card shows the head of the sense, not the whole Wiktionary entry:
+    // four paragraph-length options are a reading test, not a vocabulary one.
+    const gloss = shortGloss(full);
     // Distractors are glosses of other words of the same part of speech, so
-    // the choice tests the word rather than the grammar.
+    // the choice tests the word rather than the grammar. Shortening can make
+    // two senses read alike, and an option that is also correct is worse than
+    // no question, so matching ones are skipped.
     const rng = mulberry32(seedFrom(`mc:${l.id}`));
-    const others = ctx.pool.filter((o) => o.pos === l.pos && o.id !== l.id && o.glosses[0]);
-    const distractors = pick(others, 3, rng).map((o) => o.glosses[0]!);
-    if (distractors.length < 3) continue;
+    const others = ctx.pool.filter(
+      (o) => o.pos === l.pos && o.id !== l.id && o.glosses[0] && shortGloss(o.glosses[0]) !== gloss,
+    );
+    const distractors = pick(others, 3, rng).map((o) => shortGloss(o.glosses[0]!));
+    if (new Set([gloss, ...distractors]).size < 4) continue;
 
     out.push({
       id: id(['u', ctx.unit, 'mc', l.id]),
@@ -157,7 +165,7 @@ export function genVocabTyped(ctx: GenContext): Exercise[] {
       unit: ctx.unit,
       topic: ctx.topic,
       type: 'type-en-de' as const,
-      prompt: l.glosses[0]!,
+      prompt: shortGloss(l.glosses[0]!),
       // A noun is only right with its article.
       answer: withArticle(l),
       refs: { lemmaIds: [l.id] },

@@ -1,4 +1,4 @@
-import type { Exercise, Level } from './content-types.ts';
+import type { Exercise, ExerciseType, Level } from './content-types.ts';
 import type { Mistake } from '~/db/types.ts';
 import { UNITS } from './syllabus.ts';
 import { mulberry32, seedFrom, shuffled } from './rng.ts';
@@ -128,4 +128,87 @@ export function unitsUpToLevel(level: Level): number[] {
   const order: Level[] = ['A1', 'A2', 'B1'];
   const limit = order.indexOf(level);
   return UNITS.filter((u) => order.indexOf(u.level) <= limit).map((u) => u.unit);
+}
+
+/**
+ * Practice runs as a ladder, not a shuffle.
+ *
+ * A drill used to deal all of a unit's items in random order, so the first
+ * thing a learner saw after reading the explanation could be "write this in
+ * German" for a word they had never met. That is a test, not teaching. The
+ * order now follows the fading sequence the worked-example research describes:
+ * recognise the word, then complete a sentence that supports you, then produce
+ * it unaided. Within a stage the types stay interleaved, which is what the
+ * spacing work supports; the blocking is only between stages.
+ *
+ * See TEACHING.md for the method and its sources.
+ */
+export const LADDER_STAGES = ['recognise', 'complete', 'produce'] as const;
+export type LadderStage = (typeof LADDER_STAGES)[number];
+
+const STAGE_OF: Record<ExerciseType, LadderStage> = {
+  // Pick the meaning out of four: the lowest-stakes way to meet a word.
+  'mc-de-en': 'recognise',
+  'mc-en-de': 'recognise',
+  gender: 'recognise',
+  'article-case': 'recognise',
+  'choose-form': 'recognise',
+  // The sentence is in front of you; supply the missing piece.
+  cloze: 'complete',
+  'word-order': 'complete',
+  'error-spotting': 'complete',
+  'type-de-en': 'complete',
+  // Nothing to lean on: produce the German from memory.
+  'type-en-de': 'produce',
+  plural: 'produce',
+  'principal-parts': 'produce',
+  'conjugation-table': 'produce',
+  'declension-table': 'produce',
+};
+
+export function stageOf(type: ExerciseType): LadderStage {
+  return STAGE_OF[type];
+}
+
+/**
+ * How many of the unit's words one pass through the ladder covers.
+ *
+ * Running the whole unit as three blocks meant thirty-five multiple-choice
+ * cards before anything else, which is neither a lesson nor pleasant. A unit
+ * is instead a handful of short cycles: meet five words, use them in
+ * sentences, then write them — then the next five.
+ */
+const WAVE_LEMMAS = 5;
+
+export function ladderOrder(items: Exercise[], seed: string): Exercise[] {
+  const mixed = shuffled(items, mulberry32(seedFrom(`${seed}:ladder`)));
+  const wordOf = (e: Exercise): string => e.refs.lemmaIds?.[0] ?? '';
+
+  // Every card about one word lands in the same cycle, so recognising it and
+  // producing it never end up in different sittings.
+  const words: string[] = [];
+  const seen = new Set<string>();
+  for (const e of mixed) {
+    const w = wordOf(e);
+    if (w && !seen.has(w)) {
+      seen.add(w);
+      words.push(w);
+    }
+  }
+  const waveOfWord = new Map(words.map((w, i) => [w, Math.floor(i / WAVE_LEMMAS)]));
+  const waveCount = Math.max(1, Math.ceil(words.length / WAVE_LEMMAS));
+
+  const waves: Exercise[][] = Array.from({ length: waveCount }, () => []);
+  let spare = 0;
+  for (const e of mixed) {
+    const w = wordOf(e);
+    // A sentence item that names no word — word order, error spotting — is
+    // spread evenly rather than piled into the first cycle.
+    const wave = w ? (waveOfWord.get(w) ?? 0) : spare++ % waveCount;
+    waves[wave]!.push(e);
+  }
+
+  return waves.flatMap((wave) =>
+    LADDER_STAGES.flatMap((stage) => wave.filter((e) => stageOf(e.type) === stage)),
+  );
 }

@@ -45,6 +45,14 @@ A few things worth knowing:
   level test at the end of each level. Anything you get wrong in a test is
   queued back into review.
 
+## How it teaches
+
+Practice runs as a ladder — recognise a word, then complete a sentence that
+supports you, then produce it unaided — and answering a sentence opens a
+word-by-word breakdown of it: every word's meaning and the form it is in.
+The method, the research behind it and the gaps that remain are written up in
+[TEACHING.md](TEACHING.md).
+
 ## The content rule
 
 Every German word, gloss, example sentence and grammar explanation in this app

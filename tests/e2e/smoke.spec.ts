@@ -86,8 +86,9 @@ test('typing is not interrupted, and the umlaut keys insert', async ({ page }) =
   await page.goto('./#/unit/1/drill');
   await expect(page.locator('.prompt-text')).toBeVisible({ timeout: 15_000 });
 
-  // Find a typed item rather than a multiple-choice one.
-  for (let i = 0; i < 8; i++) {
+  // Find a typed item. Practice is a ladder, so recognition comes first and a
+  // typed card is a little way in.
+  for (let i = 0; i < 25; i++) {
     if (await page.locator('input[type=text]').count() > 0) break;
     await page.locator('button.choice, .gender-row button').first().click();
     await page.getByRole('button', { name: 'Continue' }).click();
@@ -172,4 +173,42 @@ test('placement runs a round and places the learner', async ({ page }) => {
   await page.getByRole('button', { name: /start here/i }).click();
   await page.waitForFunction(() => location.hash === '#/', null, { timeout: 25_000 });
   await expect(page.getByRole('link', { name: /^Unit 1 ·/ })).toBeVisible();
+});
+
+test('a sentence can be broken down word by word after answering', async ({ page }) => {
+  await page.goto('./#/onboarding');
+  await page.getByRole('button', { name: /start from zero/i }).click();
+  await page.waitForFunction(() => location.hash === '#/', null, { timeout: 25_000 });
+
+  await page.goto('./#/unit/1/drill');
+  await expect(page.locator('.prompt-text')).toBeVisible({ timeout: 15_000 });
+
+  // Work through the session until a sentence item comes up; only those can be
+  // broken down, and the order is seeded rather than fixed.
+  const breakDown = page.getByRole('button', { name: 'Break it down' });
+  for (let i = 0; i < 30 && (await breakDown.count()) === 0; i += 1) {
+    const choices = page.locator('button.choice, .gender-row button');
+    if ((await choices.count()) > 0) {
+      await choices.first().click();
+    } else {
+      await page.locator('input[type=text]').first().fill('x');
+      await page.getByRole('button', { name: 'Check' }).click();
+    }
+    await expect(page.locator('.verdict')).toBeVisible();
+    if ((await breakDown.count()) > 0) break;
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await expect(page.locator('.prompt-text')).toBeVisible();
+  }
+  expect(await breakDown.count()).toBe(1);
+
+  await breakDown.click();
+  const rows = page.locator('.breakdown-list li');
+  await expect(rows.first()).toBeVisible();
+  expect(await rows.count()).toBeGreaterThan(2);
+  // The translation and at least one word's meaning have to be readable.
+  await expect(page.locator('.breakdown-en')).not.toBeEmpty();
+  await expect(rows.first().locator('.breakdown-word')).not.toBeEmpty();
+  await expect(page.locator('.breakdown-meaning').first()).not.toBeEmpty();
+  // The form tables arrive after the meanings; at least one word is labelled.
+  await expect(page.locator('.breakdown-role').first()).toBeVisible({ timeout: 15_000 });
 });

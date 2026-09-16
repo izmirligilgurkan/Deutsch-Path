@@ -7,6 +7,7 @@ import { UNITS } from '~/lib/syllabus.ts';
 import {
   buildDailyTest,
   buildLevelTest,
+  ladderOrder,
   sample,
   unitsForLevel,
   TEST_LENGTHS,
@@ -29,8 +30,9 @@ export function UnitDrill({ unit }: { unit: number }) {
             title: plan.title,
             closeHref: `#/unit/${unit}`,
             load: async () => ({
-              // A drill runs the whole unit, in a stable order.
-              items: sample(await loadExercises(unit), Number.MAX_SAFE_INTEGER, `drill:${unit}`),
+              // A drill runs the whole unit as a ladder: recognise, then
+              // complete, then produce. The unit test is the mixed one.
+              items: ladderOrder(await loadExercises(unit), `drill:${unit}`),
               level: plan.level,
             }),
           }

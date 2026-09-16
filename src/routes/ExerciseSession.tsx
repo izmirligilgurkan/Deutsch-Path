@@ -228,6 +228,9 @@ export function ExerciseSession({ spec }: { spec: SessionSpec }) {
   }
 
   const attribution = attributionFor(exercise, sentences, lemmas);
+  // Sentence exercises can be broken down word by word once answered.
+  const sentence =
+    exercise.refs.sentenceId === undefined ? undefined : sentences.get(exercise.refs.sentenceId);
 
   return (
     <>
@@ -249,6 +252,7 @@ export function ExerciseSession({ spec }: { spec: SessionSpec }) {
           allowTransliteration: settings.allowTransliteration,
           mode: mode === 'test' ? 'test' : 'practice',
         }}
+        {...(sentence ? { sentence } : {})}
         onAnswered={onAnswered}
         onContinue={onContinue}
       />
