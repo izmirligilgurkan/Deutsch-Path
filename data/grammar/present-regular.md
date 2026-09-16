@@ -16,46 +16,39 @@ retrieved: 2026-09-16
 
 # Present tense
 
-### Verbs
+### Present Tense
 
-German verbs can be classified as *weak* or as *strong*. Weak verbs are very regular in their forms, whereas strong verbs change the stem vowel.
+#### Use
 
-Weak:
+The Present Tense is used for..
 
-```
-kaufen, kaufte, gekauft
-```
+- The Present Tense (="das Präsens") is used to describe situations that are happening and aren't the past.
 
-Strong:
+- For Ongoing Action, like *I'm swimming in the pool now*
 
-```
-singen, sang, gesungen
-```
+- Everyday Truths, like *The moon and stars will come at night.*
 
-With its Anglo-Saxon origin, this notion is also present in English.
+- Future meaning, if explicitly stated, like *I will run tomorrow morning*
 
-```
-flip, flipped, flipped
-sing, sang, sung
-```
+- Actions started in the past and still going on in the present *I've been cleaning the house all day*
 
-Some German verbs have weak and strong forms. This may depend on meaning:
+#### Progressive Forms
 
-```
-Der Botschafter wurde nach Berlin gesandt.
-Der Süddeutsche Rundfunk sendete ein Konzert aus dem Gasteig.
-```
+There is a present progressive tense in colloquial spoken German. Its use is optional.
 
-Or on transitive vs. intransitive use:
+Here is one example:
 
-```
-Das Hemd hing auf der Wäscheleine.
-Sie hängte das Hemd auf die Wäscheleine.
-```
+Ich bin am Fahren. (I am at the driving) I'm driving.
 
-### Strong Verbs
+The person to say this would be driving during the time they say this and they would continue to drive after stating this for some time.
 
-**Liste der starken und unregelmässigen Verben**
+You nominalize the verb ("fahren" (driving) becomes "das Fahren") and add a "am". You can also do this with forms of the past.
+
+Als er kam war ich gerade am Abwaschen. (When he arrived i was at "the dishwashing") I was washing the dishes when he arrived.
+
+So the verb "sein" (to be) includes the information what tense he was doing what he did in.
+
+Here the progressive meaning is also emphasized with the word "gerade" meaning something like: I was JUST ABOUT to wash the dishes(not the same though because it means he is already doing it and not about to start).
 
 
 ## Further reading

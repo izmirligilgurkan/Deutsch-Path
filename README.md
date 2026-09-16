@@ -139,7 +139,7 @@ What it currently produces:
 |---|---|
 | `data/lexicon/*.json` | 3,277 lemmas with gender, plural, forms, glosses, provenance |
 | `data/sentences/*.json` | 8,577 sentences, 97.9% native-authored, 97.6% lemma coverage |
-| `data/grammar/*.md` | 69 topics — 42 excerpted from Wikibooks, 27 honest stubs |
+| `data/grammar/*.md` | 69 topics — 37 excerpted from Wikibooks, 32 honest stubs |
 | `data/exercises/*.json` | 4,112 items across 35 units, 12 exercise types |
 | `data/goethe-levels.json` | 3,277 words tagged A1 / A2 / B1 from the Goethe Wortlisten |
 

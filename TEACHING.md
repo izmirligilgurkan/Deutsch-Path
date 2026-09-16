@@ -123,9 +123,6 @@ Listed so the gaps are visible rather than implied.
 - **No "why" in the breakdown.** It names the case a word is in but not what
   put it there. Preposition case government is a closed, sourceable set, so
   "dative, because *mit* takes the dative" is derivable — it is not derived yet.
-- **One explanation serves several topics.** Twelve of the 42 sourced grammar
-  topics excerpt the same Wikibooks page as another topic, because the map
-  records a page but not a section.
 
 ## Sources
 

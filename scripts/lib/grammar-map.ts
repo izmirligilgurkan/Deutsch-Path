@@ -5,8 +5,17 @@
  * this course needs. Per the build spec those become stubs with reference
  * links — the gap is never filled in by hand.
  *
- * `section` narrows the excerpt to one heading on a shared page, so that
- * `case-accusative` and `case-dative` do not both ship the whole Cases page.
+ * `section` narrows the excerpt to one heading on a shared page. Without it,
+ * "sein in the present tense" and "haben in the present tense" shipped the
+ * same whole page — about *tun*, *haben* and *wissen*, with no *sein* on it at
+ * all — and a learner read the wrong explanation twice.
+ *
+ * A topic whose page turned out not to cover it has had the page removed
+ * rather than kept for the sake of having content: the comparative and the
+ * superlative are not on the Adjectives and Adverbs page, and the prepositions
+ * page is about two-way prepositions and contractions, not about which
+ * prepositions take which case. Those are stubs now, which is what the build
+ * spec asks for when no open source covers a topic.
  */
 
 export interface TopicSource {
@@ -32,10 +41,10 @@ const MDB = (slug: string, label: string) => ({
 export const TOPIC_SOURCES: Record<string, TopicSource> = {
   // ── A1 ──────────────────────────────────────────────────────────────────
   'alphabet-pronunciation': { title: 'Alphabet and pronunciation', page: 'German/Grammar/Alphabet and Pronunciation' },
-  'personal-pronouns': { title: 'Personal pronouns', page: 'German/Grammar/Personal pronouns', furtherReading: [LINGOLIA('pronomen/personalpronomen', 'Personalpronomen')] },
-  'verb-sein-present': { title: 'sein in the present tense', page: 'German/Grammar/Irregular verbs', furtherReading: [LINGOLIA('verben/sein-haben', 'sein und haben')] },
-  'present-regular': { title: 'Present tense', page: 'German/Grammar/Verbs', furtherReading: [LINGOLIA('zeitformen/praesens', 'Präsens')] },
-  'verb-haben-present': { title: 'haben in the present tense', page: 'German/Grammar/Irregular verbs', furtherReading: [LINGOLIA('verben/sein-haben', 'sein und haben')] },
+  'personal-pronouns': { title: 'Personal pronouns', page: 'German/Grammar/Personal pronouns', section: 'The pronouns by person', furtherReading: [LINGOLIA('pronomen/personalpronomen', 'Personalpronomen')] },
+  'verb-sein-present': { title: 'sein in the present tense', page: 'German/Appendices/Grammar II', section: "Conjugating 'to be'", furtherReading: [LINGOLIA('verben/sein-haben', 'sein und haben')] },
+  'present-regular': { title: 'Present tense', page: 'German/Grammar/Verbs', section: 'Present Tense', furtherReading: [LINGOLIA('zeitformen/praesens', 'Präsens')] },
+  'verb-haben-present': { title: 'haben in the present tense', page: 'German/Grammar/Irregular verbs', section: 'haben', furtherReading: [LINGOLIA('verben/sein-haben', 'sein und haben')] },
   'w-questions': { title: 'W-questions', page: 'German/Grammar/Interrogatives', furtherReading: [LINGOLIA('satzbau/fragen', 'Fragen')] },
   'yes-no-questions': { title: 'Yes/no questions', page: 'German/Grammar/Polar questions' },
   'noun-gender': { title: 'Noun gender', page: 'German/Grammar/Noun gender', furtherReading: [LINGOLIA('substantive/genus', 'Genus')] },
@@ -44,39 +53,39 @@ export const TOPIC_SOURCES: Record<string, TopicSource> = {
   'case-accusative': { title: 'Accusative case', page: 'German/Grammar/Cases', furtherReading: [LINGOLIA('substantive/kasus', 'Kasus')] },
   kein: { title: 'kein', furtherReading: [LINGOLIA('satzbau/verneinung', 'Verneinung')] },
   'negation-nicht-vs-kein': { title: 'nicht vs kein', furtherReading: [LINGOLIA('satzbau/verneinung', 'Verneinung'), MDB('negation.html', 'Negation')] },
-  'word-order-v2': { title: 'Word order: the verb second', page: 'German/Grammar/Sentences', furtherReading: [LINGOLIA('satzbau/hauptsatz', 'Hauptsatz')] },
-  'word-order-inversion': { title: 'Inversion', page: 'German/Grammar/Sentences', furtherReading: [LINGOLIA('satzbau/hauptsatz', 'Hauptsatz')] },
+  'word-order-v2': { title: 'Word order: the verb second', page: 'German/Grammar/Sentences', section: 'Position of the Verb', furtherReading: [LINGOLIA('satzbau/hauptsatz', 'Hauptsatz')] },
+  'word-order-inversion': { title: 'Inversion', page: 'German/Grammar/Sentences', section: 'Order of phrases', furtherReading: [LINGOLIA('satzbau/hauptsatz', 'Hauptsatz')] },
   'verbs-stem-changing': { title: 'Stem-changing verbs', page: 'German/Grammar/Stem-changing verbs' },
   'verbs-separable': { title: 'Separable verbs', page: 'German/Grammar/Prefixed verbs', furtherReading: [LINGOLIA('verben/trennbare-verben', 'Trennbare Verben')] },
   'modals-present': { title: 'Modal verbs', page: 'German/Grammar/Modal auxiliary verbs', furtherReading: [LINGOLIA('verben/modalverben', 'Modalverben')] },
   moechten: { title: 'möchten', furtherReading: [LINGOLIA('verben/modalverben', 'Modalverben')] },
   'possessive-articles': { title: 'Possessive articles', page: 'German/Grammar/Pronomial possessives', furtherReading: [LINGOLIA('pronomen/possessivpronomen', 'Possessivpronomen')] },
   imperative: { title: 'Imperative', page: 'German/Grammar/Imperatives', furtherReading: [LINGOLIA('verben/imperativ', 'Imperativ')] },
-  'prepositions-time-basic': { title: 'Prepositions of time', page: 'German/Grammar/Prepositions and Postpositions', furtherReading: [LINGOLIA('praepositionen/temporal', 'Temporale Präpositionen')] },
-  'prepositions-place-basic': { title: 'Prepositions of place', page: 'German/Grammar/Prepositions and Postpositions', furtherReading: [LINGOLIA('praepositionen/lokal', 'Lokale Präpositionen')] },
+  'prepositions-time-basic': { title: 'Prepositions of time', furtherReading: [LINGOLIA('praepositionen/temporal', 'Temporale Präpositionen')] },
+  'prepositions-place-basic': { title: 'Prepositions of place', furtherReading: [LINGOLIA('praepositionen/lokal', 'Lokale Präpositionen')] },
   numbers: { title: 'Numbers', page: 'German/Appendices/Numbers' },
   'clock-time': { title: 'Telling the time', furtherReading: [MDB('uhrzeit.html', 'Uhrzeit')] },
   dates: { title: 'Dates', furtherReading: [MDB('datum.html', 'Datum')] },
   'case-dative': { title: 'Dative case', page: 'German/Grammar/Cases', furtherReading: [LINGOLIA('substantive/kasus', 'Kasus')] },
-  'dative-pronouns': { title: 'Dative pronouns', page: 'German/Grammar/Personal pronouns' },
+  'dative-pronouns': { title: 'Dative pronouns', page: 'German/Appendices/Grammar I', section: 'Dative case personal pronouns' },
   'verbs-with-dative': { title: 'Verbs with the dative', page: 'German/Grammar/Ditransitive verbs', furtherReading: [MDB('verben-mit-dativ.html', 'Verben mit Dativ')] },
   'perfekt-intro': { title: 'Perfekt: an introduction', furtherReading: [LINGOLIA('zeitformen/perfekt', 'Perfekt')] },
 
   // ── A2 ──────────────────────────────────────────────────────────────────
   'perfekt-full': { title: 'Perfekt', furtherReading: [LINGOLIA('zeitformen/perfekt', 'Perfekt'), MDB('perfekt.html', 'Perfekt')] },
-  'praeteritum-sein-haben-modals': { title: 'Präteritum of sein, haben and modals', page: 'German/Grammar/The simple past tense', furtherReading: [LINGOLIA('zeitformen/praeteritum', 'Präteritum')] },
-  wechselpraepositionen: { title: 'Two-way prepositions', page: 'German/Grammar/Prepositions with accusative and dative', furtherReading: [LINGOLIA('praepositionen/wechselpraepositionen', 'Wechselpräpositionen')] },
+  'praeteritum-sein-haben-modals': { title: 'Präteritum of sein, haben and modals', page: 'German/Grammar/The simple past tense', section: 'Irregular verbs', furtherReading: [LINGOLIA('zeitformen/praeteritum', 'Präteritum')] },
+  wechselpraepositionen: { title: 'Two-way prepositions', page: 'German/Grammar/Prepositions and Postpositions', section: 'Two way Prepositions', furtherReading: [LINGOLIA('praepositionen/wechselpraepositionen', 'Wechselpräpositionen')] },
   'prepositions-dative': { title: 'Dative prepositions', page: 'German/Grammar/Dative prepositions' },
-  'prepositions-accusative': { title: 'Accusative prepositions', page: 'German/Grammar/Prepositions and Postpositions', furtherReading: [LINGOLIA('praepositionen', 'Präpositionen')] },
-  'adjective-declension-strong': { title: 'Strong adjective declension', page: 'German/Grammar/Declining adjectives', furtherReading: [LINGOLIA('adjektive/deklination', 'Adjektivdeklination')] },
-  'adjective-declension-weak': { title: 'Weak adjective declension', page: 'German/Grammar/Declining adjectives', furtherReading: [LINGOLIA('adjektive/deklination', 'Adjektivdeklination')] },
-  'adjective-declension-mixed': { title: 'Mixed adjective declension', page: 'German/Grammar/Declining adjectives', furtherReading: [LINGOLIA('adjektive/deklination', 'Adjektivdeklination')] },
-  comparative: { title: 'Comparative', page: 'German/Grammar/Adjectives and Adverbs', furtherReading: [LINGOLIA('adjektive/steigerung', 'Steigerung')] },
-  superlative: { title: 'Superlative', page: 'German/Grammar/Adjectives and Adverbs', furtherReading: [LINGOLIA('adjektive/steigerung', 'Steigerung')] },
-  'subordinate-clauses-basic': { title: 'Subordinate clauses', page: 'German/Grammar/Subordinating conjunctions', furtherReading: [LINGOLIA('satzbau/nebensatz', 'Nebensatz')] },
-  'word-order-verb-final': { title: 'Verb-final word order', page: 'German/Grammar/Subordinating conjunctions', furtherReading: [LINGOLIA('satzbau/nebensatz', 'Nebensatz')] },
+  'prepositions-accusative': { title: 'Accusative prepositions', furtherReading: [LINGOLIA('praepositionen', 'Präpositionen')] },
+  'adjective-declension-strong': { title: 'Strong adjective declension', page: 'German/Grammar/Adjectives and Adverbs', section: 'Strong Declension', furtherReading: [LINGOLIA('adjektive/deklination', 'Adjektivdeklination')] },
+  'adjective-declension-weak': { title: 'Weak adjective declension', page: 'German/Grammar/Adjectives and Adverbs', section: 'Weak Declension', furtherReading: [LINGOLIA('adjektive/deklination', 'Adjektivdeklination')] },
+  'adjective-declension-mixed': { title: 'Mixed adjective declension', page: 'German/Grammar/Adjectives and Adverbs', section: 'Mixed Declension', furtherReading: [LINGOLIA('adjektive/deklination', 'Adjektivdeklination')] },
+  comparative: { title: 'Comparative', furtherReading: [LINGOLIA('adjektive/steigerung', 'Steigerung')] },
+  superlative: { title: 'Superlative', furtherReading: [LINGOLIA('adjektive/steigerung', 'Steigerung')] },
+  'subordinate-clauses-basic': { title: 'Subordinate clauses', page: 'German/Grammar/Subordinating conjunctions', section: 'Some subordinating conjunctions', furtherReading: [LINGOLIA('satzbau/nebensatz', 'Nebensatz')] },
+  'word-order-verb-final': { title: 'Verb-final word order', page: 'German/Grammar/Subordinating conjunctions', section: 'The VF word order', furtherReading: [LINGOLIA('satzbau/nebensatz', 'Nebensatz')] },
   'reflexive-verbs': { title: 'Reflexive verbs', page: 'German/Grammar/Reflexive pronouns', furtherReading: [LINGOLIA('verben/reflexive-verben', 'Reflexive Verben')] },
-  'verbs-with-prepositions': { title: 'Verbs with prepositions', furtherReading: [MDB('verben-mit-praepositionen.html', 'Verben mit Präpositionen')] },
+  'verbs-with-prepositions': { title: 'Verbs with prepositions', page: 'German/Grammar/Prepositions and Postpositions', section: 'Verbs with prepositions', furtherReading: [MDB('verben-mit-praepositionen.html', 'Verben mit Präpositionen')] },
   'da-wo-compounds': { title: 'da- and wo- compounds', furtherReading: [MDB('praepositionaladverbien.html', 'Präpositionaladverbien')] },
   'konjunktiv2-present': { title: 'Konjunktiv II', furtherReading: [LINGOLIA('verben/konjunktiv/konjunktiv-2', 'Konjunktiv II')] },
   'indefinite-pronouns': { title: 'Indefinite pronouns', page: 'German/Grammar/Pronouns', furtherReading: [LINGOLIA('pronomen/indefinitpronomen', 'Indefinitpronomen')] },
@@ -84,7 +93,7 @@ export const TOPIC_SOURCES: Record<string, TopicSource> = {
   'zu-infinitive-intro': { title: 'zu + infinitive', furtherReading: [LINGOLIA('satzbau/infinitivsaetze', 'Infinitivsätze')] },
 
   // ── B1 ──────────────────────────────────────────────────────────────────
-  'praeteritum-full': { title: 'Präteritum', page: 'German/Grammar/The simple past tense', furtherReading: [LINGOLIA('zeitformen/praeteritum', 'Präteritum')] },
+  'praeteritum-full': { title: 'Präteritum', page: 'German/Grammar/The simple past tense', section: 'Forming the simple past', furtherReading: [LINGOLIA('zeitformen/praeteritum', 'Präteritum')] },
   plusquamperfekt: { title: 'Plusquamperfekt', furtherReading: [LINGOLIA('zeitformen/plusquamperfekt', 'Plusquamperfekt')] },
   'passive-present': { title: 'Passive: present', furtherReading: [LINGOLIA('verben/passiv', 'Passiv')] },
   'passive-praeteritum': { title: 'Passive: Präteritum', furtherReading: [LINGOLIA('verben/passiv', 'Passiv')] },
@@ -96,7 +105,7 @@ export const TOPIC_SOURCES: Record<string, TopicSource> = {
   'prepositions-genitive': { title: 'Genitive prepositions', furtherReading: [LINGOLIA('praepositionen', 'Präpositionen')] },
   'konjunktiv2-past': { title: 'Konjunktiv II past', furtherReading: [LINGOLIA('verben/konjunktiv/konjunktiv-2', 'Konjunktiv II')] },
   'als-ob': { title: 'als ob', furtherReading: [LINGOLIA('satzbau/nebensatz', 'Nebensatz')] },
-  'subordinate-clauses-extended': { title: 'Subordinate clauses, extended', page: 'German/Grammar/Subordinating conjunctions', furtherReading: [LINGOLIA('satzbau/nebensatz', 'Nebensatz')] },
+  'subordinate-clauses-extended': { title: 'Subordinate clauses, extended', page: 'German/Grammar/Subordinating conjunctions', section: 'Infinitives', furtherReading: [LINGOLIA('satzbau/nebensatz', 'Nebensatz')] },
   'um-zu': { title: 'um … zu', furtherReading: [LINGOLIA('satzbau/infinitivsaetze', 'Infinitivsätze')] },
   'two-part-conjunctions': { title: 'Two-part conjunctions', page: 'German/Grammar/Coordinating conjunctions', furtherReading: [LINGOLIA('satzbau/konjunktionen', 'Konjunktionen')] },
   'n-deklination': { title: 'n-Deklination', furtherReading: [MDB('n-deklination.html', 'n-Deklination')] },

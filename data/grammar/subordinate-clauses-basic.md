@@ -16,55 +16,6 @@ retrieved: 2026-09-16
 
 # Subordinate clauses
 
-### Subordinating conjunctions
-
-We've talked about conjunctions and the difference between coordinating conjunctions and subordinating conjunctions in the section on coordinating conjunctions. In this section we'll talk about subordinating conjunctions. There are more of these than there are coordinating conjunctions, and some have their own grammatical quirks. They form subordinate clauses, which differ from coordinate clauses in German in that the word order is different. There are several other ways of forming subordinate clauses in German, which will be covered in other sections.
-
-#### The VF word order
-
-We've covered the V2 word order for simple sentences and coordinate clauses, the V1 word order for polar questions and imperatives, and even the V0 word order for impersonal imperatives. There is still one remaining, the VF word order, which is the order used in subordinate clause. The F here stands for final, and in the VF word order the finite verb is placed at the end of the sentence.
-
-The VF word order normally occurs in subordinate clauses, so in order to do some examples we're going to introduce the subordinating conjunction *weil*, which means "because" or "since".
-
-Let's compare the V2, V1, VF word orders in a short sentence.
-
-- *Du bist müde.* – "You are tired."
-  - This is a simple statement using the V2 word order.
-- *Bist du müde?* – "Are you tired?"
-  - This is a polar question using the V1 word order.
-- *... , weil du müde bist.* – "because you're tired."
-  - Here the verb *bist* is now at the end. Even though the verb is at the end like an infinitive, it's still a finite verb and is conjugated as you would expect.
-
-In a complete sentence:
-
-- *Du schläfst, weil du müde bist.* – "You're sleeping because you're tired."
-  - Note that German prefers to separate subordinate clauses with a comma.
-
-As in English, a subordinate clause can be moved to the front of sentence:
-
-- *Weil du müde bist, schläfst du.* – "Because you're tired, you're sleeping."
-
-But now the verb in the main clause seems to come first, violating the V2 rule; why is this? A subordinate clause can't exist on its own and must be part of the main clause. As such, it uses up the first position, so the verb in the main clause must come next in order to stay in the second position. The subject *du* must be moved after the verb. We've seen this kind of thing before with adverbs, and the result is the same but with the subordinate clause playing the role of the adverb here. The result is that the V2 rule is still preserved in the main clause and everything is as it should be, as long as you remember that a subordinate clause is really part of the main clause, while a coordinate clause is a separate entity.
-
-#### Separable verbs
-
-Recall that the prefix of a separable verb is placed at the end of a sentence in the V2 and V1 word orders, but reunited with the main part of the verb at the end it's an infinitive. In the VF word order, the prefix and the main part of the verb are again both at the end, so the prefix is reunited with the main part in this case as well.
-
-- *Ich fange meine Reise an.* – "I'm beginning my trip."
-- *Ich kann nicht arbeiten, weil ich meine Reise anfange.* – "I can't work because I'm beginning my trip."
-
-#### Infinitives
-
-There are two questions related to infinitives with subordinate clauses. First, where does the subordinate clause go when there is an infinitive in the main clause? The answer is that it goes after the infinitive:
-
-- *Ich werde gewinnen, weil ich stark bin.* – "I will win because I'm strong."
-
-You may recall that in our discussion of the sentence bracket in the section on the future tense, that the back field, the position after the non-finite part of the verb, is reserved for longer, self-contained phrases, and a subordinate clause certainly fits that description. As we have seen above, a subordinate clause can also be placed in the front field (*Vorfeld*), before the finite verb. The middle field (*Mittelfeld*) is also possible, but unusual, especially in spoken German.
-
-The other question is where does the finite verb go when subordinate clause has an infinitive. The answer here is that it goes after the infinitive:
-
-- *Ich gehe morgen nicht zu der Party, weil ich arbeiten muss.* – "I'm not going to the party tomorrow because I must work."
-
 #### Some subordinating conjunctions
 
 Here is a list of common subordinating conjunctions. It's not exhaustive, but it should give you a better idea of how these things work. We've divided them up into time and cause related categories, and we're leaving a few others for later.
@@ -85,6 +36,35 @@ It can also be translated as "if", meaning when a certain condition is met. *Ich
 - *bevor*: This can be translated as "before". An alternative with about the same meaning is *ehe*, but it's not used as much.
   - *Ich ging in den Laden, bevor ich nach Hause kam.* – "I went to the store before coming home."
   - *Du musst deine Hände waschen, bevor du essen darfst.* – "You must wash you hands before you may eat."
+
+One quirk with *bevor* is that when the main clause is negative, then the subclause may include a seemingly redundant and arbitrary *nicht*. In such cases *bevor* would normally be translated as "until". This extra *nicht* is optional and occurs mainly in spoken German. For example: *Ich kann nicht nach Hause gehen, bevor meine Arbeit*nicht*fertig ist.* – "I can't go home until my work is done."
+
+- *nachdem*: This is the opposite of *bevor* and means "after".
+  - *Ich ging zu Hause, nachdem ich in den Laden ging.* – "I went home after going to the store."
+  - *Du darfst essen, nachdem du deine Hände waschst.* – "You may eat after you wash your hands."
+- *bis*: This is usually translated as "until", meaning up to the time an event occurs.
+  - *Ihr dürft spielen, bis das Abendessen fertig ist.* – "You may play until dinner is ready."
+
+A common parting phrase is *Bis dann.* Literally this is "Until then" where "then" is the time of the next meeting.
+
+- *sobald*: This is similar to *nachdem*, but conveys that the events immediately follow each other. In can be translated as "as soon as". It overlaps in meaning with *wenn*.
+  - *Ich gebe dir das Geld, sobald ich es habe.* – "I'll give you the money as soon as I have it."
+- *seit*: This can be translated as "since", meaning starting after the time an event occurs. Remember that "since" in the sense of "because" is translated as "weil".
+  - *Ich kenne sie, seit ich ein Kind war.* – "I've known her since I was a kid."
+    - Note that German uses the present tense in the main clause here.
+
+##### Cause related
+
+- *da*: This is roughly equivalent to *weil*, but it might be translated as "(seeing) as" or "now that". As an adverb, *da* means "there".
+  - *Ich habe einen Akzent, da ich Russe bin.* – "I have an accent since I'm Russian."
+- *obwohl*: This can be translated as "though", "although" or "however", meaning the two statements might seem to contradict each other. This makes the meaning similar to *aber*, which is a coordinating conjunction and has already been covered.
+- *damit*: This can be translated as "so that" or "in order that". There is a construction with *um* and *zu* which can mean roughly the same thing, but the grammar is different and it will be covered in another section.
+  - *Sprechen Sie langsam, damit ich Sie verstehen kann.* – "Speak slowly so that I can understand you."
+- *falls*: This can be translated as "in case", in the sense of something that's done to allow for the possibility of something else.
+  - *Ich brauche einen Regenschirm, falls es regnet.* – "I need an umbrella, in case it rains."
+- *indem*: This can be translated as "by", giving an explanation of how something was done.
+  - *Ich trockne die Wäsche, indem ich sie in die Sonne hänge.* – "I dry the laundry by hanging it in the sun."
+- We've already covered *weil* above. A related conjunction is *denn*, but that is a coordinating conjunction and has already been covered in the corresponding section.
 
 
 ## Further reading

@@ -16,22 +16,6 @@ retrieved: 2026-09-16
 
 # Präteritum
 
-### The simple past tense
-
-German, much like English, forms the past tense in two ways, one by adding a special ending to the verb, and one by using an auxiliary verb. (Keep in mind though, that German does not distinguish between something happening once and something happening continuously, while English does. If you count these variations then it brings the tally for English up to four.) In this section we'll talk about the one where the ending changes; this is called the preterite or simple past. The other is called the perfect, which will be defined below. Although the German versions are formed similarly to the corresponding tenses in English, they are used rather differently. Both forms require a good amount of explanation, so we'll only cover the simple past in detail here.
-
-#### The difference between simple past and perfect
-
-In English, the simple past is usually formed by adding "-(e)d" to the end of the verb. For example "I move," becomes "I moved." The perfect tense is formed by combining the auxiliary verb "to have" with a special form of the verb called the past participle. Coincidentally, the past participle is also usually formed by adding "-(e)d" to the verb. So "I move," becomes "I have moved." Note that with irregular verbs the simple past and the participle are often different, and forming the past tense may involve a vowel changes. (Such a vowel change is called and ablaut, as mentioned in the section on stem changing verbs.) For example "I give," becomes "I gave," in the simple past, and "I have given" in the perfect tense. In English the difference in meaning between the two forms can be subtle, but in general the perfect tense implies a sense of completion that the simple past does not. For example "I slept," may mean that you were only sleeping a short time and were woken up before you were ready. But "I have slept," implies you've gotten enough sleep for what you need to do; you are done sleeping for the time being. (In English, the continuous past tenses are the past progressive – "I was sleeping", and the past perfect progressive – "I had been sleeping". Neither of these exist in German.) With verbs which describe a single event, the difference in meaning nearly evaporates, for example "I gave the child a toy," vs. "I have given the child a toy."
-
-The difference between the simple past and perfect tenses in German is difficult to explain. To help understand what's going on, it will be helpful to talk about the various dialects in German. The dialects are generally spoken at home and among friends, while the Standard German we're covering in this book is something people learn in school so people from different German speaking regions can understand each other. There are dozens of dialects, but they can be broadly divided into Low (North) and High (South) varieties. There is no clear dividing line between the two though; these dialects tend to blend into one another. The High German dialects have lost the simple past tense except for a few verbs, so people from the south (southern Germany, Austria and the German speaking parts of Switzerland) are mostly familiar with simple past tense through written German and mass media. Meanwhile, the simple past survives in Low German dialects, and so people from the north are familiar with the simple past tense from an early age. (Because of mass media and other influences, speaking dialect at home is becoming less common, even rare. So today's children usually speak Standard German. But the effect that these regional differences have on the language still persist.)
-
-As a consequence, the simple past is used more frequently in the north and the perfect tense is often used to convey a sense of completion as in English. Written German tends to follow this rule as well. But in the south, this sense of completion has been lost, but there is a more subtle difference between simple past and the perfect tense. Since the simple past is associated with written German, as used in fiction or a newspaper, it tends to be used when the event took place within a specific time frame, especially when it's part of a sequence of events. In this sense, you might call the German simple past the "storybook" tense because you would almost always use it when telling a story. Of course this isn't the only time you'd use it, but it might help to keep in the back of your mind that the simple past is a signal that there's a narrative being told, not just a mention of a random occurrence.
-
-Of course this is a gross oversimplification of reality; both the High and Low forms of German influence German speakers to varying degrees, and all these trends tend to mix together in the blender of mass media. The upshot is both of these descriptions, or even some combination of the two, can be valid descriptions of the difference between the two forms of the past tense, depending on who you talk to. The good news is that it's difficult to be wrong about which form to use. In fact, most sentences using either one of the past tenses in English can be translated as either simple past or perfect tense in German and few German speakers would take issue with the meaning.
-
-But there are certain verbs where the simple past is preferred even in spoken language and in all regions. We'll list these near the end of the section.
-
 #### Forming the simple past
 
 ##### Weak verbs
@@ -46,6 +30,76 @@ As with English, the German simple past is usually formed by changing the ending
 | **Second** (informal) | -test | -tet |
 | **Second** (formal) | -ten |  |
 | **Third** | -te | -ten |
+
+There is an exception in the third person singular in that an *-e* is added rather than a *-t-* inserted.
+
+This is how the endings work in practice with the verb *hören*:
+
+**Sentences with *hören* in the simple past**
+
+| Person | Masculine | Feminine | Neuter | Plural |
+| --- | --- | --- | --- | --- |
+| **First** | Ich hörte. "I heard." |  |  | Wir hörten. "We heard." |
+| **Second** (informal) | Du hörtest. "You heard." |  |  | Ihr hörtet. "You heard." |
+| **Second** (formal) | Sie hörten. "You heard." |  |  |  |
+| **Third** | Er hörte. "He heard." | Sie hörte. "She heard." | Es hörte. "It heard." | Sie hörten. "They heard." |
+
+As with the present tense, stems ending with *-d-*, *-t-*, *-m-* or *-n-* have an *-e-* added before the *t*, assuming there's not one already, to make the word flow more easily. Hence:
+
+- *Ich redete.* – "I talked."
+
+##### Strong Verbs
+
+As in English, some verbs form their simple past tense using a vowel change instead of, or in addition to, a change of ending. This occurs more frequently and more systematically than in English so it's worthwhile to group them into a special class known as strong verbs. (We mentioned strong verbs briefly in the section on stem-changing verbs. All stem-changing verbs are strong but not all strong verbs are stem-changing.) While there are still ending changes for strong verbs, the endings follow a pattern different from weak verbs, and which is more similar to the present tense. The full table for strong verbs is:
+
+**Verb endings (Simple Past, Weak Verbs)**
+
+| Person | Singular | Plural |
+| --- | --- | --- |
+| **First** | * | *-en |
+| **Second** (informal) | *-st | *-t |
+| **Second** (formal) | *-en |  |
+| **Third** | * | *-en |
+
+Here, the * means that a vowel change occurs. Each verb has its own vowel change, and it's probably easiest just to memorize what the change is separately for each verb. Fortunately, the change is the same for each number and person combination. Note that the endings are the same as the present tense except for the first and third person singular, and there the ending is dropped altogether.
+
+For the stem-changing, hence strong, verb *schlafen* this works as follows:
+
+**Sentences with *schlafen*, simple past tense**
+
+| Person | Masculine | Feminine | Neuter | Plural |
+| --- | --- | --- | --- | --- |
+| **First** | Ich schlief. "I slept." |  |  | Wir schliefen. "We slept." |
+| **Second** (informal) | Du schliefst. "You slept." |  |  | Ihr schlieft. "You slept." |
+| **Second** (formal) | Sie schliefen. "You slept." |  |  |  |
+| **Third** | Er schlief. "He schlief." | Sie schlief. "She slept." | Es schlief. "It slept." | Sie schliefen. "They slept." |
+
+Some possible vowel changes are:
+
+- *a* to *ie*, as seen above with *schlafen*.
+- *ä* to *i*, as in *hängen*:
+  - *Ich hänge* – "I hang"
+  - *Ich hing* – "I hung"
+- *au* to *ie*, as in *laufen*:
+  - *Ich laufe* – "I run"
+  - *Ich lief* – "I ran"
+- *e* to *a*, an in *sehen*, *rennen*, *sprechen*:
+  - *Ich sehe* – "I see"
+  - *Ich sah* – "I saw"
+- *ei* to *ie*, as in *bleiben*:
+  - *Ich bleibe* – "I remain"
+  - *Ich blieb* – "I remained"
+- *i* to *a*, as in *singen*:
+  - *Ich singen* – "I sing"
+  - *Ich sang* – "I sang"
+- *ie* to *a*, as in *liegen*:
+  - *Ich liege.* – "I lie (position)"
+  - *Ich lag.* – "I lay"
+- *o* to *a*, as in *kommen*:
+  - *Ich komme* – "I come"
+  - *Ich kam* – "I came"
+
+Due to German spelling rules, a vowel change may entail minor changes in stem in the written form. For example there may be change between *t* and *tt*, *ck* and *k*, *ss* and *ẞ*, or an *h* my be lost or gained. These changes don't affect pronunciation, at least not by much, so the verbs are still considered regular strong verbs.
 
 
 ## Further reading

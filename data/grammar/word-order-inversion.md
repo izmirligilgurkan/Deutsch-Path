@@ -16,74 +16,82 @@ retrieved: 2026-09-16
 
 # Inversion
 
-### Sentence Structure in Main clauses
+### Order of phrases - Reihenfolge der Satzglieder
 
-Here is the ultimate syntax guide for a main clause. German allows a considerable amount of syntactical freedom as parts of speech are indicated through case, rather than syntax. Nonetheless, there are conventions to follow, especially ones that reduce the ambiguity of pronouns.
+In English, you need the position of phrases to determine whether a noun phrase is a subject or an object. In German the cases tell you which role is assigned to a certain noun phrase. Therefore, the word order is less strict.
 
-**Word-Order in the Main Clause**
+#### First Position - erste Position
 
-| **First Position** | Anything | Used for emphasis. Sometimes people will even put a past participle or some other verb in the first position. You shouldn't do that until you know what you are doing. The first position is often used for the subject (Nominative), however. |
-| --- | --- | --- |
-| **Second Position** | Conjugated Verb | "habe", "muss", "arbeitete" |
-| **Mittelfeld** | Nominative Pronoun | "ich" |
-|  | Reflexive Pronoun | "mich", "uns" |
-|  | Accusative Pronoun | **A** "dich" |
-|  | Dative Pronoun | **D** "dir", "mir" |
-|  | (Temporal Expressions) | Expressions of time, especially short temporal adverbs, are often placed here. |
-|  | Nominative Noun | "die Katze" |
-|  | Dative Noun | **D** "meiner Mutter" |
-|  | Accusative Noun | **A = ADDA** "meinen Vater" |
-|  | Prepositional Phrases | Time, Manner, Place |
-|  | Adverbs, Predicate Adjectives | Time, Manner Place |
-|  | Verbal negation using "nicht" | see section on negation for proper treatment of this topic |
-| **Final Position** All Remaining Verbs | Separable Prefixes | "Ich fange damit *an*!" |
-|  | Past Participles (conjugated verb should be either "haben" od. "sein) | "Ich habe heute nicht *gearbeitet*." |
-|  | Infinitives | Used with modal verb as conjugated verb. "Du sollst das nicht *tun*." |
-|  |  | Used with modal-like verbs (sehen, hören, helfen, lassen) "Ich höre dich *atmen*." |
-|  | Extended verb phrases: three verbs in sentence | Build Inwards |
-|  |  | Translating a hypothetical English sentence with three verbs into German, the first English verb - the conjugated verb - would be in the second position in the German sentence. The second verb will be on the outside of the verb-phrase, at the end of the German sentence. The third verb will be immediately before that. Subj . 1 . [Mittelfeld] . 3 . 2. |
-|  |  | "Ich *habe (1)* seit dem Unfall nicht *arbeiten (3) können (2)*." "I have (1) not been able (2) to work (3) since the accident." |
-| **Nachfeld** | The stuff you forgot to say, or that you just thought of after saying your verb. This happens to both native-speakers and those learning the language. However, try to avoid it. | This position is also used for comparisons. See below. |
+In neutral sentences the subject is most likely in the first position (Examples 1, 4, 5, 6).
 
-This is the officially-sanctioned syntax of a main clause. However, German syntax is not written in stone. One has considerable latitude in the way one constructs one's sentence. Before fleshing out the topic, here are some rules, conventions, and words of advice:
+However, you can put everything there you want to stress. This is very common with phrases about time or place (Examples 2, 3, 7). English speakers need to remember that the first position is restricted to exactly one phrase.
 
-1) In terms of being placed in proper syntax, the pronouns are the most important, for they are the ones most liable to ambiguity ("sie" = which person, what part of speech, which case? Put it in its correct position).
+You can even put objects in first position (Example 8). You do it mostly, if you want to emphasize the object or if you have to repeat the sentence because your partner has not understood this particular part of it.
 
-2) It is not possible for a sentence to include all of the listed items, but it is still good to be able to reproduce that schema from memory.
+If the subject is not in first position, it goes directly after the conjugated verb (Examples 2, 3, 7, 8), unless preceded by a reflexive pronoun or an accusative or dative pronoun.
 
-3) You must be able to recognize an element of a sentence. For example, you must not split something like, "mit einem Buch", for that is a prepositional phrase, i.e., one and only one sentence element. Many other sentence elements are, however, only one word. You get a lot better at this as time goes on.
+#### Order of Phrases in the Middle of the clause - Reihenfolge der Satzglieder im Mittelfeld
 
-4) Two good mnemonics. Number one: pronouns before nouns. always. even if it feels weird to put both your accusative and dative objects before your subject (a noun), you must get used to it. It doesn't happen very often, though.
+##### Introduction
 
-5) The second one is "ADDA" (i.e., NOT DAAD, the Deutsche Akademische Austausch Dienst). ADDA describes, first, the pronouns (Accusative, then Dative), and then the nouns (Dative, then Accusative). ADDA. think ABBA, but with D's instead of B's.
+In the middle of the sentence – the part between the two parts of the verb – word order is quite flexible.
 
-6) The first position is usually your subject, but can also draw attention to something you want to discuss.
+Often the word order for a neutral sentence can be described like this:
 
-7) As will be explained below, prepositional phrases and adverbs follow the "Time, Manner, Place" format.
+1. Time
+2. Objects
+3. Manner
+4. Place
 
-8) Beyond reducing/eliminating ambiguity, you actually do have a fair amount of freedom. "Time, Manner, Place" is more a suggestion than a commandment, and most German textbooks tell you to learn the schema laid out above, but then to speak and write your sentences with items in *ascending order of importance*. Put the important stuff at the end. Then you get to your verb, which gives all of the words in the sentence meaning, resulting in a crescendo of emotion and understanding. Or not. But you see how that might work.
+The mnemonic is "STOMP" where S is for subject. However, when looking at wild German sentences you will find structures that do not follow these principles but are nonetheless correct. This is very frequent in spoken language. Mostly the deviation from the neutral structure is caused by a special focus. While they are not wrong, it would be inappropriate to use them all the time. Therefore it is best to learn the principles described here. If you have mastered them and can use them without thinking about it, you can try some of the deviations.
 
-9) If you speak enough, your verbs start going to the right places. It will seem perfectly natural that the verb is in the second position, and that the other verbs are at the end. Getting used to subordinate clauses takes more time, but eventually your words go to the right place. Don't worry about making mistakes, but also try not to forget which verb you have waiting in your head until the sentence ends.
+##### Time
 
-10) Banish the terms, "subject", "direct object", and "indirect object" from your head. Get used to explaining things in terms of "nominative", "accusative", "dative", and "genitive". Same goes for "linking-" and "helping-verbs". Start talking about modal verbs, and modal-like verbs.
+Time seems to be a very important concept for German speaking people. It is mostly mentioned very early in the sentence, either at the very beginning in the first position which means that the subject goes directly after the conjugated verb (i.e.: Gestern war ich im Kino) or early in the middle field (i.e.: Ich war gestern im Kino). The sentence "Ich war im Kino gestern" is not exactly wrong, but it would sound weird in most situations. It could be used though in a casual conversation when putting special emphasis on "im Kino", but it's not the regular sentence pattern.
 
-In general, you have to learn how to talk about grammar to be able to study German successfully.
+##### Order of Objects
 
-11) If you can do the declensions in your head, you can do the syntax in your head. Syntax is easier.
+The order of objects is different for nouns and pronouns. Pronouns always come before nouns, and reflexive pronouns come before everything except nominative pronouns. **ADDA**, mentioned above, is a good way to remember the prescribed order of cases for pronouns and then nouns. As sentences can contain only two objects, here are the three possible combinations deriving from ADDA:
 
-### Position of the Verb
+Two pronouns: accusative before dative (*AD*)
 
-#### Clauses with one verb part - Sätze mit nur einem Verbteil
+```
+I   II    Acc. Dat.       
+Ich habe  sie  ihm  gegeben.
+Ich gab   sie  ihm         .
+```
 
-In a main clause (Hauptsatz), the conjugated verb is in *second position*.
+One noun, one pronoun: The pronoun goes first, regardless of the case
 
-**Clauses with one verb part**
+```
+I   II    Pronoun  Noun      
+Ich habe  ihm      die Kleider gegeben.
+Ich gab   sie      dem Jungen         .
+```
 
-|  | First Position (I) | (II) | Mittelfeld | Punctuation |
-| --- | --- | --- | --- | --- |
-| 1. | Er | geht | nach Hause | . |
-| 2. | Heute Abend | fahre | ich mit dem Auto nach Köln | . |
-| 3. | Im Park | machte | er einen langen Spaziergang | . |
+Two nouns: dative before accusative (*DA*)
+
+```
+I   II    Dat.           Acc.      
+Ich habe  dem Jungen     die Kleider gegeben.
+Ich gab   dem Jungen     die Kleider        .
+```
+
+##### Manner
+
+This includes adverbs and prepositional phrases describing how, why, and by what methods the event of the sentence has taken place.
+
+##### Place
+
+This includes adverbs and prepositional phrases describing *location* and *direction*
+
+#### Satzglieder im Nachfeld
+
+In German grammar the term *Nachfeld* is used to describe parts of the sentence that come **after** the second part of the verb. The *Nachfeld* is neglected in most learner's grammars. It is mostly used in spoken language, when people add something to a sentence as an afterthought or with special emphasis. In **written language** it is important for comparisons. You put them almost exclusively in the nachfeld.
+
+Consider the example *Peter verdient mehr Geld als Paul'* (Peter earns more money than Paul). Now try to convert the sentence to the perfect. If you follow the normal sentence structure rules you would have to write: *Peter hat mehr Geld als Paul verdient*, but this is almost never done. The sentence best accepted by a majority of German speakers is: *Peter hat mehr Geld verdient als Paul*. The comparison is put **after** the past participle.
+
+Note that the two items being compared must be in the same case. *Du verdienst mehr Geld als ich*. This is also correct grammar in English, though it is now almost obsolete among native English speakers.
 
 
 ## Further reading

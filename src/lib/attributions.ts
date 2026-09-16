@@ -49,9 +49,9 @@ export const SOURCES: SourceEntry[] = [
     url: 'https://en.wikibooks.org/wiki/German',
     license: 'CC BY-SA 4.0',
     licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
-    used: 'Grammar explanations — 42 of the 69 topics.',
+    used: 'Grammar explanations — 37 of the 69 topics.',
     modifications:
-      'Excerpted and converted to Markdown; headings shifted. The 27 topics Wikibooks does not cover are shown as stubs with reference links, never filled in.',
+      'Excerpted and converted to Markdown; headings shifted, and narrowed to the section that covers the topic. The 32 topics Wikibooks does not cover are shown as stubs with reference links, never filled in.',
     bundled: true,
   },
   {

@@ -16,36 +16,113 @@ retrieved: 2026-09-16
 
 # Präteritum of sein, haben and modals
 
-### The simple past tense
+#### Irregular verbs
 
-German, much like English, forms the past tense in two ways, one by adding a special ending to the verb, and one by using an auxiliary verb. (Keep in mind though, that German does not distinguish between something happening once and something happening continuously, while English does. If you count these variations then it brings the tally for English up to four.) In this section we'll talk about the one where the ending changes; this is called the preterite or simple past. The other is called the perfect, which will be defined below. Although the German versions are formed similarly to the corresponding tenses in English, they are used rather differently. Both forms require a good amount of explanation, so we'll only cover the simple past in detail here.
+Within both the weak and strong categories, there are both regular and irregular verbs. This produces four classes of verbs: weak, irregular weak, strong and irregular strong. Irregular weak verbs follow the weak past tense pattern for the most part, for example the first person singular ending is *-te*, but differ from the pattern in detail. Irregular strong verbs follow the strong past tense pattern, so they have no first person singular ending, but differ from that pattern in other ways. The class of regular strong verbs can also be divided into stem-changing and non-stem-changing verbs, bringing the tally of classes up to five, and the past-like present verbs bring it up to six. Finally, there is a handful of verbs which follow both strong and weak patterns in some way, and so don't really fit into either group. We'll just call them variable, but they bring the tally to seven.
 
-#### The difference between simple past and perfect
+This may seem complex, but understanding these patterns will greatly decrease what you have to memorize in order to properly conjugate verbs. Even with the most irregular verbs, are similarities with the common patterns which can make memorization easier.
 
-In English, the simple past is usually formed by adding "-(e)d" to the end of the verb. For example "I move," becomes "I moved." The perfect tense is formed by combining the auxiliary verb "to have" with a special form of the verb called the past participle. Coincidentally, the past participle is also usually formed by adding "-(e)d" to the verb. So "I move," becomes "I have moved." Note that with irregular verbs the simple past and the participle are often different, and forming the past tense may involve a vowel changes. (Such a vowel change is called and ablaut, as mentioned in the section on stem changing verbs.) For example "I give," becomes "I gave," in the simple past, and "I have given" in the perfect tense. In English the difference in meaning between the two forms can be subtle, but in general the perfect tense implies a sense of completion that the simple past does not. For example "I slept," may mean that you were only sleeping a short time and were woken up before you were ready. But "I have slept," implies you've gotten enough sleep for what you need to do; you are done sleeping for the time being. (In English, the continuous past tenses are the past progressive – "I was sleeping", and the past perfect progressive – "I had been sleeping". Neither of these exist in German.) With verbs which describe a single event, the difference in meaning nearly evaporates, for example "I gave the child a toy," vs. "I have given the child a toy."
+##### Irregular weak verbs
 
-The difference between the simple past and perfect tenses in German is difficult to explain. To help understand what's going on, it will be helpful to talk about the various dialects in German. The dialects are generally spoken at home and among friends, while the Standard German we're covering in this book is something people learn in school so people from different German speaking regions can understand each other. There are dozens of dialects, but they can be broadly divided into Low (North) and High (South) varieties. There is no clear dividing line between the two though; these dialects tend to blend into one another. The High German dialects have lost the simple past tense except for a few verbs, so people from the south (southern Germany, Austria and the German speaking parts of Switzerland) are mostly familiar with simple past tense through written German and mass media. Meanwhile, the simple past survives in Low German dialects, and so people from the north are familiar with the simple past tense from an early age. (Because of mass media and other influences, speaking dialect at home is becoming less common, even rare. So today's children usually speak Standard German. But the effect that these regional differences have on the language still persist.)
+These follow the weak past ending pattern, but change the stem as well, often with just a vowel change. For example:
 
-As a consequence, the simple past is used more frequently in the north and the perfect tense is often used to convey a sense of completion as in English. Written German tends to follow this rule as well. But in the south, this sense of completion has been lost, but there is a more subtle difference between simple past and the perfect tense. Since the simple past is associated with written German, as used in fiction or a newspaper, it tends to be used when the event took place within a specific time frame, especially when it's part of a sequence of events. In this sense, you might call the German simple past the "storybook" tense because you would almost always use it when telling a story. Of course this isn't the only time you'd use it, but it might help to keep in the back of your mind that the simple past is a signal that there's a narrative being told, not just a mention of a random occurrence.
+- *bringen* – "to bring"
+  - *Ich bringe* – "I bring"
+  - *Ich brachte* – "I brought"
+- *denken* – "to think"
+  - *Ich denke* – "I think"
+  - *Ich dachte* – "I thought"
+- *brennen* – "to burn"
+  - *Ich brenne* – "I burn"
+  - *Ich brannte* – "I burned"
+- *kennen* – "to know"
+  - *Ich kenne* – "I know"
+  - *Ich kannte* – "I knew"
+- *nennen* – "to name"
+  - *Ich nenne* – "I name"
+  - *Ich nannte* – "I named"
+- *rennen* – "to run"
+  - *Ich renne* – "I run"
+  - *Ich rannte* – "I ran"
+- *haben* – "to have"
+  - *Ich habe* – "I have"
+  - *Ich hatte* – "I had"
+- *senden* – "to broadcast" or "to send"
+  - This is regular in it's meaning "to broadcast", but is usually irregular with past tense stem *sand-* in the meaning "to send".
+  - *Ich sende* – "I send"
+  - *Ich sandte* – "I sent"
 
-Of course this is a gross oversimplification of reality; both the High and Low forms of German influence German speakers to varying degrees, and all these trends tend to mix together in the blender of mass media. The upshot is both of these descriptions, or even some combination of the two, can be valid descriptions of the difference between the two forms of the past tense, depending on who you talk to. The good news is that it's difficult to be wrong about which form to use. In fact, most sentences using either one of the past tenses in English can be translated as either simple past or perfect tense in German and few German speakers would take issue with the meaning.
+You may recall that *haben* is irregular in the present tense, but all the others here are regular in the present tense.
 
-But there are certain verbs where the simple past is preferred even in spoken language and in all regions. We'll list these near the end of the section.
+##### Irregular strong verbs
 
-#### Forming the simple past
+These verbs follow the strong past ending pattern in the simple past tense, but have stem changes other than a simple vowel change. Although the stem is different than expected, simple past tense conjugation can be found by adding the appropriate strong endings to a common stem. Many of these are regular in the present tense:
 
-##### Weak verbs
+- *stehen* – "to stand"
+  - *Ich stand* – "I stood"
+- *sitzen* – "to sit"
+  - *Ich saẞ* – "I sat"
+- *leiden* – "to suffer"
+  - *Ich litt* – "I suffered"
+- *gehen* – "to go"
+  - *Ich ging* – "I went"
+- *ziehen* – "to pull"
+  - *Ich zog* – "I pulled"
 
-As with English, the German simple past is usually formed by changing the ending. But since German still likes to have different endings for different person and number combinations, the simple past is usually formed by inserting a *-t(e)-* rather than adding something to the end. Verbs that follow this pattern are called weak verbs to distinguish them from strong verbs which are covered below. The full table is:
+Two special cases with this group are:
 
-**Verb endings (Simple Past, Weak Verbs)**
+- *tun* – "to do"
+  - This verb is fairly regular except for the infinitive. In the simple past it's conjugated like a strong verb with the stem *tat-*
+  - *Ich tat* – "I did"
 
-| Person | Singular | Plural |
-| --- | --- | --- |
-| **First** | -te | -ten |
-| **Second** (informal) | -test | -tet |
-| **Second** (formal) | -ten |  |
-| **Third** | -te | -ten |
+- *sein* – "to be"
+  - This is very irregular in the present tense, but in the simple past tense it follows the strong pattern but with the stem *war-*. These past tense forms are cognates to the English "was" and "were".
+  - *Ich war* – "I was"
+
+##### Past-like present verbs
+
+These verbs follow the weak pattern in the past tense; this is somewhat ironic since they are so similar to the strong past pattern in the present tense. They sometimes undergo a vowel change, but not the same as the change in present tense. A special case is *mögen* since the *g* becomes *ch*.
+
+- *dürfen* – "may"
+  - *Ich durfte* – "I was allowed to"
+    - The vowel changes from *ü* to *u*.
+- *können* – "can"
+  - *Ich konnte* – "I could"
+    - The vowel changes from *ö* to *o*.
+- *mögen* – "may, to like"
+  - *Ich mochte* – "I might have"
+    - This undergoes a stem change in addition to a vowel change, so it might be considered an irregular past-like present verb.
+- *müssen* – "must"
+  - *Ich musste* – "I had to"
+    - The vowel changes from *ü* to *u*.
+- *sollen* – "should"
+  - *Ich sollte* – "I was supposed to", "I should have"
+    - No vowel change.
+- *wissen* – "to know"
+  - *Ich wusste* – "I knew"
+    - The vowel changes from *i* to *u*.
+- *wollen* – "to want"
+  - *Ich wollte* – "I wanted"
+    - No vowel change.
+
+Note that some gymnastics are required for the translations into English since the English versions often have no past tense.
+
+##### Variable verbs
+
+These verbs follow neither the strong or weak pattern completely. Many are strong for some meanings and weak for others.
+
+- *werden* – "to become"
+  - We said in the section on uninflected adjectives that *werden* acts like a stem changing verb in the present tense. But in the simple past it acts more like a weak verb, and since stem changing verbs are strong it's best to say it "acts like" a stem changing verb rather than it actually is one. In fact it's conjugated almost exactly like a weak verb in the simple past except that the *-det-* syllable you'd expect is reduced to *-d-*:
+  - *Ich werde* – "I became"
+
+- *schaffen* – "to create or make" or "to manage or succeed"
+  - In the sense "to create or make" it's strong and has a vowel change from *a* to *u*. But in the sense of "to manage or succeed" it's weak.
+
+- *backen* - "to bake" or "to stick (together)"
+  - This is weak for some meanings, and either strong or weak for others according to the speaker's taste. In many cases both strong and weak forms exist, but they are not used much and there is no difference in meaning between the two. We refer you to the Usage Notes section in Wiktionary for more details.
+
+- *mahlen* - "to grind", *salzen* - "to salt", *spalten* - "to split"
+  - For the most part these are regular weak verbs. But we'll see that they sometimes follow a strong pattern when we get to the section on participles.
 
 
 ## Further reading
