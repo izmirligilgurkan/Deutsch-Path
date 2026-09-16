@@ -21,6 +21,8 @@ export interface GenContext {
   pool: Lemma[];
   /** Level-appropriate sentences. */
   sentences: Sentence[];
+  /** Every lemma taught up to and including this unit. */
+  taught: Set<string>;
 }
 
 const ARTICLE_FORMS = new Set([
@@ -175,10 +177,26 @@ export function genVocabTyped(ctx: GenContext): Exercise[] {
 
 // ── Sentence-based drills ──────────────────────────────────────────────────
 
-/** Sentences that use one of this unit's lemmas, newest ids last for stability. */
+/**
+ * Sentences that use one of this unit's lemmas, easiest first.
+ *
+ * "Level-appropriate" is not the same as "readable here". Every word of *Was
+ * bringt das mit sich?* is A1, so it was fair game in unit 1, where the
+ * learner knows twenty-five words and none of the idiom. Sentences are ranked
+ * by how many of their words the course has not taught yet, then by length, so
+ * a unit gets the most transparent sentences available to it rather than the
+ * first ones by id. Nothing is filtered out: an early unit would have nothing
+ * left, and one unknown word in a sentence is how reading works.
+ */
 function sentencesForUnit(ctx: GenContext, limit: number): Sentence[] {
   const wanted = new Set(ctx.lemmas.map((l) => l.id));
-  return ctx.sentences.filter((s) => s.lemmas.some((l) => wanted.has(l))).slice(0, limit);
+  const unknown = (s: Sentence) => s.lemmas.filter((l) => !ctx.taught.has(l)).length;
+  return ctx.sentences
+    .filter((s) => s.lemmas.some((l) => wanted.has(l)))
+    .map((s) => ({ s, cost: unknown(s), length: tokenize(s.de).length }))
+    .sort((a, b) => a.cost - b.cost || a.length - b.length || a.s.id - b.s.id)
+    .slice(0, limit)
+    .map((x) => x.s);
 }
 
 export function genCloze(ctx: GenContext, limit = 12): Exercise[] {

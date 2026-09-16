@@ -67,6 +67,12 @@ for (const level of ['A1', 'A2', 'B1'] as Level[]) {
 }
 
 const assigned = new Set<string>();
+/**
+ * What the learner can be assumed to know by the time a unit runs: every word
+ * assigned to it or to an earlier unit, plus the reference lemmas — the
+ * definite article is in every other sentence and is taught from unit 3.
+ */
+const taught = new Set<string>(lexicon.filter((l) => l.reference).map((l) => l.id));
 let totalExercises = 0;
 const perUnitCounts: string[] = [];
 
@@ -81,7 +87,10 @@ for (const plan of UNITS) {
     0,
     LEMMAS_PER_UNIT,
   );
-  for (const l of unitLemmas) assigned.add(l.id);
+  for (const l of unitLemmas) {
+    assigned.add(l.id);
+    taught.add(l.id);
+  }
 
   // Distractors and examples may use anything up to this unit's level.
   const pool = lexicon.filter((l) => LEVEL_ORDER[l.level ?? 'B1'] <= LEVEL_ORDER[plan.level]);
@@ -95,6 +104,7 @@ for (const plan of UNITS) {
     lemmas: unitLemmas,
     pool,
     sentences: levelSentences,
+    taught,
   };
 
   const exercises: Exercise[] = [

@@ -109,6 +109,15 @@ so what a unit drills is what it has taught. Card prompts use the head of a
 sense rather than Wiktionary's full entry (`shortGloss`), so an option is a
 word, not a paragraph.
 
+A unit's sentences are ranked by how much of them the course has already
+taught. "Level-appropriate" was not the same thing: every word of *Was bringt
+das mit sich?* is A1, so it was fair game in unit 1, where the learner knows
+twenty-five words and none of the idiom. Ranking by unseen words, then by
+length, takes unit 1 from **3.4 unknown words per sentence to 1.0** (unit 2,
+2.2 → 0.7; unit 12, 1.5 → 0.2). Nothing is filtered out — an early unit whose
+vocabulary is twenty-five function words would have nothing left, and one new
+word in a sentence is how reading works. The breakdown explains that word.
+
 ## What is still missing
 
 Listed so the gaps are visible rather than implied.
@@ -117,9 +126,6 @@ Listed so the gaps are visible rather than implied.
   a test. The worked-example research argues the first encounter should be a
   presentation — the word, its article, its meaning, one sentence — with
   nothing to answer. This does not exist yet.
-- **Sentences are not gated by unit.** A unit's sentence items are drawn from
-  any sentence using that unit's vocabulary, so a unit 1 cloze can be an
-  idiomatic B1 sentence whose *words* happen to be A1.
 - **No "why" in the breakdown.** It names the case a word is in but not what
   put it there. Preposition case government is a closed, sourceable set, so
   "dative, because *mit* takes the dative" is derivable — it is not derived yet.

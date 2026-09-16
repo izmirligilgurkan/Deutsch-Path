@@ -40,8 +40,12 @@ function sentence(id: number, de: string, lemmas: string[]): Sentence {
   };
 }
 
-function context(sentences: Sentence[], lemmas = [bruecke, mann, buch]): GenContext {
-  return { unit: 1, topic: 'case-accusative', lemmas, pool: lemmas, sentences };
+function context(
+  sentences: Sentence[],
+  lemmas = [bruecke, mann, buch],
+  taught = new Set(lemmas.map((l) => l.id)),
+): GenContext {
+  return { unit: 1, topic: 'case-accusative', lemmas, pool: lemmas, sentences, taught };
 }
 
 describe('withArticle', () => {
@@ -131,5 +135,21 @@ describe('seeded shuffle', () => {
     const b = shuffled(items, mulberry32(seedFrom('x')));
     expect(a).toEqual(b);
     expect([...a].sort()).toEqual(items);
+  });
+});
+
+describe('sentence choice', () => {
+  it('prefers the sentence a learner can already read', () => {
+    // Every word of both is "level-appropriate"; only one is readable in a
+    // unit that has taught three words.
+    const easy = sentence(2, 'Der Mann liest das Buch.', ['Mann|noun', 'Buch|noun']);
+    const hard = sentence(1, 'Was bringt das dem Mann?', ['Mann|noun', 'bringen|verb', 'was|pron']);
+    const [first] = genCloze(context([hard, easy]), 1);
+    expect(first?.refs.sentenceId).toBe(2);
+  });
+
+  it('falls back to a sentence with unknown words rather than none', () => {
+    const only = sentence(7, 'Der Mann bringt es.', ['Mann|noun', 'bringen|verb']);
+    expect(genCloze(context([only]), 1)).toHaveLength(1);
   });
 });
