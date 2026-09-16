@@ -14,9 +14,9 @@ function Inlines({ nodes }: { nodes: Inline[] }) {
       {nodes.map((node, i) => {
         switch (node.type) {
           case 'bold':
-            return <strong key={i}>{node.text}</strong>;
+            return <strong key={i}><Inlines nodes={node.content} /></strong>;
           case 'italic':
-            return <em key={i}>{node.text}</em>;
+            return <em key={i}><Inlines nodes={node.content} /></em>;
           case 'code':
             return <code key={i} class="mono">{node.text}</code>;
           case 'link':

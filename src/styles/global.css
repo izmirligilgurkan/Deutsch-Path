@@ -376,12 +376,44 @@ th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--bord
 .unit-done .unit-num { background: var(--ok); color: var(--bg); }
 
 .grammar-body { font-size: 0.95rem; line-height: 1.6; }
-.grammar-body table { margin: 12px 0; font-size: 0.85rem; }
+/*
+ * A conjugation table has five columns and does not fit a phone. `width: 100%`
+ * squeezed it until the last column's words were cut off mid-word, so it takes
+ * its natural width inside .table-scroll and scrolls sideways instead.
+ */
+.grammar-body table { margin: 12px 0; font-size: 0.85rem; width: max-content; min-width: 100%; }
+.grammar-body th, .grammar-body td { white-space: nowrap; }
+/*
+ * Scrolled to the Plural column, the row labels would otherwise be off-screen
+ * and the forms would belong to nothing. The first column stays put.
+ */
+.grammar-body th:first-child,
+.grammar-body td:first-child {
+  position: sticky;
+  left: 0;
+  background: var(--bg-raised);
+}
+.grammar-body th:first-child { background: var(--bg-sunken); }
 .grammar-body th { background: var(--bg-sunken); }
 .grammar-body h2 { margin-top: 20px; font-size: 1.05rem; }
 .grammar-body h3 { margin-top: 16px; font-size: 0.95rem; }
 .grammar-body code { background: var(--bg-sunken); padding: 1px 4px; border-radius: 4px; }
-.table-scroll { overflow-x: auto; }
+/*
+ * A table that scrolls needs to say so, or the Plural column simply looks
+ * missing. The `local` gradients sit on the table and slide away as it
+ * scrolls; the `scroll` shadows stay pinned to the edges, so a shadow shows
+ * only on the side that still has table behind it. No JavaScript, so it works
+ * the same offline.
+ */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background:
+    linear-gradient(to right, var(--bg-raised) 40%, transparent) left center / 28px 100% no-repeat local,
+    linear-gradient(to left, var(--bg-raised) 40%, transparent) right center / 28px 100% no-repeat local,
+    radial-gradient(farthest-side at 0 50%, rgba(0, 0, 0, 0.22), transparent) left center / 12px 100% no-repeat,
+    radial-gradient(farthest-side at 100% 50%, rgba(0, 0, 0, 0.22), transparent) right center / 12px 100% no-repeat;
+}
 
 .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--gap); }
 .stat { background: var(--bg-raised); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; }

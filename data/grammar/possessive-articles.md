@@ -11,7 +11,7 @@ sourceRevision: 4072269
 license: CC-BY-SA-4.0
 licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/"
 modified: Excerpted and converted to Markdown; headings shifted. Text not rewritten.
-retrieved: 2026-09-15
+retrieved: 2026-09-16
 ---
 
 # Possessive articles
@@ -50,10 +50,12 @@ The last entry (in **bold**) does not correspond to any indefinite articles. Exa
 
 The possessive roots are summarized in the following table:
 
+**Personal Pronouns (Nominative)**
+
 | Person | Masculine | Feminine | Neuter | Plural |
 | --- | --- | --- | --- | --- |
-| **First** | mein- | unser- |  |  |
-| **Second** (informal) | dein- | euer- |  |  |
+| **First** | mein- |  |  | unser- |
+| **Second** (informal) | dein- |  |  | euer- |
 | **Second** (formal) | Ihr- |  |  |  |
 | **Third** | sein- | ihr- | sein- | ihr- |
 
@@ -93,8 +95,6 @@ The only irregularity you may encounter with this system is that the letters *-e
 Before moving on to the pronouns, this is a good time to introduce the remaining "ein-word", *kein*. In general an "ein-word" refers to a determiner which declines as *ein* does. This includes *ein* itself, the possessive determiners, and *kein*.
 
 As mentioned earlier, there are several forms of negation in German; we've already covered *nicht* but another important one is *kein*. You put *kein* in front a noun, appropriately declined of course, to say there is no such noun. It can often be be translated as "no", for example:
-
-- *Wir haben keine Bananen.* – "We have no bananas."
 
 
 ## Further reading

@@ -19,6 +19,40 @@ describe('htmlToMarkdown', () => {
     expect(md).toContain('| Nom | der |');
   });
 
+  it('puts a colspan cell in the column it starts at, not the next one', () => {
+    // Regression: the Wikibooks conjugation tables are shaped for their
+    // third-person row and span the three singular columns everywhere else,
+    // so reading cells in document order filed "wir wissen" under Feminine.
+    const table =
+      '<table>' +
+      '<tr><th>Person</th><th>Masculine</th><th>Feminine</th><th>Neuter</th><th>Plural</th></tr>' +
+      '<tr><td>First</td><td colspan="3">ich weiß</td><td>wir wissen</td></tr>' +
+      '<tr><td>Third</td><td>er weiß</td><td>sie weiß</td><td>es weiß</td><td>sie wissen</td></tr>' +
+      '</table>';
+    const md = htmlToMarkdown(wrap(table));
+    expect(md).toContain('| First | ich weiß |  |  | wir wissen |');
+    expect(md).toContain('| Third | er weiß | sie weiß | es weiß | sie wissen |');
+  });
+
+  it('keeps a rowspan cell out of the rows below it', () => {
+    const table =
+      '<table>' +
+      '<tr><th>Case</th><th>Singular</th><th>Plural</th></tr>' +
+      '<tr><td rowspan="2">Nom</td><td>der</td><td>die</td></tr>' +
+      '<tr><td>den</td><td>die</td></tr>' +
+      '</table>';
+    const md = htmlToMarkdown(wrap(table));
+    expect(md).toContain('| Nom | der | die |');
+    expect(md).toContain('|  | den | die |');
+  });
+
+  it('keeps the caption, which names the verb the forms belong to', () => {
+    const table =
+      '<table><caption><b>Conjugating <i>wissen</i></b></caption>' +
+      '<tr><th>Person</th></tr><tr><td>ich weiß</td></tr></table>';
+    expect(htmlToMarkdown(wrap(table))).toContain('**Conjugating *wissen***');
+  });
+
   it('drops the chapter navigation Wikibooks puts on every page', () => {
     // Regression: this rendered as a table of contents at the top of unit 1.
     const nav =

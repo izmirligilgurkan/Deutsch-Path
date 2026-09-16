@@ -11,7 +11,7 @@ sourceRevision: 3822461
 license: CC-BY-SA-4.0
 licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/"
 modified: Excerpted and converted to Markdown; headings shifted. Text not rewritten.
-retrieved: 2026-09-15
+retrieved: 2026-09-16
 ---
 
 # Inversion
@@ -19,6 +19,8 @@ retrieved: 2026-09-15
 ### Sentence Structure in Main clauses
 
 Here is the ultimate syntax guide for a main clause. German allows a considerable amount of syntactical freedom as parts of speech are indicated through case, rather than syntax. Nonetheless, there are conventions to follow, especially ones that reduce the ambiguity of pronouns.
+
+**Word-Order in the Main Clause**
 
 | **First Position** | Anything | Used for emphasis. Sometimes people will even put a past participle or some other verb in the first position. You shouldn't do that until you know what you are doing. The first position is often used for the subject (Nominative), however. |
 | --- | --- | --- |
@@ -74,6 +76,8 @@ In general, you have to learn how to talk about grammar to be able to study Germ
 #### Clauses with one verb part - Sätze mit nur einem Verbteil
 
 In a main clause (Hauptsatz), the conjugated verb is in *second position*.
+
+**Clauses with one verb part**
 
 |  | First Position (I) | (II) | Mittelfeld | Punctuation |
 | --- | --- | --- | --- | --- |

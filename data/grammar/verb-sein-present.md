@@ -11,7 +11,7 @@ sourceRevision: 4610927
 license: CC-BY-SA-4.0
 licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/"
 modified: Excerpted and converted to Markdown; headings shifted. Text not rewritten.
-retrieved: 2026-09-15
+retrieved: 2026-09-16
 ---
 
 # sein in the present tense
@@ -28,10 +28,12 @@ It means "to do" in the sense of to perform or carry out an action. As such it o
 
 This is the only verb in German that ends with *-un*, so there is a good reason to call it irregular in the infinitive.
 
+**Conjugating *tun*, present tense**
+
 | Person | Masculine | Feminine | Neuter | Plural |
 | --- | --- | --- | --- | --- |
-| **First** | ich tue "I do" | wir tun "we do" |  |  |
-| **Second** (informal) | du tust "you do" | ihr tut "you do" |  |  |
+| **First** | ich tue "I do" |  |  | wir tun "we do" |
+| **Second** (informal) | du tust "you do" |  |  | ihr tut "you do" |
 | **Second** (formal) | Sie tun "you do" |  |  |  |
 | **Third** | er tut "he does" | sie tut "she does" | es tut "it does" | sie tun "they do" |
 
@@ -53,10 +55,12 @@ for "You're working."
 
 The verb for "to have" is often irregular in European languages, and German is no exception. It's not as irregular as one might fear though, at least in the present tense, since it only drops the *b* in certain cases.
 
+**Conjugating *haben*, present tense**
+
 | Person | Masculine | Feminine | Neuter | Plural |
 | --- | --- | --- | --- | --- |
-| **First** | ich habe "I have" | wir haben "we have" |  |  |
-| **Second** (informal) | du hast "you have" | ihr habt "you have" |  |  |
+| **First** | ich habe "I have" |  |  | wir haben "we have" |
+| **Second** (informal) | du hast "you have" |  |  | ihr habt "you have" |
 | **Second** (formal) | Sie haben "you have" |  |  |  |
 | **Third** | er hat "he has" | sie hat "she has" | es hat "it has" | sie haben "they have" |
 
@@ -75,10 +79,12 @@ There are only seven of these verbs: *dürfen*, *können*, *mögen*, *müssen*, 
 
 This verb means "to know", but only in the sense of knowing a fact, or of being aware of something. You would use *kennen* to to mean "to know" in the sense of being acquainted with a person, or being familiar with something.
 
+**Conjugating *wissen*, present tense**
+
 | Person | Masculine | Feminine | Neuter | Plural |
 | --- | --- | --- | --- | --- |
-| **First** | ich weiß "I know" | wir wissen "we know" |  |  |
-| **Second** (informal) | du weißt "you know" | ihr wisst "you know" |  |  |
+| **First** | ich weiß "I know" |  |  | wir wissen "we know" |
+| **Second** (informal) | du weißt "you know" |  |  | ihr wisst "you know" |
 | **Second** (formal) | Sie wissen "you know" |  |  |  |
 | **Third** | er weiß "he knows" | sie weiß "she knows" | es weiß "it knows" | sie wissen "they know" |
 
@@ -93,10 +99,12 @@ For example:
 
 This means "to like", though be aware there are many ways to express this sentiment depending on what you like and other circumstances.
 
+**Conjugating *mögen*, present tense**
+
 | Person | Masculine | Feminine | Neuter | Plural |
 | --- | --- | --- | --- | --- |
-| **First** | ich mag "I like" | wir mögen "we like" |  |  |
-| **Second** (informal) | du magst "you like" | ihr mögt "you like" |  |  |
+| **First** | ich mag "I like" |  |  | wir mögen "we like" |
+| **Second** (informal) | du magst "you like" |  |  | ihr mögt "you like" |
 | **Second** (formal) | Sie mögen "you like" |  |  |  |
 | **Third** | er mag "he likes" | sie mag "she likes" | es mag "it likes" | sie mögen "they like" |
 
@@ -106,8 +114,6 @@ For example:
 - *Magst du Schokolade?* – "Do you like chocolate?"
 
 ##### wollen
-
-This means "to want". It's a cognate to the English future tense forming word "will", but it's a false friend; the meanings aren't really the same any more. "To want" was a common meaning of "to will" in English, but it's rare in modern English, surviving mostly in the nouns "will" and "goodwill, and in "willing", "willingly", and the phrase "do what you will".
 
 
 ## Further reading

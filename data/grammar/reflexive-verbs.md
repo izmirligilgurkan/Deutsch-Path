@@ -11,7 +11,7 @@ sourceRevision: 4223872
 license: CC-BY-SA-4.0
 licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/"
 modified: Excerpted and converted to Markdown; headings shifted. Text not rewritten.
-retrieved: 2026-09-15
+retrieved: 2026-09-16
 ---
 
 # Reflexive verbs
@@ -33,17 +33,21 @@ German uses its reflexive pronouns in the same way, but just as impersonal verbs
 
 The German reflexive pronouns only have two cases you have to worry about, the accusative and dative. They are summarized in the following tables:
 
-| Person | Masculine | Feminine | Neuter | Plural |
-| --- | --- | --- | --- | --- |
-| **First** | mich | uns |  |  |
-| **Second** (familiar) | dich | euch |  |  |
-| **Second** (polite) | **sich** |  |  |  |
-| **Third** | **sich** |  |  |  |
+**Reflexiv Pronouns (accustaive)**
 
 | Person | Masculine | Feminine | Neuter | Plural |
 | --- | --- | --- | --- | --- |
-| **First** | mir | uns |  |  |
-| **Second** (familiar) | dir | euch |  |  |
+| **First** | mich |  |  | uns |
+| **Second** (familiar) | dich |  |  | euch |
+| **Second** (polite) | **sich** |  |  |  |
+| **Third** | **sich** |  |  |  |
+
+**Reflexiv Pronouns (dative)**
+
+| Person | Masculine | Feminine | Neuter | Plural |
+| --- | --- | --- | --- | --- |
+| **First** | mir |  |  | uns |
+| **Second** (familiar) | dir |  |  | euch |
 | **Second** (polite) | **sich** |  |  |  |
 | **Third** | **sich** |  |  |  |
 

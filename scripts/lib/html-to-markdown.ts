@@ -92,31 +92,75 @@ function isNavigation(el: HTMLElement): boolean {
   return links.length >= 5 || !/[.!?:]/.test(el.text);
 }
 
+function span(cell: HTMLElement, attr: 'colspan' | 'rowspan'): number {
+  const n = Number.parseInt(cell.getAttribute(attr) ?? '1', 10);
+  // A span wider than any real table is a malformed attribute, not a hint.
+  return Number.isFinite(n) && n >= 1 && n <= 32 ? n : 1;
+}
+
+/**
+ * Lay the cells out on the grid the source describes, honouring colspan and
+ * rowspan.
+ *
+ * The conjugation tables are shaped for their third-person row — *Person,
+ * Masculine, Feminine, Neuter, Plural* — and every other row spans the three
+ * singular columns with one cell:
+ *
+ *     | colspan="3" | ich weiß || wir wissen
+ *
+ * Reading cells in document order put *wir wissen* in the Feminine column.
+ * A spanned cell keeps its text in the first column it covers and leaves the
+ * rest of the span empty, which is as close as Markdown gets to a merged cell.
+ */
+function layOutGrid(rows: HTMLElement[]): string[][] {
+  const grid: (string | undefined)[][] = [];
+  const at = (r: number): (string | undefined)[] => (grid[r] ??= []);
+
+  rows.forEach((tr, r) => {
+    at(r);
+    let c = 0;
+    for (const cell of tr.querySelectorAll(':scope > th, :scope > td')) {
+      // Skip the columns a rowspan from an earlier row already occupies.
+      while (at(r)[c] !== undefined) c += 1;
+      const cols = span(cell, 'colspan');
+      const text = cellText(cell);
+      for (let dr = 0; dr < span(cell, 'rowspan'); dr += 1) {
+        for (let dc = 0; dc < cols; dc += 1) {
+          at(r + dr)[c + dc] = dr === 0 && dc === 0 ? text : '';
+        }
+      }
+      c += cols;
+    }
+  });
+
+  const width = Math.max(0, ...grid.map((row) => row.length));
+  return grid.map((row) => {
+    const out: string[] = [];
+    for (let c = 0; c < width; c += 1) out.push(row[c] ?? '');
+    return out;
+  });
+}
+
 function tableToMarkdown(table: HTMLElement): string {
   if (isNavigation(table)) return '';
   const rows = table.querySelectorAll('tr');
   if (rows.length === 0) return '';
 
-  const grid = rows.map((tr) =>
-    tr.querySelectorAll('th, td').map((c) => cellText(c)),
-  );
-  const width = Math.max(...grid.map((r) => r.length));
-  if (width === 0) return '';
+  const grid = layOutGrid(rows);
+  const [header, ...rest] = grid;
+  if (!header || header.length === 0) return '';
 
-  const pad = (r: string[]) => {
-    const out = [...r];
-    while (out.length < width) out.push('');
-    return out;
-  };
-
-  const [first, ...rest] = grid;
-  const header = pad(first ?? []);
   const lines = [
     `| ${header.join(' | ')} |`,
     `| ${header.map(() => '---').join(' | ')} |`,
-    ...rest.map((r) => `| ${pad(r).join(' | ')} |`),
+    ...rest.map((r) => `| ${r.join(' | ')} |`),
   ];
-  return lines.join('\n');
+
+  // The caption names what the table conjugates or declines; without it a
+  // reader arriving mid-page cannot tell which verb the forms belong to.
+  const caption = table.querySelector('caption');
+  const title = caption ? cellText(caption) : '';
+  return title ? `${title}\n\n${lines.join('\n')}` : lines.join('\n');
 }
 
 function listToMarkdown(list: HTMLElement, ordered: boolean, depth: number): string {
@@ -198,6 +242,9 @@ export interface ExtractOptions {
   maxChars?: number;
 }
 
+/** A paradigm table is a few hundred characters; a reference list is not. */
+const MAX_TRAILING_TABLE = 2000;
+
 export function htmlToMarkdown(html: string, options: ExtractOptions = {}): string {
   const root = parse(html);
   for (const selector of DROP_SELECTORS) {
@@ -239,7 +286,18 @@ export function htmlToMarkdown(html: string, options: ExtractOptions = {}): stri
   for (const block of selected) {
     const md = blockToMarkdown(block);
     if (!md) continue;
-    if (options.maxChars && chars + md.length > options.maxChars && out.length > 0) break;
+    if (options.maxChars && chars + md.length > options.maxChars && out.length > 0) {
+      // The conjugation and declension tables are what a learner comes to a
+      // grammar page for; the prose around them is the part that can be cut.
+      // Stopping on a table kept the padding and dropped the content, so one
+      // table is allowed over the budget and the excerpt ends with it —
+      // unless it is a reference list rather than a paradigm. Wikibooks ends
+      // some pages with the whole strong-verb table, which is 17 kB and not
+      // an explanation of anything.
+      if (block.tagName?.toLowerCase() !== 'table' || md.length > MAX_TRAILING_TABLE) break;
+      out.push(md);
+      break;
+    }
     out.push(md);
     chars += md.length;
   }

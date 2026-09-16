@@ -11,7 +11,7 @@ sourceRevision: 4077737
 license: CC-BY-SA-4.0
 licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/"
 modified: Excerpted and converted to Markdown; headings shifted. Text not rewritten.
-retrieved: 2026-09-15
+retrieved: 2026-09-16
 ---
 
 # Verbs with the dative
@@ -32,10 +32,12 @@ In English the direct object is distinguished from the indirect object by word o
 
 The dative case for personal pronouns is summarized in the following table.
 
+**Personal Pronouns (Dative)**
+
 | Person | Masculine | Feminine | Neuter | Plural |
 | --- | --- | --- | --- | --- |
-| **First** | mir | uns |  |  |
-| **Second** (informal) | dir | euch |  |  |
+| **First** | mir |  |  | uns |
+| **Second** (informal) | dir |  |  | euch |
 | **Second** (formal) | Ihnen |  |  |  |
 | **Third** | ihm | ihr | ihm | ihnen |
 

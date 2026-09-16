@@ -11,7 +11,7 @@ sourceRevision: 4088745
 license: CC-BY-SA-4.0
 licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/"
 modified: Excerpted and converted to Markdown; headings shifted. Text not rewritten.
-retrieved: 2026-09-15
+retrieved: 2026-09-16
 ---
 
 # Präteritum of sein, haben and modals
@@ -37,6 +37,8 @@ But there are certain verbs where the simple past is preferred even in spoken la
 ##### Weak verbs
 
 As with English, the German simple past is usually formed by changing the ending. But since German still likes to have different endings for different person and number combinations, the simple past is usually formed by inserting a *-t(e)-* rather than adding something to the end. Verbs that follow this pattern are called weak verbs to distinguish them from strong verbs which are covered below. The full table is:
+
+**Verb endings (Simple Past, Weak Verbs)**
 
 | Person | Singular | Plural |
 | --- | --- | --- |

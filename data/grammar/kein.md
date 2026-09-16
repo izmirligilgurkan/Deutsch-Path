@@ -9,7 +9,7 @@ sourceUrl: "https://en.wikibooks.org/wiki/German/Grammar"
 license: CC-BY-SA-4.0
 licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/"
 modified: No source text included.
-retrieved: 2026-09-15
+retrieved: 2026-09-16
 ---
 
 # kein

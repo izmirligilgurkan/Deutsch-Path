@@ -11,10 +11,12 @@ sourceRevision: 4042834
 license: CC-BY-SA-4.0
 licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/"
 modified: Excerpted and converted to Markdown; headings shifted. Text not rewritten.
-retrieved: 2026-09-15
+retrieved: 2026-09-16
 ---
 
 # Indefinite pronouns
+
+**German Pronouns Declined**
 
 |  | Nominative | Accusative | Dative | Genitive | Possessive Pronoun |
 | --- | --- | --- | --- | --- | --- |
@@ -87,6 +89,31 @@ Despite the difficulty many people have in learning German declensions, case end
 As discussed above, possessive pronouns replace the genitive case for pronouns. In this table, they will be placed where the genitive case is, so that their similarities to other parts of speech that actually are in the genitive case can become clear.
 
 German is very rigorous in its use of gender, and will use the pronoun corresponding to the gender of the referential noun, regardless of whether the noun being referenced is a person (unlike English, which uses "it" for everything not a person or other entities (animals, ships) in certain contexts). *Der Liberalismus* will be referred to as "er", or "he", whereas "das Mädchen" would be "es", or "it". Many English speakers have trouble with this, especially in spoken language. Mastery is nonetheless possible with a proper understanding of German declension, use of a few rules of thumb (for example, nouns ending in "-chen" are usually neuter), and a considerable amount of practice.
+
+**Side-by-side Declension of Definite Articles, der-word Endings, 3rd-Person Pronouns (and possessives), Strong Adjective Endings, and Interrogative Pronouns, to illustrate their similarities**
+
+| Gender and Case | Definite Article | der-word Endings | Pronoun (possessive) | Strong Adjective Endings | Interrogative Pronouns, sometimes also used as relative pronouns |
+| --- | --- | --- | --- | --- | --- |
+| **Masculine** |  |  |  |  |  |
+| Nominative | de**r** | -e**r** | e**r** | -e**r** | we**r** (who?) |
+| Accusative | de**n** | -e**n** | ih**n** | -e**n** | we**n** (whom?) |
+| Dative | de**m** | -e**m** | ih**m** | -e**m** | we**m** (to/for whom?) |
+| Genitive | de**s** + s | -e**s** | (**s**ein-) (corresponding "s") | -en (M,N strong adjective endings in genitive case do not fit pattern) | (we**ssen**) (whose? - form similar to masculine, genitive relative pronoun). N.B.(1) |
+| **Neuter** |  |  |  |  |  |
+| Nominative | da**s** | -e**s** | e**s** | -e**s** | wa**s** (what?) |
+| Accusative | da**s** | -e**s** | e**s** | -e**s** | wa**s** (what?) |
+| Dative | de**m** | -e**m** | ih**m** | -e**m** |  |
+| Genitive | de**s** + s | -e**s** | (**s**ein-) (corresponding "s") | -en (M,N strong adjective endings in genitive case do not fit pattern) |  |
+| **Feminine** |  |  |  |  |  |
+| Nominative | di**e** | -**e** | si**e** | -**e** |  |
+| Accusative | di**e** | -**e** | si**e** | -**e** |  |
+| Dative | de**r** | -e**r** | ih**r** | -e**r** |  |
+| Genitive | de**r** | -e**r** | (ih**r**-) | -e**r** |  |
+| **Plural** |  |  |  |  |  |
+| Nominative | di**e** | -**e** | si**e** | -**e** |  |
+| Accusative | di**e** | -**e** | si**e** | -**e** |  |
+| Dative | de**n + n** | -e**n** | ih**nen** N.B.(2) | -**en** |  |
+| Genitive | de**r** | -e**r** | (ih**r**-) | -e**r** |  |
 
 
 ## Further reading

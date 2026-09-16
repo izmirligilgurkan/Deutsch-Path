@@ -11,12 +11,14 @@ sourceRevision: 3658991
 license: CC-BY-SA-4.0
 licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/"
 modified: Excerpted and converted to Markdown; headings shifted. Text not rewritten.
-retrieved: 2026-09-15
+retrieved: 2026-09-16
 ---
 
 # Prepositions of place
 
 German has dative, accusative, genitive and two-way prepositions and postpositions. Each preposition causes the adverbial expression on which it acts to take the case of the preposition. Two-way prepositions cause the adverbial expression to take the accusative case if the verb indicates an action or movement, and the dative case if the verb refers to something that is not changing location.
+
+**Several German prepositions**
 
 | Accusative | Dative | Genitive | two-way |
 | --- | --- | --- | --- |
@@ -63,6 +65,8 @@ Spoken:  Während dem Essen  wollen wir nicht gestört werden.
 ### Two way Prepositions (Wechselpräpositionen)
 
 The case with two way prepositions should be determined with questions like wo? (where?), wann? (when?), wohin? (where does it go to?) and wie? (how?).
+
+**Two-way prepositions**
 
 | Prepositions | Wo? Wann? | Wohin? | Wie? |
 | --- | --- | --- | --- |

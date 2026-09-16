@@ -11,7 +11,7 @@ sourceRevision: 4404552
 license: CC-BY-SA-4.0
 licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/"
 modified: Excerpted and converted to Markdown; headings shifted. Text not rewritten.
-retrieved: 2026-09-15
+retrieved: 2026-09-16
 ---
 
 # Mixed adjective declension
@@ -55,6 +55,8 @@ So German predicate adjectives aren't declined at all and appear as they do in a
 In order to make this idea work in practice, we'll need to distinguish between two types of determiner. Those that carry enough declension information to share with an adjective we'll call specific, and those that don't we'll call generic. Specific determiners include all *der* words, including definite articles, and those *ein* words which have an ending. This includes all indefinite articles except *ein*, and the corresponding *ein* words. Remember that contractions with prepositions, *am*, *ans*, *zur*, *zum*, etc., all include a definite article, and so count as specific as well. But *ein*, and the corresponding words *mein*, *dein*, *kein*, etc. are generic because they don't actually have an inflection ending.
 
 Adjectives preceded by a generic determiner or no determiner at all are fully declined since they carry the "declension load". The endings for fully declined adjectives are:
+
+**Full declension of German adjectives**
 
 | Case | Masculine | Feminine | Neuter | Plural |
 | --- | --- | --- | --- | --- |

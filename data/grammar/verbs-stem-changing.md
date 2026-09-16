@@ -11,7 +11,7 @@ sourceRevision: 4325914
 license: CC-BY-SA-4.0
 licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/"
 modified: Excerpted and converted to Markdown; headings shifted. Text not rewritten.
-retrieved: 2026-09-15
+retrieved: 2026-09-16
 ---
 
 # Stem-changing verbs
@@ -32,14 +32,18 @@ Strong verbs are often classified into types according to the specifics of the a
 
 We haven't covered the past tense yet, so why talk about strong and weak now? The reason is that there is a subclass of strong verbs which also experience a vowel change in the present tense, and it's these verbs which we'll be covering in this section. An easy example is *schlafen* ("to sleep"). It's conjugated as follows, with the vowel changes marked in bold.
 
+**Sentences with *schlafen***
+
 | Person | Masculine | Feminine | Neuter | Plural |
 | --- | --- | --- | --- | --- |
-| **First** | Ich schlafe. "I sleep." | Wir schlafen. "We sleep." |  |  |
-| **Second** (informal) | Du **schläfst**. "You sleep." | Ihr schlaft. "You sleep." |  |  |
+| **First** | Ich schlafe. "I sleep." |  |  | Wir schlafen. "We sleep." |
+| **Second** (informal) | Du **schläfst**. "You sleep." |  |  | Ihr schlaft. "You sleep." |
 | **Second** (formal) | Sie schlafen. "You sleep." |  |  |  |
 | **Third** | Er **schläft**. "He sleeps." | Sie **schläft**. "She sleeps." | Es **schläft**. "It sleeps." | Sie schlafen. "They sleep." |
 
 The general pattern is:
+
+**Verb endings (Present, Indicative)**
 
 | Person | Singular | Plural |
 | --- | --- | --- |
