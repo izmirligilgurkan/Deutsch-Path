@@ -1,9 +1,21 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 /**
  * Mobile smoke test (spec §6): a learner can start from nothing and answer a
  * question, which is the path that must never break.
  */
+/**
+ * A drill presents each of the unit's new words before it asks anything, so a
+ * test that wants a question has to walk past the presentation cards first.
+ */
+async function pastPresentations(page: Page): Promise<void> {
+  const gotIt = page.getByRole('button', { name: 'Got it' });
+  for (let i = 0; i < 40 && (await gotIt.count()) > 0; i += 1) {
+    await gotIt.click();
+    await page.waitForTimeout(60);
+  }
+}
+
 test('a new learner can start the course and answer a drill', async ({ page }) => {
   await page.goto('./');
 
@@ -38,7 +50,9 @@ test('a new learner can start the course and answer a drill', async ({ page }) =
 
   // A drill item accepts an answer and moves on.
   await page.goto('./#/unit/1/drill');
-  await expect(page.locator('.prompt-text')).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator('.meet-word, .prompt-text').first()).toBeVisible({ timeout: 15_000 });
+  await pastPresentations(page);
+  await expect(page.locator('.prompt-text')).toBeVisible();
 
   const choices = page.locator('button.choice, .gender-row button');
   if (await choices.count() > 0) {
@@ -49,8 +63,9 @@ test('a new learner can start the course and answer a drill', async ({ page }) =
   }
   // Answering must produce a verdict and a way forward.
   await expect(page.locator('.verdict')).toBeVisible();
+  const before = await page.locator('.session-bar').innerText();
   await page.getByRole('button', { name: 'Continue' }).click();
-  await expect(page.locator('.session-bar')).toContainText('2/');
+  await expect(page.locator('.session-bar')).not.toHaveText(before);
 });
 
 test('a drill session hides the tab bar and collapses provenance', async ({ page }) => {
@@ -62,7 +77,7 @@ test('a drill session hides the tab bar and collapses provenance', async ({ page
   await expect(page.getByRole('navigation', { name: 'Primary' })).toBeVisible();
 
   await page.goto('./#/unit/1/drill');
-  await expect(page.locator('.prompt-text')).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator('.meet-word, .prompt-text').first()).toBeVisible({ timeout: 15_000 });
 
   // Inside one it is hidden: on a phone its height is worth more than the tabs.
   await expect(page.getByRole('navigation', { name: 'Primary' })).toBeHidden();
@@ -84,7 +99,8 @@ test('typing is not interrupted, and the umlaut keys insert', async ({ page }) =
   await page.getByRole('button', { name: /start from zero/i }).click();
   await page.waitForFunction(() => location.hash === '#/', null, { timeout: 25_000 });
   await page.goto('./#/unit/1/drill');
-  await expect(page.locator('.prompt-text')).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator('.meet-word, .prompt-text').first()).toBeVisible({ timeout: 15_000 });
+  await pastPresentations(page);
 
   // Find a typed item. Practice is a ladder, so recognition comes first and a
   // typed card is a little way in.
@@ -181,7 +197,8 @@ test('a sentence can be broken down word by word after answering', async ({ page
   await page.waitForFunction(() => location.hash === '#/', null, { timeout: 25_000 });
 
   await page.goto('./#/unit/1/drill');
-  await expect(page.locator('.prompt-text')).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator('.meet-word, .prompt-text').first()).toBeVisible({ timeout: 15_000 });
+  await pastPresentations(page);
 
   // Work through the session until a sentence item comes up; only those can be
   // broken down, and the order is seeded rather than fixed.
@@ -211,4 +228,22 @@ test('a sentence can be broken down word by word after answering', async ({ page
   await expect(page.locator('.breakdown-meaning').first()).not.toBeEmpty();
   // The form tables arrive after the meanings; at least one word is labelled.
   await expect(page.locator('.breakdown-role').first()).toBeVisible({ timeout: 15_000 });
+});
+
+test('a drill presents each new word before asking about it', async ({ page }) => {
+  await page.goto('./#/onboarding');
+  await page.getByRole('button', { name: /start from zero/i }).click();
+  await page.waitForFunction(() => location.hash === '#/', null, { timeout: 25_000 });
+
+  await page.goto('./#/unit/1/drill');
+  // Regression: a unit used to open with "write this in German" for a word the
+  // learner had never seen.
+  await expect(page.locator('.meet-word')).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator('.meet-meaning')).not.toBeEmpty();
+  // A presentation card asks nothing, so there is no way to answer it wrong.
+  expect(await page.locator('input[type=text]').count()).toBe(0);
+  expect(await page.locator('button.choice').count()).toBe(0);
+
+  await page.getByRole('button', { name: 'Got it' }).click();
+  await expect(page.locator('.session-bar')).toContainText('2/');
 });

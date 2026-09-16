@@ -11,6 +11,7 @@ import { mulberry32, seedFrom, shuffled } from './rng.ts';
  */
 
 const LABELS: Record<string, string> = {
+  meet: 'New word',
   'mc-de-en': 'What does this mean?',
   'type-en-de': 'Write it in German',
   gender: 'der, die or das?',
@@ -30,6 +31,17 @@ export function exerciseToQuestion(exercise: Exercise): Question | null {
   const label = LABELS[exercise.type] ?? 'Answer';
 
   switch (exercise.type) {
+    case 'meet':
+      // Nothing to answer: the prompt is the word, the "answer" is what it
+      // means, and the card shows both.
+      return {
+        cardType: 'meet',
+        label: 'New word',
+        prompt: exercise.prompt,
+        promptLang: 'de',
+        answers,
+      };
+
     case 'conjugation-table':
     case 'declension-table': {
       // The prompt is "headword — cell, cell, cell"; split it into boxes.

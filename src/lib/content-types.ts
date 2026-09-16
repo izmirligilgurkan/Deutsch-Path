@@ -99,6 +99,12 @@ export interface Sentence {
 }
 
 export type ExerciseType =
+  /**
+   * Not a question: the word, what it means, and one sentence using it, with
+   * nothing to answer. Built at runtime for a unit's drill, never committed to
+   * data/ — a presentation card in a test would be a free mark.
+   */
+  | 'meet'
   | 'mc-de-en'
   | 'mc-en-de'
   | 'type-de-en'

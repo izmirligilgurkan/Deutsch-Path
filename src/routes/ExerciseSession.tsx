@@ -77,11 +77,16 @@ export function ExerciseSession({ spec }: { spec: SessionSpec }) {
   }, [ready, spec.kind, spec.unit, spec.level, spec.title]);
 
   const exercise = items[index];
+  /** Presentation cards have no answer, so they are not part of the score. */
+  const scoredTotal = useMemo(() => items.filter((e) => e.type !== 'meet').length, [items]);
   const question = useMemo(() => (exercise ? exerciseToQuestion(exercise) : null), [exercise]);
 
   const onAnswered = useCallback(
     (correct: boolean, given: string) => {
       if (!exercise) return;
+      // A presentation card is not a question; counting it as a right answer
+      // would let a drill be passed by pressing Got it.
+      if (exercise.type === 'meet') return;
       if (correct) setCorrectCount((c) => c + 1);
       else setWrong((w) => [...w, { exercise, given }]);
 
@@ -106,7 +111,7 @@ export function ExerciseSession({ spec }: { spec: SessionSpec }) {
   );
 
   const finish = useCallback(async () => {
-    const total = items.length;
+    const total = scoredTotal;
     const score = total > 0 ? correctCount / total : 0;
     const db = await getDB();
 
@@ -142,7 +147,7 @@ export function ExerciseSession({ spec }: { spec: SessionSpec }) {
 
     await touchStreak(settings);
     setPhase('done');
-  }, [items.length, correctCount, mode, spec.kind, spec.unit, spec.level, wrong, settings, sessionStart]);
+  }, [scoredTotal, correctCount, mode, spec.kind, spec.unit, spec.level, wrong, settings, sessionStart]);
 
   const onContinue = useCallback(() => {
     setStartedAt(Date.now());
@@ -166,7 +171,7 @@ export function ExerciseSession({ spec }: { spec: SessionSpec }) {
   }
 
   if (phase === 'done') {
-    const total = items.length;
+    const total = scoredTotal;
     const pct = total > 0 ? Math.round((correctCount / total) * 100) : 0;
     const passed = total > 0 && correctCount / total >= PASS_MARK;
 
@@ -228,6 +233,7 @@ export function ExerciseSession({ spec }: { spec: SessionSpec }) {
   }
 
   const attribution = attributionFor(exercise, sentences, lemmas);
+  const lemma = exercise.refs.lemmaIds?.[0] ? lemmas.get(exercise.refs.lemmaIds[0]) : undefined;
   // Sentence exercises can be broken down word by word once answered.
   const sentence =
     exercise.refs.sentenceId === undefined ? undefined : sentences.get(exercise.refs.sentenceId);
@@ -253,6 +259,7 @@ export function ExerciseSession({ spec }: { spec: SessionSpec }) {
           mode: mode === 'test' ? 'test' : 'practice',
         }}
         {...(sentence ? { sentence } : {})}
+        {...(lemma ? { lemma } : {})}
         onAnswered={onAnswered}
         onContinue={onContinue}
       />

@@ -137,17 +137,19 @@ export function unitsUpToLevel(level: Level): number[] {
  * thing a learner saw after reading the explanation could be "write this in
  * German" for a word they had never met. That is a test, not teaching. The
  * order now follows the fading sequence the worked-example research describes:
- * recognise the word, then complete a sentence that supports you, then produce
- * it unaided. Within a stage the types stay interleaved, which is what the
+ * meet the word, recognise it, then complete a sentence that supports you,
+ * then produce it unaided. Within a stage the types stay interleaved, which is what the
  * spacing work supports; the blocking is only between stages.
  *
  * See TEACHING.md for the method and its sources.
  */
-export const LADDER_STAGES = ['recognise', 'complete', 'produce'] as const;
+export const LADDER_STAGES = ['meet', 'recognise', 'complete', 'produce'] as const;
 export type LadderStage = (typeof LADDER_STAGES)[number];
 
 const STAGE_OF: Record<ExerciseType, LadderStage> = {
-  // Pick the meaning out of four: the lowest-stakes way to meet a word.
+  // Nothing to answer: the word, its meaning and a sentence using it.
+  meet: 'meet',
+  // Pick the meaning out of four: the lowest-stakes way to be asked about it.
   'mc-de-en': 'recognise',
   'mc-en-de': 'recognise',
   gender: 'recognise',

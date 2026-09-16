@@ -41,11 +41,18 @@ reverses as expertise grows — the *expertise-reversal effect* (Kalyuga et al.,
 
 | Stage | What it asks | Card types |
 |---|---|---|
+| **Meet** | Nothing. The word, its meaning and a sentence using it | `meet` |
 | **Recognise** | Pick the meaning or the form out of four | `mc-de-en`, `gender`, `article-case`, `choose-form` |
 | **Complete** | The sentence is in front of you; supply the missing part | `cloze`, `word-order`, `error-spotting` |
 | **Produce** | Nothing to lean on; write the German | `type-en-de`, `plural`, `conjugation-table`, `principal-parts` |
 
-A word is therefore always recognised before it has to be produced.
+A word is therefore seen before it is asked about, and recognised before it
+has to be produced. The presentation card shows the article with the noun, the
+principal parts with the verb, and one Tatoeba sentence with the word marked in
+it — all of it read off the data, none of it written. It asks nothing, and it
+counts for nothing: it is excluded from the session score, so a drill cannot be
+passed by pressing *Got it*. These cards exist only inside a drill; a card with
+no question in a unit test would be a free mark.
 
 The unit is not three long blocks, though. Every card about one word lands in
 the same cycle of about five words, so a unit reads as several short passes —
@@ -122,10 +129,6 @@ word in a sentence is how reading works. The breakdown explains that word.
 
 Listed so the gaps are visible rather than implied.
 
-- **A "meet the word" step.** The ladder starts at recognition, which is still
-  a test. The worked-example research argues the first encounter should be a
-  presentation — the word, its article, its meaning, one sentence — with
-  nothing to answer. This does not exist yet.
 - **No "why" in the breakdown.** It names the case a word is in but not what
   put it there. Preposition case government is a closed, sourceable set, so
   "dative, because *mit* takes the dative" is derivable — it is not derived yet.

@@ -2,7 +2,10 @@ import { useMemo } from 'preact/hooks';
 import { ExerciseSession, type SessionSpec } from './ExerciseSession.tsx';
 import { Screen } from '~/components/Screen.tsx';
 import { getDB } from '~/db/index.ts';
-import { loadExercises } from '~/lib/content.ts';
+import { loadExercises, loadSentences } from '~/lib/content.ts';
+import { loadCourseLexicon } from '~/db/level-list.ts';
+import { meetCards } from '~/lib/meet-cards.ts';
+import { assignLemmasToUnits } from '~/srs/session.ts';
 import { UNITS } from '~/lib/syllabus.ts';
 import {
   buildDailyTest,
@@ -29,12 +32,22 @@ export function UnitDrill({ unit }: { unit: number }) {
             kind: 'drill',
             title: plan.title,
             closeHref: `#/unit/${unit}`,
-            load: async () => ({
-              // A drill runs the whole unit as a ladder: recognise, then
-              // complete, then produce. The unit test is the mixed one.
-              items: ladderOrder(await loadExercises(unit), `drill:${unit}`),
-              level: plan.level,
-            }),
+            load: async () => {
+              const [exercises, lexicon, sentences] = await Promise.all([
+                loadExercises(unit),
+                loadCourseLexicon(),
+                loadSentences(plan.level),
+              ]);
+              // Each of the unit's words is presented once before it is asked
+              // about. These cards exist only here: a card with no question in
+              // a unit test would be a free mark.
+              const unitLemmas = assignLemmasToUnits(lexicon).get(unit) ?? [];
+              const items = ladderOrder(
+                [...meetCards(unit, unitLemmas, sentences), ...exercises],
+                `drill:${unit}`,
+              );
+              return { items, level: plan.level };
+            },
           }
         : null,
     [unit],

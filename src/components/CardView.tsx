@@ -5,7 +5,8 @@ import { splitGloss } from '~/lib/gloss.ts';
 import { UmlautRow } from './UmlautRow.tsx';
 import { Verdict } from './AnswerFeedback.tsx';
 import { SentenceBreakdown } from './SentenceBreakdown.tsx';
-import type { Sentence } from '~/lib/content-types.ts';
+import { MeetWord } from './MeetWord.tsx';
+import type { Lemma, Sentence } from '~/lib/content-types.ts';
 
 /**
  * Renders one question and collects the answer.
@@ -29,6 +30,7 @@ export function CardView({
   question,
   options,
   sentence,
+  lemma,
   onAnswered,
   onContinue,
 }: {
@@ -36,6 +38,8 @@ export function CardView({
   options: CheckOptions;
   /** The sentence this question came from, if it came from one. */
   sentence?: Sentence;
+  /** The word a presentation card is introducing. */
+  lemma?: Lemma;
   /** `correct` drives scheduling; `given` is kept for the mistake log. */
   onAnswered: (correct: boolean, given: string) => void;
   onContinue: () => void;
@@ -97,6 +101,25 @@ export function CardView({
     setGiven(choice);
     setResult(r);
     onAnswered(r.correct, choice);
+  }
+
+  // A presentation card asks nothing, so none of the answering machinery below
+  // applies: it counts as seen the moment the learner moves on.
+  if (question.cardType === 'meet') {
+    return (
+      <div>
+        <MeetWord
+          word={question.prompt}
+          meaning={question.answers[0] ?? ''}
+          {...(lemma ? { lemma } : {})}
+          {...(sentence ? { example: sentence } : {})}
+          onContinue={() => {
+            onAnswered(true, '');
+            onContinue();
+          }}
+        />
+      </div>
+    );
   }
 
   return (

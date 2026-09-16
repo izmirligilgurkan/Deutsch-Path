@@ -11,6 +11,7 @@ import type { Exercise, Form, Lemma, Sentence } from '../../src/lib/content-type
 import { formKey, tokenize } from '../../src/lib/tokenize.ts';
 import { mulberry32, pick, seedFrom, shuffled } from './random.ts';
 import { shortGloss } from '../../src/lib/gloss.ts';
+import { withArticle } from '../../src/lib/word-form.ts';
 
 export interface GenContext {
   unit: number;
@@ -63,12 +64,7 @@ function findForm(lemma: Lemma, ...tags: string[]): string | undefined {
 }
 
 /** `die Brücke` — the article is required when producing a noun (spec §4.3). */
-export function withArticle(lemma: Lemma): string {
-  if (lemma.pos !== 'noun') return lemma.lemma;
-  if (lemma.pluralOnly) return `die ${lemma.lemma}`;
-  const article = lemma.gender === 'm' ? 'der' : lemma.gender === 'f' ? 'die' : 'das';
-  return `${article} ${lemma.lemma}`;
-}
+export { withArticle } from '../../src/lib/word-form.ts';
 
 // ── Vocabulary ─────────────────────────────────────────────────────────────
 

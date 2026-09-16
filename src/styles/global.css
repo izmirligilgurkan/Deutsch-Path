@@ -535,3 +535,18 @@ th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--bord
   font-size: 0.78rem;
   color: var(--text-dim);
 }
+
+/* ── Meeting a word ─────────────────────────────────────────────────────── */
+
+/*
+ * The first time a word appears it is shown, not asked. Bigger than a question
+ * prompt and centred, so it reads as a thing to take in rather than a thing to
+ * answer.
+ */
+.meet { text-align: center; padding: 20px 16px; }
+.meet-word { font-size: 1.9rem; font-weight: 700; line-height: 1.2; margin-top: 6px; }
+.meet-meaning { font-size: 1.05rem; color: var(--text-dim); margin-top: 8px; }
+.meet-parts { font-size: 0.85rem; color: var(--text-dim); margin-top: 10px; }
+.meet-example { padding: 14px 16px; }
+.meet-example-de { margin: 0; font-size: 1rem; }
+.meet-example-en { margin: 6px 0 0; font-size: 0.9rem; color: var(--text-dim); }
