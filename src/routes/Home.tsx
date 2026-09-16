@@ -3,7 +3,7 @@ import { Screen } from '~/components/Screen.tsx';
 import { InstallHint } from '~/components/InstallHint.tsx';
 import { useSettings } from '~/db/settings-store.ts';
 import { getDB } from '~/db/index.ts';
-import { loadLexicon } from '~/lib/content.ts';
+import { loadCourseLexicon } from '~/db/level-list.ts';
 import { UNITS } from '~/lib/syllabus.ts';
 import { buildSession, ensureCardsForUnit, unlockedUnits } from '~/srs/session.ts';
 import { retentionRate } from '~/srs/scheduler.ts';
@@ -29,7 +29,7 @@ export function Home() {
 
     void (async () => {
       try {
-        const lexicon = await loadLexicon();
+        const lexicon = await loadCourseLexicon();
         const unlocked = await unlockedUnits(settings);
         for (const unit of unlocked) await ensureCardsForUnit(unit);
 

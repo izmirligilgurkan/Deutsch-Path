@@ -3,7 +3,7 @@ import { Screen } from '~/components/Screen.tsx';
 import { SourceNote } from '~/components/SourceNote.tsx';
 import { CardView } from '~/components/CardView.tsx';
 import { useSettings } from '~/db/settings-store.ts';
-import { loadLexicon } from '~/lib/content.ts';
+import { loadCourseLexicon } from '~/db/level-list.ts';
 import type { Lemma } from '~/lib/content-types.ts';
 import type { Card } from '~/db/types.ts';
 import { buildQuestion, type Question } from '~/srs/cards.ts';
@@ -37,7 +37,7 @@ export function Review({ leechMode = false }: { leechMode?: boolean }) {
 
     void (async () => {
       try {
-        const all = await loadLexicon();
+        const all = await loadCourseLexicon();
         if (cancelled) return;
         setLexicon(new Map(all.map((l) => [l.id, l])));
         setPool(all);

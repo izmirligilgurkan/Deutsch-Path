@@ -4,7 +4,8 @@ import { SourceNote } from '~/components/SourceNote.tsx';
 import { CardView } from '~/components/CardView.tsx';
 import { useSettings } from '~/db/settings-store.ts';
 import { getDB } from '~/db/index.ts';
-import { loadExercises, loadLexicon, loadSentences } from '~/lib/content.ts';
+import { loadExercises, loadSentences } from '~/lib/content.ts';
+import { loadCourseLexicon } from '~/db/level-list.ts';
 import { attributionFor, exerciseToQuestion } from '~/lib/exercise-question.ts';
 import { UNITS } from '~/lib/syllabus.ts';
 import { mulberry32, seedFrom, shuffled } from '~/lib/rng.ts';
@@ -54,7 +55,7 @@ export function ExerciseSession({ spec }: { spec: SessionSpec }) {
       try {
         const [{ items: chosen, level }, lexicon] = await Promise.all([
           spec.load(),
-          loadLexicon(),
+          loadCourseLexicon(),
         ]);
         // Sentences are only needed to attribute sentence-based items.
         const levelSentences = await loadSentences(level);

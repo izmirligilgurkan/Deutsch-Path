@@ -1,7 +1,7 @@
 import { getDB } from '~/db/index.ts';
 import type { Card, Mistake, PracticeMode, ReviewLog, Settings, UnitProgress } from '~/db/types.ts';
 import type { Lemma, Level } from '~/lib/content-types.ts';
-import { loadLexicon } from '~/lib/content.ts';
+import { loadCourseLexicon } from '~/db/level-list.ts';
 import { updateSettings } from '~/db/settings-store.ts';
 import { buildQueue, dayKey, leechQueue, newCard, reviewCard } from './scheduler.ts';
 import { cardTypesFor } from './cards.ts';
@@ -45,7 +45,7 @@ export function assignLemmasToUnits(lexicon: Lemma[]): Map<number, Lemma[]> {
  * or resets scheduling.
  */
 export async function ensureCardsForUnit(unit: number): Promise<number> {
-  const lexicon = await loadLexicon();
+  const lexicon = await loadCourseLexicon();
   const lemmas = assignLemmasToUnits(lexicon).get(unit) ?? [];
   const db = await getDB();
 

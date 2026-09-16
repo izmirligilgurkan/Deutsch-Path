@@ -1,6 +1,7 @@
 import { useState } from 'preact/hooks';
 import { Screen } from '~/components/Screen.tsx';
 import { getDB } from '~/db/index.ts';
+import { invalidateCourseLexicon } from '~/db/level-list.ts';
 import { updateSettings, useSettings } from '~/db/settings-store.ts';
 import type { Level } from '~/lib/content-types.ts';
 import type { LevelListEntry } from '~/db/types.ts';
@@ -50,7 +51,13 @@ export function ImportLevelList() {
       for (const entry of entries) await tx.objectStore('levelList').put(entry);
       await tx.done;
       await updateSettings({ levelListImportedAt: Date.now() });
-      setStatus({ kind: 'ok', text: `Imported ${entries.length} entries.` });
+      // Levels feed unit assignment and the words-known counts, so the cached
+      // lexicon has to be rebuilt before any screen reads it again.
+      invalidateCourseLexicon();
+      setStatus({
+        kind: 'ok',
+        text: `Imported ${entries.length} words. Your levels now come from the Goethe list.`,
+      });
     } catch (err) {
       setStatus({ kind: 'bad', text: `Import failed: ${String(err instanceof Error ? err.message : err)}` });
     }
@@ -60,7 +67,8 @@ export function ImportLevelList() {
     const db = await getDB();
     await db.clear('levelList');
     await updateSettings({ levelListImportedAt: null });
-    setStatus({ kind: 'ok', text: 'Level list cleared from this device.' });
+    invalidateCourseLexicon();
+    setStatus({ kind: 'ok', text: 'Level list cleared. Back to approximate levels.' });
   }
 
   return (
@@ -81,8 +89,13 @@ export function ImportLevelList() {
         <ol class="small" style="padding-left:18px">
           <li>Download the Wortlisten PDFs yourself from goethe.de.</li>
           <li>
-            Run <code class="mono">npm run data:goethe -- &lt;pdf…&gt;</code> on your own machine.
-            It writes <code class="mono">goethe-levels.json</code>, which is gitignored.
+            In a clone of the repo, run <code class="mono">npm install</code> once, then{' '}
+            <code class="mono">npm run data:goethe -- A1.pdf A2.pdf B1.pdf</code>. It writes{' '}
+            <code class="mono">goethe-levels.json</code>, which is gitignored.
+          </li>
+          <li>
+            Pass all three lists if you have them — the B1 Wortliste repeats the A1 and A2
+            vocabulary, so on its own everything comes out as B1.
           </li>
           <li>Load that file below. It is written to IndexedDB and never uploaded anywhere.</li>
         </ol>

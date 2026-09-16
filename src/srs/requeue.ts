@@ -2,7 +2,7 @@ import { getDB } from '~/db/index.ts';
 import type { Exercise } from '~/lib/content-types.ts';
 import { newCard } from './scheduler.ts';
 import { cardTypesFor } from './cards.ts';
-import { loadLexicon } from '~/lib/content.ts';
+import { loadCourseLexicon } from '~/db/level-list.ts';
 
 /**
  * Feeds failed test items back into the SRS queue (spec §4.5).
@@ -19,7 +19,7 @@ export async function requeueFailedItems(
   const lemmaIds = new Set(wrong.flatMap((e) => e.refs.lemmaIds ?? []));
   if (lemmaIds.size === 0) return 0;
 
-  const lexicon = await loadLexicon();
+  const lexicon = await loadCourseLexicon();
   const byId = new Map(lexicon.map((l) => [l.id, l]));
   const db = await getDB();
   const tx = db.transaction('cards', 'readwrite');

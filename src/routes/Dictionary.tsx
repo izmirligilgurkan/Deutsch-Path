@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'preact/hooks';
 import { Screen } from '~/components/Screen.tsx';
 import { getDB } from '~/db/index.ts';
-import { loadForms, loadLexicon } from '~/lib/content.ts';
+import { loadForms } from '~/lib/content.ts';
+import { loadCourseLexicon } from '~/db/level-list.ts';
 import { formKey } from '~/lib/tokenize.ts';
 import { withArticle } from '~/srs/cards.ts';
 import type { Form, Lemma } from '~/lib/content-types.ts';
@@ -20,7 +21,7 @@ export function Dictionary() {
 
   useEffect(() => {
     void (async () => {
-      const [all, db] = await Promise.all([loadLexicon(), getDB()]);
+      const [all, db] = await Promise.all([loadCourseLexicon(), getDB()]);
       setLexicon(all);
       setSeen(new Map((await db.getAll('seenLemmas')).map((s) => [s.lemmaId, s])));
       setLoading(false);

@@ -4,7 +4,8 @@ import { CardView } from '~/components/CardView.tsx';
 import { SourceNote } from '~/components/SourceNote.tsx';
 import { useSettings, updateSettings } from '~/db/settings-store.ts';
 import { getDB } from '~/db/index.ts';
-import { loadExercises, loadLexicon, loadSentences } from '~/lib/content.ts';
+import { loadExercises, loadSentences } from '~/lib/content.ts';
+import { loadCourseLexicon } from '~/db/level-list.ts';
 import { attributionFor, exerciseToQuestion } from '~/lib/exercise-question.ts';
 import {
   buildPlacementRound,
@@ -61,7 +62,7 @@ export function Placement() {
         const units = unitsForLevel(level);
         const [pools, lexicon, levelSentences] = await Promise.all([
           Promise.all(units.map((u) => loadExercises(u).catch(() => [] as Exercise[]))),
-          loadLexicon(),
+          loadCourseLexicon(),
           loadSentences(level),
         ]);
         if (cancelled) return;

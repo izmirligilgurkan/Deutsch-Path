@@ -149,13 +149,39 @@ belong to A1, A2 and B1 — and they are **copyrighted compilations**. So:
 
 1. You download the Wortlisten PDFs yourself from
    [goethe.de](https://www.goethe.de/de/spr/kup/prf/prf.html).
-2. You run the importer on your own machine:
+2. In a clone of this repo, install the dependencies **once** — the importer
+   runs through `tsx`, which lives in `node_modules`:
    ```bash
-   npm run data:goethe -- ~/Downloads/Goethe-Zertifikat_A1_Wortliste.pdf
+   npm install
    ```
-   It writes `goethe-levels.json`, which is gitignored.
-3. In the app, open **Settings → Import level list** and load that file. It
-   goes into IndexedDB on that device and is never uploaded anywhere.
+3. Run the importer on your own machine:
+   ```bash
+   npm run data:goethe -- A1.pdf A2.pdf B1.pdf
+   ```
+   Pass all three lists if you have them. The B1 Wortliste repeats the A1 and
+   A2 vocabulary, so importing it alone marks every word B1; with all three,
+   each word takes the lowest level it appears at.
+
+   It writes `goethe-levels.json`, which is gitignored. Useful flags:
+
+   | Flag | What it does |
+   |---|---|
+   | `--preview` | Report what it found, write nothing |
+   | `--level B1` | Set the level when the filename doesn't say |
+   | `--out <path>` | Write somewhere other than the repo root |
+   | `--text` | Dump the raw PDF lines, to debug a layout it misreads |
+
+4. In the app, open **Settings → Import level list** and load that file. It
+   goes into IndexedDB on that device and is never uploaded anywhere. Levels
+   across the app — unit vocabulary, the words-known counts, the dictionary —
+   switch from approximate to the imported ones immediately.
+
+The parser does not assume a fixed page layout, since the PDFs cannot be
+checked in as fixtures. It measures the document, scores each column by how
+often the word at that position is a lemma the course already knows, and picks
+the columns that actually look like a word list — then reports the match rate
+and a sample so you can check it before trusting the result. If it gets a
+layout wrong, `--text` shows the raw lines.
 
 Nothing Goethe-derived is committed to this repository or served from Pages.
 `.gitignore` blocks the filenames and `validate-data.ts` fails the build if a
