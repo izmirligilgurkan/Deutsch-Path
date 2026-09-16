@@ -247,3 +247,45 @@ test('a drill presents each new word before asking about it', async ({ page }) =
   await page.getByRole('button', { name: 'Got it' }).click();
   await expect(page.locator('.session-bar')).toContainText('2/');
 });
+
+test('the whole course works with the network off', async ({ page, context }) => {
+  // Regression: the service worker's data route was serialised into sw.js
+  // still referring to a build-time constant, so it threw on every request,
+  // matched nothing, and cached no course data at all. The app said it was
+  // ready to work offline and then had nothing offline.
+  await page.goto('./');
+  await page.getByRole('link', { name: /get started/i }).click();
+  await page.getByRole('button', { name: /start from zero/i }).click();
+  await page.waitForFunction(() => location.hash === '#/', null, { timeout: 25_000 });
+
+  // The course is downloaded deliberately, not only when a screen is visited.
+  // Settings reports what is actually cached, and keeps looking while the
+  // download runs, so this waits on the app's own accounting rather than on a
+  // count of cache entries.
+  await page.goto('./#/settings');
+  await expect(page.getByText(/The whole course is on this device/)).toBeVisible({
+    timeout: 120_000,
+  });
+
+  await context.setOffline(true);
+  // Navigating away aborts whatever is in flight, and an abort is reported as
+  // a failed request too; only a real network error counts here.
+  const failures: string[] = [];
+  page.on('requestfailed', (r) => {
+    const why = r.failure()?.errorText ?? '';
+    if (!why.includes('ABORTED')) failures.push(`${new URL(r.url()).pathname} (${why})`);
+  });
+
+  // A unit the learner never opened while online.
+  await page.goto('./#/unit/3');
+  await expect(page.getByRole('heading', { name: /Nouns/ })).toBeVisible({ timeout: 15_000 });
+
+  await page.goto('./#/unit/3/drill');
+  await expect(page.locator('.meet-word, .prompt-text').first()).toBeVisible({ timeout: 15_000 });
+
+  await page.goto('./#/dictionary');
+  await expect(page.locator('.dict-row, .card').first()).toBeVisible({ timeout: 15_000 });
+
+  expect(failures).toEqual([]);
+  await context.setOffline(false);
+});

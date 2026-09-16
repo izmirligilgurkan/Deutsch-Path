@@ -100,7 +100,8 @@ export const en = {
   pwa: {
     updateAvailable: 'A new version is available.',
     reload: 'Reload',
-    offlineReady: 'Ready to work offline.',
+    offlineReady: 'Ready to work offline — the whole course is on your phone.',
+    downloading: 'Saving the course for offline use…',
     dismiss: 'Dismiss',
   },
 

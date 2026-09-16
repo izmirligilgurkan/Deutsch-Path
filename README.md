@@ -31,7 +31,10 @@ A few things worth knowing:
 - **Everything stays on your phone.** Progress lives in the browser's own
   storage. There is no server and no sign-in, so clearing site data erases it —
   use **Settings → Export progress** for a backup.
-- **It works offline** after the first visit, including on a plane.
+- **It works offline.** The whole course — about 11 MB — downloads itself in
+  the background on your first visit, so a plane or a U-Bahn tunnel makes no
+  difference. **Settings → Offline** says how much is saved and finishes the
+  job if a download was interrupted.
 - **The umlaut row** above the keyboard types ä ö ü ß. In practice you can also
   write `ae oe ue ss` and it is accepted; tests are strict.
 - **Answers are case-sensitive** by default, because German capitalises nouns.

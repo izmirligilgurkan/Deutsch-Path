@@ -10,6 +10,7 @@ import {
   BackupError,
 } from '~/db/backup.ts';
 import { t } from '~/i18n/strings.ts';
+import { OfflineStatus } from '~/components/OfflineStatus.tsx';
 import type { Settings as SettingsType } from '~/db/types.ts';
 
 export function Settings() {
@@ -142,6 +143,11 @@ export function Settings() {
             onChange={(e) => { set({ showSourceAttribution: (e.target as HTMLInputElement).checked }); }}
           />
         </label>
+      </section>
+
+      <section class="card">
+        <h2>Offline</h2>
+        <OfflineStatus />
       </section>
 
       <section class="card">
