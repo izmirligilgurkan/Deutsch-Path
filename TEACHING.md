@@ -87,7 +87,17 @@ it is in ("1st or 3rd person singular Präteritum"). It is derived, not written:
 meanings are Wiktionary glosses, and the grammatical labels are a plain-English
 reading of the wiktextract tags on the matching row of the word's form table.
 Where the data does not say, the app says nothing rather than guessing — an
-ambiguous form shows every reading it has.
+ambiguous form shows every reading it has, up to three, and drops none of them
+silently. 96% of the words in the corpus resolve; a name or a loanword that has
+no entry is left blank.
+
+Function words needed a fix of their own to get there. Wiktionary gives `der`
+no declension table: *die*, *das*, *den*, *dem* and *des* are separate entries
+saying which form of `der` they are, and the personal pronouns are built the
+same way. Those entries are now merged into the lemma they point at, so the
+commonest words in German have a paradigm at all. The article itself is a
+*reference* lemma — in the lexicon to be read, never drilled, because "write
+the German for *the*" has six right answers.
 
 ### 5. Comprehensible input: nothing should be a wall
 
@@ -107,9 +117,6 @@ Listed so the gaps are visible rather than implied.
   a test. The worked-example research argues the first encounter should be a
   presentation — the word, its article, its meaning, one sentence — with
   nothing to answer. This does not exist yet.
-- **The definite article is not taught.** `der/die/das` is not a lemma in the
-  course at all: kaikki files it under a part of speech the pipeline drops. A
-  breakdown of any sentence containing it shows a blank.
 - **Sentences are not gated by unit.** A unit's sentence items are drawn from
   any sentence using that unit's vocabulary, so a unit 1 cloze can be an
   idiomatic B1 sentence whose *words* happen to be A1.

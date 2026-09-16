@@ -296,3 +296,69 @@ export function isTypeableHeadword(word: string): boolean {
   if (word.length > 1 && word === word.toUpperCase() && /[A-ZÄÖÜ]/.test(word)) return false;
   return true;
 }
+
+/**
+ * German grammatical tags, as wiktextract writes them. Used to tell a sense
+ * that names a form ("accusative of ich") from one that only labels a register
+ * ("colloquial") — and to drop the labels from the form row that results.
+ */
+const GRAMMATICAL_TAGS: Set<string> = new Set([
+  'nominative', 'accusative', 'dative', 'genitive',
+  'singular', 'plural',
+  'masculine', 'feminine', 'neuter',
+  'first-person', 'second-person', 'third-person',
+  'present', 'past', 'preterite', 'future', 'perfect', 'pluperfect',
+  'subjunctive', 'subjunctive-i', 'subjunctive-ii', 'imperative', 'indicative',
+  'infinitive', 'participle', 'comparative', 'superlative',
+  'strong', 'weak', 'mixed', 'predicative', 'reflexive',
+]);
+
+/** One inflected form, and the lemma it belongs to. */
+export interface InflectionRow {
+  /** The lemma this is a form of, as Wiktionary spells it. */
+  base: string;
+  form: string;
+  tags: string[];
+}
+
+/**
+ * Inflections that Wiktionary records as their own entries rather than as rows
+ * of a form table.
+ *
+ * Function words are built this way: `der` has no declension table at all, and
+ * *die*, *das*, *den*, *dem*, *des* are separate entries saying which form of
+ * `der` they are. The same holds for the personal pronouns — *mich* and *mir*
+ * are entries pointing at `ich`. Ignoring them left the commonest words in
+ * German with no paradigm, so a sentence breakdown could say nothing about
+ * them.
+ *
+ * Every field read here is structured: the tags and the `form_of` target are
+ * wiktextract's own, so no gloss text is parsed.
+ */
+export function extractInflections(entry: KaikkiEntry): InflectionRow[] {
+  const form = entry.word;
+  if (typeof form !== 'string' || form.length === 0) return [];
+
+  const out: InflectionRow[] = [];
+  const seen = new Set<string>();
+  for (const sense of entry.senses ?? []) {
+    const tags = sense.tags ?? [];
+    if (!tags.includes('form-of')) continue;
+    // "alternative form of", "obsolete spelling of" and the dialect entries
+    // are pointers, not paradigm rows.
+    if (!isClean(tags)) continue;
+    const base = sense.form_of?.[0]?.word;
+    // `base === form` is not a mistake to skip: *der* is a form of *der*,
+    // nominative masculine and also genitive/dative feminine.
+    if (typeof base !== 'string' || base.length === 0) continue;
+
+    const grammatical = tags.filter((t) => GRAMMATICAL_TAGS.has(t));
+    if (grammatical.length === 0) continue;
+
+    const key = `${base}|${grammatical.join(',')}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({ base, form, tags: grammatical });
+  }
+  return out;
+}

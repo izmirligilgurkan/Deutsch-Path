@@ -72,13 +72,43 @@ const TAG_LABELS: [tag: string, label: string][] = [
 
 const DECLENSION_CLASS = new Set(['strong', 'weak', 'mixed']);
 
+/**
+ * Tags of the same kind are alternatives, not a list: *die* carries both
+ * `nominative` and `accusative` because the form is either, so it reads
+ * "nominative/accusative" rather than "nominative accusative".
+ */
+const GROUPS: string[][] = [
+  ['first-person', 'second-person', 'third-person'],
+  ['nominative', 'accusative', 'dative', 'genitive'],
+  ['singular', 'plural'],
+  ['masculine', 'feminine', 'neuter'],
+];
+
+function groupOf(tag: string): number {
+  return GROUPS.findIndex((g) => g.includes(tag));
+}
+
 export function describeForm(tags: readonly string[], pos?: string): string {
   const held = new Set(tags);
-  return TAG_LABELS.filter(
+  const shown = TAG_LABELS.filter(
     ([tag]) => held.has(tag) && (pos === 'adj' || !DECLENSION_CLASS.has(tag)),
-  )
-    .map(([, label]) => label)
-    .join(' ');
+  );
+
+  const parts: string[] = [];
+  for (let i = 0; i < shown.length; i += 1) {
+    const group = groupOf(shown[i]![0]);
+    if (group === -1) {
+      parts.push(shown[i]![1]);
+      continue;
+    }
+    const run = [shown[i]![1]];
+    while (i + 1 < shown.length && groupOf(shown[i + 1]![0]) === group) {
+      i += 1;
+      run.push(shown[i]![1]);
+    }
+    parts.push(run.join('/'));
+  }
+  return parts.join(' ');
 }
 
 interface Match {
@@ -122,16 +152,28 @@ function resolve(surface: string, lemmas: readonly Lemma[], formsByLemma: Record
   return best;
 }
 
+/** A reading that pins down person, case or number, rather than only tense. */
+const SPECIFIC = /person|nominative|accusative|dative|genitive|singular|plural/;
+
 /**
  * What form the word is in. A form can have several readings — *bringt* is
  * both *ihr bringt* and *er bringt* — and nothing in the data says which one
  * this is, so every reading is shown rather than one of them picked.
  */
 function rolesOf(forms: readonly Form[], pos?: string): string {
-  const readings = [...new Set(forms.map((f) => describeForm(f.tags, pos)).filter(Boolean))]
-    .sort()
-    .slice(0, 2);
+  const all = [...new Set(forms.map((f) => describeForm(f.tags, pos)).filter(Boolean))];
+
+  // A word's head-line forms carry a bare tag or two — *nahm* is listed as
+  // "past" as well as in the conjugation table — and a reading that names no
+  // person, case or number only dilutes the ones that do.
+  const specific = all.filter((r) => SPECIFIC.test(r));
+  // Three at most: past that, a form is ambiguous enough that listing every
+  // reading says less than the count does. Dropping one silently would be
+  // worse — *bringt* is 3rd person singular far more often than it is a
+  // 2nd person plural imperative, and nothing in the data knows that.
+  const readings = (specific.length > 0 ? specific : all).sort().slice(0, 3);
   if (readings.length < 2) return readings[0] ?? '';
+  if (readings.length > 2) return readings.join(' or ');
 
   // Two readings of the same form usually differ only at the front — *wusste*
   // is 1st or 3rd person singular Präteritum — so the shared tail is said once.

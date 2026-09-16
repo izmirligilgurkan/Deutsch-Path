@@ -138,12 +138,12 @@ What it currently produces:
 | Output | Contents |
 |---|---|
 | `data/lexicon/*.json` | 3,277 lemmas with gender, plural, forms, glosses, provenance |
-| `data/sentences/*.json` | 8,434 sentences, 97.6% native-authored, 97.4% lemma coverage |
+| `data/sentences/*.json` | 8,577 sentences, 97.9% native-authored, 97.6% lemma coverage |
 | `data/grammar/*.md` | 69 topics — 42 excerpted from Wikibooks, 27 honest stubs |
-| `data/exercises/*.json` | 4,113 items across 35 units, 12 exercise types |
+| `data/exercises/*.json` | 4,112 items across 35 units, 12 exercise types |
 | `data/goethe-levels.json` | 3,277 words tagged A1 / A2 / B1 from the Goethe Wortlisten |
 
-Total 10.8 MB, against the 15 MB budget.
+Total 11.3 MB, against the 15 MB budget.
 
 Sources: [kaikki.org](https://kaikki.org/dictionary/German/) (Wiktionary,
 CC BY-SA), [Tatoeba](https://tatoeba.org/en/downloads) (CC BY 2.0 FR / CC0),

@@ -44,6 +44,18 @@ describe('describeForm', () => {
   });
 });
 
+describe('describeForm alternations', () => {
+  it('reads tags of the same kind as alternatives', () => {
+    // *die* is nominative or accusative, not both at once.
+    expect(describeForm(['accusative', 'feminine', 'nominative', 'singular'])).toBe(
+      'nominative/accusative singular feminine',
+    );
+    expect(describeForm(['dative', 'masculine', 'neuter', 'singular'])).toBe(
+      'dative singular masculine/neuter',
+    );
+  });
+});
+
 describe('breakDownSentence', () => {
   it('names the form a word is in', () => {
     const [, second] = breakDownSentence('Ich weiß es.', [ich, wissen], forms);
@@ -56,6 +68,33 @@ describe('breakDownSentence', () => {
     // Nothing in the data says which reading this is, and guessing would teach
     // the wrong one half the time.
     const [, second] = breakDownSentence('Ich wusste es.', [ich, wissen], forms);
+    expect(second?.role).toBe('1st or 3rd person singular Präteritum');
+  });
+
+  it('resolves the definite article, which has no form table of its own', () => {
+    // Regression: kaikki files der/die/das as separate entries rather than one
+    // paradigm, so the commonest word in German used to come out blank.
+    const der = lemma('der|det', 'der', 'det', 'the');
+    const article: Record<string, Form[]> = {
+      'der|det': [{ form: 'das', tags: ['nominative', 'accusative', 'neuter', 'singular'] }],
+    };
+    const [first] = breakDownSentence('das Buch', [], article, [der]);
+    expect(first?.lemma?.id).toBe('der|det');
+    expect(first?.role).toBe('nominative/accusative singular neuter');
+  });
+
+  it('ignores a head-line row that names only the tense', () => {
+    // *nahm* is listed as "past" as well as in the conjugation table; that
+    // reading adds nothing next to "1st or 3rd person singular Präteritum".
+    const nehmen = lemma('nehmen|verb', 'nehmen', 'verb', 'to take');
+    const table: Record<string, Form[]> = {
+      'nehmen|verb': [
+        { form: 'nahm', tags: ['first-person', 'singular', 'preterite'] },
+        { form: 'nahm', tags: ['third-person', 'singular', 'preterite'] },
+        { form: 'nahm', tags: ['past'] },
+      ],
+    };
+    const [, second] = breakDownSentence('Er nahm es.', [nehmen], table);
     expect(second?.role).toBe('1st or 3rd person singular Präteritum');
   });
 

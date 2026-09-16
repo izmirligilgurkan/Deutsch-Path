@@ -25,10 +25,10 @@ Anything else is a build failure.
 
 | File | Records | Size |
 |---|---|---|
-| `data/lexicon/*.json` | 3,277 lemmas | ~5.7 MB |
-| `data/sentences/*.json` | 8,434 sentences | ~3.8 MB |
+| `data/lexicon/*.json` | 3,277 lemmas | ~6.1 MB |
+| `data/sentences/*.json` | 8,577 sentences | ~3.9 MB |
 | `data/grammar/*.md` | 69 topics (42 sourced, 27 stubs) | ~0.3 MB |
-| `data/exercises/*.json` | 4,113 items across 35 units | ~1.1 MB |
+| `data/exercises/*.json` | 4,112 items across 35 units | ~1.1 MB |
 | `data/goethe-levels.json` | 3,277 word→level entries | ~0.1 MB |
 
 `data/goethe-levels.json` is the one file here that is **not** covered by the

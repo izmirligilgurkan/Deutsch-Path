@@ -60,7 +60,9 @@ const byLevel = new Map<Level, Lemma[]>();
 for (const level of ['A1', 'A2', 'B1'] as Level[]) {
   byLevel.set(
     level,
-    lexicon.filter((l) => l.level === level).sort((a, b) => (a.freqRank ?? 0) - (b.freqRank ?? 0)),
+    lexicon
+      .filter((l) => l.level === level && !l.reference)
+      .sort((a, b) => (a.freqRank ?? 0) - (b.freqRank ?? 0)),
   );
 }
 

@@ -24,6 +24,7 @@ import { orderGlosses } from '../src/lib/gloss.ts';
 import {
   extractForms,
   extractGlosses,
+  extractInflections,
   extractNounFacts,
   extractVerbFacts,
   isFormOnlyEntry,
@@ -31,12 +32,12 @@ import {
   isPointerEntry,
   isTypeableHeadword,
   lemmaId,
-  trimForms,
   mapPos,
-  wiktionaryUrl,
+  trimForms,
   type KaikkiEntry,
   type NounFacts,
   type VerbFacts,
+  wiktionaryUrl,
 } from './lib/kaikki.ts';
 import { DATA_DIR, RAW_DIR, progress, readBz2Lines, readLines, writeJson } from './lib/io.ts';
 
@@ -110,6 +111,25 @@ const exactIndex = new Map<string, string[]>();
 const formIndex = new Map<string, string[]>();
 /** Surface forms of proper nouns — allowed inside sentences, never taught. */
 const properNames = new Set<string>();
+/**
+ * Inflections Wiktionary files as their own entries, keyed by the lemma they
+ * belong to. Merged into that lemma once the scan has seen every entry.
+ */
+const inflections = new Map<string, Form[]>();
+
+const addTo = (map: Map<string, string[]>, key: string, id: string) => {
+  if (key.length === 0) return;
+  const ids = map.get(key);
+  if (ids) {
+    if (!ids.includes(id)) ids.push(id);
+  } else {
+    map.set(key, [id]);
+  }
+};
+const register = (id: string, surface: string) => {
+  addTo(formIndex, formKey(surface), id);
+  addTo(exactIndex, surface, id);
+};
 
 const p1 = progress('entries');
 for await (const line of readLines(kaikkiPath)) {
@@ -126,13 +146,31 @@ for await (const line of readLines(kaikkiPath)) {
   if (typeof word !== 'string' || word.length === 0) continue;
 
   if (entry.pos === 'name') {
-    properNames.add(formKey(word));
-    for (const f of extractForms(entry)) properNames.add(formKey(f.form));
+    // Only the capitalised surfaces. German capitalises every proper noun, and
+    // Wiktionary lists the article a name takes as one of its declension forms
+    // — "die" for *die CIA*, "der" for *der Kosovo*. Taking those in made the
+    // scorer skip every occurrence of der, die, das and des in the corpus, so
+    // the commonest words in German scored zero and left the course entirely.
+    const isCapitalised = (w: string) => w.length > 0 && w[0] !== w[0]!.toLocaleLowerCase('de-DE');
+    if (isCapitalised(word)) properNames.add(formKey(word));
+    for (const f of extractForms(entry)) {
+      if (isCapitalised(f.form)) properNames.add(formKey(f.form));
+    }
     continue;
   }
 
   const pos = mapPos(entry.pos);
   if (!pos) continue;
+
+  // Collected before the entry is judged: an inflection that lives in its own
+  // entry is exactly what the lemma it points at is missing.
+  for (const row of extractInflections(entry)) {
+    const key = lemmaId(row.base, pos);
+    const rows = inflections.get(key);
+    if (rows) rows.push({ form: row.form, tags: row.tags });
+    else inflections.set(key, [{ form: row.form, tags: row.tags }]);
+  }
+
   if (isFormOnlyEntry(entry)) continue; // an inflection of some other lemma
 
   const glosses = extractGlosses(entry);
@@ -152,20 +190,7 @@ for await (const line of readLines(kaikkiPath)) {
   candidates.set(id, candidate);
 
   // Index the lemma and every inflected form Wiktionary lists for it.
-  const add = (map: Map<string, string[]>, key: string) => {
-    if (key.length === 0) return;
-    const ids = map.get(key);
-    if (ids) {
-      if (!ids.includes(id)) ids.push(id);
-    } else {
-      map.set(key, [id]);
-    }
-  };
-  const register = (surface: string) => {
-    add(formIndex, formKey(surface));
-    add(exactIndex, surface);
-  };
-  register(word);
+  register(id, word);
   for (const f of entryForms.filter(isIndexableForm)) {
     // Only single-token forms are indexed. Splitting multi-word forms into
     // their parts ("am schönsten", "steht auf") would register "am" against
@@ -174,9 +199,30 @@ for await (const line of readLines(kaikkiPath)) {
     // resolves through its base verb ("steht" → stehen); it is attributed to
     // the base rather than guessed at.
     const parts = words(f.form);
-    if (parts.length === 1) register(parts[0]!);
+    if (parts.length === 1) register(id, parts[0]!);
   }
 }
+
+// ── Merge the inflections that live in their own entries ───────────────────
+
+let merged = 0;
+for (const [id, rows] of inflections) {
+  const candidate = candidates.get(id);
+  if (!candidate) continue;
+  // Only gaps are filled. A lemma whose own table already lists a surface
+  // describes it better than a scattered entry does, and merging both doubled
+  // the size of every adjective's paradigm for nothing.
+  const seen = new Set(candidate.forms.map((f) => f.form));
+  for (const row of rows) {
+    const key = row.form;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    candidate.forms.push(row);
+    register(id, row.form);
+    merged += 1;
+  }
+}
+console.log(`  ${merged.toLocaleString()} inflections merged from their own entries`);
 console.log(
   `  ${p1.count.toLocaleString()} entries → ${candidates.size.toLocaleString()} lemmas, ` +
     `${formIndex.size.toLocaleString()} distinct forms, ${properNames.size.toLocaleString()} proper-noun forms`,
@@ -258,6 +304,17 @@ console.log(
 );
 
 // ── Select: rank by score, keep what Wiktionary describes completely ────────
+
+/**
+ * Lemmas that stay in the lexicon but are never drilled as vocabulary.
+ *
+ * The definite article is the whole of this list. It is the most frequent word
+ * in German, so it ranks first and would otherwise open unit 1 with "write the
+ * German for 'nominative masculine singular definite article, the'" — a card
+ * with six right answers and no meaning to learn. der/die/das is taught by the
+ * gender cards, the article-case cards and the grammar topics instead.
+ */
+const REFERENCE_LEMMAS = new Set(['der|det']);
 
 function isTeachable(c: Candidate): boolean {
   if (c.score <= 0) return false;
@@ -342,6 +399,7 @@ const lexicon: Lemma[] = ranked.map((c, i) => {
     level: goetheLevelFor(c.word) ?? bandFor(rank),
     levelSource: goetheLevelFor(c.word) ? 'goethe-wortliste' : 'frequency-approx',
     freqRank: rank,
+    ...(REFERENCE_LEMMAS.has(c.id) ? { reference: true } : {}),
     source: SOURCE_NAME,
     sourceUrl: wiktionaryUrl(c.word),
     license: LICENSE,

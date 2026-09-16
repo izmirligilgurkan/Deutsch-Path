@@ -70,6 +70,13 @@ export interface Lemma extends Provenance {
   levelSource?: 'goethe-wortliste' | 'goethe-import' | 'frequency-approx';
   /** Rank in the frequency list used for the approximate ordering. */
   freqRank?: number;
+  /**
+   * Kept for reading, never drilled as vocabulary. The definite article is
+   * grammar rather than a word to translate — "the" has six German forms — so
+   * it is taught by the gender and article cards, and lives here only so a
+   * sentence breakdown can name the form it is in.
+   */
+  reference?: boolean;
 }
 
 export interface Sentence {

@@ -23,7 +23,8 @@ export function assignLemmasToUnits(lexicon: Lemma[]): Map<number, Lemma[]> {
     byLevel.set(
       level,
       lexicon
-        .filter((l) => l.level === level)
+        // A reference lemma is read, not drilled.
+        .filter((l) => l.level === level && !l.reference)
         .sort((a, b) => (a.freqRank ?? 0) - (b.freqRank ?? 0)),
     );
   }

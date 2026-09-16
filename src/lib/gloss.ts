@@ -90,7 +90,31 @@ export function orderGlosses(glosses: readonly string[]): string[] {
  */
 const MAX_SHORT = 64;
 
+/**
+ * Words a *description of a form* is made of. Wiktionary defines a function
+ * word by naming the slot it fills — "nominative masculine singular definite
+ * article, the" — and the translation is what follows the comma.
+ */
+const GRAMMAR_WORDS = new Set([
+  'nominative', 'accusative', 'dative', 'genitive',
+  'singular', 'plural', 'masculine', 'feminine', 'neuter',
+  'definite', 'indefinite', 'article', 'pronoun', 'determiner',
+  'first', 'second', 'third', 'person', 'form', 'of',
+]);
+
+/** Drops a leading description of the form, when a translation follows it. */
+function dropFormDescription(gloss: string): string {
+  const comma = gloss.indexOf(',');
+  if (comma === -1) return gloss;
+  const head = gloss.slice(0, comma).trim().toLowerCase().split(/\s+/);
+  if (head.length < 2 || !head.every((w) => GRAMMAR_WORDS.has(w))) return gloss;
+  const rest = gloss.slice(comma + 1).trim();
+  return rest.length > 0 ? rest : gloss;
+}
+
 export function shortGloss(gloss: string): string {
+  gloss = dropFormDescription(gloss);
+
   // Parentheticals nest, so they are stripped by depth rather than by regex.
   let out = '';
   let depth = 0;
