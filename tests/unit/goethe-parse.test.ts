@@ -3,6 +3,7 @@ import {
   chooseHeadwordColumns,
   extractHeadwords,
   firstToken,
+  groupKey,
   levelFromFilename,
   mergeLevels,
   normalizeHeadword,
@@ -86,25 +87,48 @@ describe('chooseHeadwordColumns', () => {
 
   it('finds the column the headwords are in, not the examples', () => {
     const choice = chooseHeadwordColumns(page(), isKnown);
-    expect(choice.columns).toEqual([56]);
+    expect([...choice.keys]).toEqual([groupKey(56, 'bold')]);
     expect(choice.matchRate).toBeGreaterThan(0.9);
   });
 
   it('reports every candidate so a bad guess can be seen', () => {
     const choice = chooseHeadwordColumns(page(), isKnown);
-    expect(choice.diagnostics.map((d) => d.x).sort()).toEqual([56, 72]);
+    expect(choice.diagnostics.map((d) => d.x).sort((a, b) => a - b)).toEqual([56, 72]);
+    expect(choice.diagnostics[0]!.sample.length).toBeGreaterThan(0);
   });
 
   it('handles a two-column layout', () => {
     const lines = [...page(), ...page().map((l) => ({ ...l, x: l.x + 300 }))];
-    expect(chooseHeadwordColumns(lines, isKnown).columns.sort((a, b) => a - b)).toEqual([56, 356]);
+    const keys = [...chooseHeadwordColumns(lines, isKnown).keys].sort();
+    expect(keys).toEqual([groupKey(356, 'bold'), groupKey(56, 'bold')].sort());
   });
 
   it('chooses nothing rather than guessing when no column looks like a word list', () => {
     const prose: PdfLine[] = Array.from({ length: 50 }, (_, i) => ({
       text: `Dies ist ein Satz Nummer ${i}.`, x: 56, page: 1, font: 'roman',
     }));
-    expect(chooseHeadwordColumns(prose, isKnown).columns).toEqual([]);
+    expect(chooseHeadwordColumns(prose, isKnown).keys.size).toBe(0);
+  });
+
+  it('separates headwords from examples that share a margin, by typeface', () => {
+    // The real lists indent little or not at all; the face is what differs.
+    const lines: PdfLine[] = [];
+    for (let i = 0; i < 30; i++) {
+      const word = [...known][i % known.size]!;
+      lines.push({ text: word, x: 56, page: 1, font: 'Bold' });
+      lines.push({ text: `Und dann sagte jemand etwas.`, x: 56, page: 1, font: 'Roman' });
+    }
+    const choice = chooseHeadwordColumns(lines, isKnown);
+    expect([...choice.keys]).toEqual([groupKey(56, 'Bold')]);
+  });
+
+  it('rejects a column of example sentences that often start with a known word', () => {
+    // This is what produced a 60%-scoring "headword column" on the real PDFs.
+    const lines: PdfLine[] = Array.from({ length: 60 }, (_, i) => ({
+      text: i % 2 === 0 ? 'Haus und Garten sind schön.' : 'Dann ging er fort.',
+      x: 56, page: 1, font: 'Roman',
+    }));
+    expect(chooseHeadwordColumns(lines, isKnown).keys.size).toBe(0);
   });
 });
 
@@ -117,15 +141,16 @@ describe('extractHeadwords', () => {
     { text: 'Quatschwort', x: 56, page: 1, font: 'b' },
     { text: 'Haus, das, ¨-er', x: 56, page: 2, font: 'b' },
   ];
+  const keys = new Set([groupKey(56, 'b')]);
 
-  it('takes only the chosen column, and splits known from unknown', () => {
-    const { known: hits, unknown } = extractHeadwords(lines, [56], (w) => known.has(w));
+  it('takes only the chosen group, and splits known from unknown', () => {
+    const { known: hits, unknown } = extractHeadwords(lines, keys, (w) => known.has(w));
     expect(hits).toEqual(['Haus', 'Abend']);
     expect(unknown).toEqual(['Quatschwort']);
   });
 
   it('deduplicates a word repeated across pages', () => {
-    expect(extractHeadwords(lines, [56], (w) => known.has(w)).known).toHaveLength(2);
+    expect(extractHeadwords(lines, keys, (w) => known.has(w)).known).toHaveLength(2);
   });
 });
 

@@ -76,89 +76,118 @@ export function firstToken(line: string): string {
   return line.trim().split(/\s+/)[0] ?? '';
 }
 
-export interface ColumnChoice {
-  /** Rounded x positions accepted as headword column margins. */
-  columns: number[];
-  /** Share of lines at those columns whose first word is a known lemma. */
-  matchRate: number;
-  /** What every candidate column scored, for the report. */
-  diagnostics: { x: number; lines: number; matched: number; rate: number }[];
+export interface ColumnGroup {
+  /** Rounded x of the column margin. */
+  x: number;
+  /** PDF font name. A Wortliste sets its headwords in a different face. */
+  font: string;
+  lines: number;
+  matched: number;
+  rate: number;
+  /** A few words from this group, so a wrong pick is obvious in the report. */
+  sample: string[];
 }
+
+export interface ColumnChoice {
+  /** Accepted groups, as `${x}|${font}` keys. */
+  keys: Set<string>;
+  /** Share of lines in the accepted groups whose first word is a known lemma. */
+  matchRate: number;
+  /** Every candidate, best first, for the report. */
+  diagnostics: ColumnGroup[];
+}
+
+export function groupKey(x: number, font: string): string {
+  return `${Math.round(x)}|${font}`;
+}
+
+/**
+ * How far apart two accepted positions in the same face must be to count as
+ * separate columns rather than a margin and the indent beneath it.
+ */
+const COLUMN_REGION = 60;
 
 /**
  * Picks the columns the headwords are in.
  *
- * A Wortliste sets its headwords at a column margin and its example sentences
- * indented or in another face. Rather than hard-coding a position, every
- * candidate margin is scored by how often the word at that position is a lemma
- * the course already knows — a headword column scores very high, a column of
- * example sentences does not.
+ * Grouping is by position *and* typeface. A Wortliste sets its headwords in
+ * bold and its examples in roman or italic, often starting at the same margin,
+ * so position alone cannot separate them — scoring x on its own picks up
+ * example sentences, whose first word is frequently a known lemma too.
+ *
+ * Each group is scored by how often the word at that position is a lemma the
+ * course already knows. A real headword column scores near 100%; a column of
+ * example sentences scores far lower, which is what the threshold rejects.
  */
-/**
- * How far apart two accepted positions must be to count as separate columns
- * rather than a margin and the indent beneath it.
- */
-const COLUMN_REGION = 60;
-
 export function chooseHeadwordColumns(
   lines: PdfLine[],
   isKnownLemma: (word: string) => boolean,
-  { minLines = 20, minRate = 0.5 }: { minLines?: number; minRate?: number } = {},
+  { minLines = 20, minRate = 0.8 }: { minLines?: number; minRate?: number } = {},
 ): ColumnChoice {
-  const byX = new Map<number, PdfLine[]>();
+  const groups = new Map<string, PdfLine[]>();
   for (const line of lines) {
-    const x = Math.round(line.x);
-    const bucket = byX.get(x);
+    const key = groupKey(line.x, line.font);
+    const bucket = groups.get(key);
     if (bucket) bucket.push(line);
-    else byX.set(x, [line]);
+    else groups.set(key, [line]);
   }
 
-  const diagnostics = [...byX.entries()]
-    .filter(([, group]) => group.length >= minLines)
-    .map(([x, group]) => {
-      let matched = 0;
-      for (const line of group) {
-        const word = normalizeHeadword(firstToken(line.text));
-        if (word && isKnownLemma(word)) matched += 1;
+  const diagnostics: ColumnGroup[] = [];
+  for (const [key, group] of groups) {
+    if (group.length < minLines) continue;
+    const [xPart, ...fontParts] = key.split('|');
+    let matched = 0;
+    const sample: string[] = [];
+    for (const line of group) {
+      const word = normalizeHeadword(firstToken(line.text));
+      if (word && isKnownLemma(word)) {
+        matched += 1;
+        if (sample.length < 6) sample.push(word);
       }
-      return { x, lines: group.length, matched, rate: matched / group.length };
-    })
-    .sort((a, b) => b.rate - a.rate || b.lines - a.lines);
-
-  // A headword column and the indent its examples sit at both score well, and
-  // example sentences often begin with a word the course knows. Within one
-  // column region the headwords are the leftmost position, so keep that and
-  // drop its indents.
-  const candidates = diagnostics.filter((d) => d.rate >= minRate).map((d) => d.x).sort((a, b) => a - b);
-  const columns: number[] = [];
-  for (const x of candidates) {
-    const previous = columns[columns.length - 1];
-    if (previous === undefined || x - previous > COLUMN_REGION) columns.push(x);
+    }
+    diagnostics.push({
+      x: Number(xPart),
+      font: fontParts.join('|'),
+      lines: group.length,
+      matched,
+      rate: matched / group.length,
+      sample,
+    });
   }
-  const accepted = diagnostics.filter((d) => columns.includes(d.x));
+  diagnostics.sort((a, b) => b.rate - a.rate || b.lines - a.lines);
+
+  // Within one face, a headword margin and the indent under it both score;
+  // the headwords are the leftmost position, so drop the indents.
+  const accepted: ColumnGroup[] = [];
+  for (const group of diagnostics.filter((d) => d.rate >= minRate)) {
+    const shadowed = accepted.some(
+      (a) => a.font === group.font && Math.abs(a.x - group.x) < COLUMN_REGION && a.x <= group.x,
+    );
+    if (!shadowed) accepted.push(group);
+  }
+
   const totalLines = accepted.reduce((n, d) => n + d.lines, 0);
   const totalMatched = accepted.reduce((n, d) => n + d.matched, 0);
 
   return {
-    columns,
+    keys: new Set(accepted.map((d) => groupKey(d.x, d.font))),
     matchRate: totalLines > 0 ? totalMatched / totalLines : 0,
     diagnostics,
   };
 }
 
-/** Headwords found at the chosen columns, deduplicated, in document order. */
+/** Headwords found in the chosen groups, deduplicated, in document order. */
 export function extractHeadwords(
   lines: PdfLine[],
-  columns: number[],
+  keys: Set<string>,
   isKnownLemma: (word: string) => boolean,
 ): { known: string[]; unknown: string[] } {
-  const wanted = new Set(columns);
   const known: string[] = [];
   const unknown: string[] = [];
   const seen = new Set<string>();
 
   for (const line of lines) {
-    if (wanted.size > 0 && !wanted.has(Math.round(line.x))) continue;
+    if (keys.size > 0 && !keys.has(groupKey(line.x, line.font))) continue;
     const word = normalizeHeadword(firstToken(line.text));
     if (!word || seen.has(word)) continue;
     seen.add(word);

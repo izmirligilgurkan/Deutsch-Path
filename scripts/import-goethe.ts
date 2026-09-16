@@ -171,24 +171,32 @@ for (const file of files) {
   }
 
   const choice = chooseHeadwordColumns(lines, isKnownLemma);
-  if (choice.columns.length === 0) {
+
+  if (choice.keys.size === 0) {
     sawTrouble = true;
     console.error(
-      '  ✗ could not find a headword column — no group of lines looked like a\n' +
-        '    word list. The layout may differ from what this expects.\n' +
-        '    Run with --text to see the raw lines, and send them along with a\n' +
-        '    bug report so the parser can be adjusted.',
+      '  ✗ no group of lines looked like a word list, so nothing was taken from\n' +
+        '    this file. A headword column should score near 100%; anything much\n' +
+        '    lower is example sentences, whose first word is often a known word\n' +
+        '    too. The strongest candidates were:',
     );
-    console.error('    strongest candidates:');
-    for (const d of choice.diagnostics.slice(0, 5)) {
-      console.error(`      x=${d.x} lines=${d.lines} matched=${d.matched} (${(d.rate * 100).toFixed(0)}%)`);
+    for (const d of choice.diagnostics.slice(0, 8)) {
+      console.error(
+        `      x=${String(d.x).padStart(4)} ${d.font.padEnd(14)} ` +
+          `lines=${String(d.lines).padStart(5)} ${(d.rate * 100).toFixed(0).padStart(3)}%  ` +
+          `${d.sample.slice(0, 5).join(', ')}`,
+      );
     }
+    console.error(
+      '    Run the same command with --text to dump the raw lines, and send\n' +
+        '    the first ~60 of them so the parser can be taught this layout.',
+    );
     continue;
   }
 
-  const { known, unknown } = extractHeadwords(lines, choice.columns, isKnownLemma);
+  const { known, unknown } = extractHeadwords(lines, choice.keys, isKnownLemma);
   console.log(
-    `  columns at x=${choice.columns.join(', ')} — ` +
+    `  ${choice.keys.size} headword column(s), ` +
       `${(choice.matchRate * 100).toFixed(0)}% of their first words are known lemmas`,
   );
   console.log(`  ${known.length.toLocaleString()} words matched the course vocabulary`);
@@ -228,6 +236,16 @@ if (Object.keys(merged).length === 0) {
 if (preview) {
   console.log('\n--preview: nothing written. Drop the flag to write the file.');
   process.exit(sawTrouble ? 1 : 0);
+}
+
+// A half-read list is worse than none: it would relabel levels with whatever
+// the example sentences happened to start with.
+if (sawTrouble && !argv.includes('--force')) {
+  console.error(
+    '\n✗ not writing the file — the results above do not look like a word list.\n' +
+      '  Re-run with --text to see the layout, or --force to write anyway.',
+  );
+  process.exit(1);
 }
 
 await writeFile(outPath, `${JSON.stringify(merged, null, 2)}\n`, 'utf8');
