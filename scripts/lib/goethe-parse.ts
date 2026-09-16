@@ -160,8 +160,14 @@ export function chooseHeadwordColumns(
   lines: PdfLine[],
   isKnownLemma: (word: string) => boolean,
   {
-    minWords = 50,
-    minAlphabetical = 0.9,
+    // A published Wortliste holds hundreds of entries per column. Requiring a
+    // substantial column is itself most of the filter.
+    minWords = 100,
+    // Example sentences sit near 0.5, the rate you get by chance; a real list
+    // is far above it. The gap is wide, so the threshold does not need to be
+    // near-perfect — and demanding that rejected real columns whose extraction
+    // is slightly noisy.
+    minAlphabetical = 0.7,
     minDistinct = 0.5,
   }: { minWords?: number; minAlphabetical?: number; minDistinct?: number } = {},
 ): ColumnChoice {
@@ -195,7 +201,10 @@ export function chooseHeadwordColumns(
       sample: words.slice(0, 6),
     });
   }
-  diagnostics.sort((a, b) => b.alphabetical - a.alphabetical || b.words - a.words);
+  // Ranked by size, not by score. A word list is long, and a two-word group
+  // that happens to be in order scores a meaningless 100% — sorting by score
+  // buried the real columns under dozens of those.
+  diagnostics.sort((a, b) => b.words - a.words);
 
   const accepted = diagnostics.filter(
     (d) => d.words >= minWords && d.alphabetical >= minAlphabetical && d.distinct >= minDistinct,

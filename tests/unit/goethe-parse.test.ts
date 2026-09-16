@@ -140,6 +140,32 @@ describe('chooseHeadwordColumns', () => {
     expect(keys).toEqual([groupKey(35, 'Bold'), groupKey(315, 'Bold')].sort());
   });
 
+  it('rejects a long column of varied sentence openings', () => {
+    // The hard case: not a repeated word, so distinctness alone will not catch
+    // it. Real sentence openings land near 50% ordered — chance — while a word
+    // list sits above 85%, which is the gap the threshold sits in.
+    const openers = ['Ich', 'Wir', 'Er', 'Sie', 'Das', 'Ein', 'Am', 'Heute', 'Bitte',
+      'Wo', 'Wann', 'Meine', 'Der', 'Die', 'Es', 'Auf', 'In', 'Nach', 'Vor', 'Zu'];
+    let seed = 7;
+    const lines: PdfLine[] = Array.from({ length: 800 }, () => {
+      seed = (seed * 1103515245 + 12345) % 2147483648;
+      return {
+        text: `${openers[seed % openers.length]!} sagte etwas dazu.`,
+        x: 142, page: 1, font: 'F3',
+      };
+    });
+    expect(chooseHeadwordColumns(lines, isKnown).keys.size).toBe(0);
+  });
+
+  it('accepts a long list whose extraction is a little noisy', () => {
+    // A real column is not perfectly ordered: page furniture and the odd
+    // mis-read line creep in. Demanding near-perfection rejected real columns.
+    const words = [...sorted];
+    for (let i = 0; i < words.length; i += 7) words[i] = 'zzstray';
+    const choice = chooseHeadwordColumns(wordList(words), isKnown);
+    expect(choice.keys.size).toBe(1);
+  });
+
   it('ignores a short run that happens to be sorted', () => {
     // "Aufgabe, Beispiel, Lösung, Prüfung" in the exam instructions is sorted
     // by luck; a word list is long.

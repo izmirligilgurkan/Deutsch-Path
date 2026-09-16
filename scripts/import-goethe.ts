@@ -25,6 +25,7 @@ import { DATA_DIR, ROOT } from './lib/io.ts';
 import {
   chooseHeadwordColumns,
   extractHeadwords,
+  groupKey,
   levelFromFilename,
   mergeLevels,
   type PdfLine,
@@ -176,10 +177,10 @@ for (const file of files) {
     sawTrouble = true;
     console.error(
       '  ✗ no column looked like an alphabetical word list, so nothing was\n' +
-        '    taken from this file. Candidates, by how well sorted they are:',
+        '    taken from this file. The largest columns in the document were:',
     );
     console.error('      x     font           words   a-z  uniq  known  sample');
-    for (const d of choice.diagnostics.slice(0, 10)) {
+    for (const d of choice.diagnostics.slice(0, 12)) {
       console.error(
         `      ${String(d.x).padStart(4)}  ${d.font.padEnd(13)} ` +
           `${String(d.words).padStart(5)}  ${(d.alphabetical * 100).toFixed(0).padStart(3)}%  ` +
@@ -199,6 +200,12 @@ for (const file of files) {
     `  ${choice.keys.size} headword column(s), ` +
       `${(choice.alphabetical * 100).toFixed(0)}% alphabetically ordered`,
   );
+  for (const d of choice.diagnostics.filter((g) => choice.keys.has(groupKey(g.x, g.font)))) {
+    console.log(
+      `    x=${String(d.x).padStart(4)} ${d.font.padEnd(12)} ${String(d.words).padStart(5)} words  ` +
+        `${(d.alphabetical * 100).toFixed(0)}% a-z  ${d.sample.slice(0, 4).join(', ')}`,
+    );
+  }
   console.log(`  ${known.length.toLocaleString()} words matched the course vocabulary`);
   console.log(
     `  ${unknown.length.toLocaleString()} not in the course and skipped` +
