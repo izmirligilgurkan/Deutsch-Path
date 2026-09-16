@@ -25,10 +25,14 @@ Anything else is a build failure.
 
 | File | Records | Size |
 |---|---|---|
-| `data/lexicon.json` | 3,000 lemmas | ~5.3 MB |
-| `data/sentences.json` | 8,286 sentences | ~3.5 MB |
-| `data/grammar/*.md` | 69 topics (42 sourced, 27 stubs) | ~0.4 MB |
-| `data/exercises/*.json` | 4,139 items across 35 units | ~1.4 MB |
+| `data/lexicon/*.json` | 3,277 lemmas | ~5.7 MB |
+| `data/sentences/*.json` | 8,434 sentences | ~3.8 MB |
+| `data/grammar/*.md` | 69 topics (42 sourced, 27 stubs) | ~0.3 MB |
+| `data/exercises/*.json` | 4,113 items across 35 units | ~1.1 MB |
+| `data/goethe-levels.json` | 3,277 word→level entries | ~0.1 MB |
+
+`data/goethe-levels.json` is the one file here that is **not** covered by the
+allowlist above. See [Goethe-Institut Wortlisten](#goethe-institut-wortlisten-a1--a2--b1).
 
 ## Source snapshots
 
@@ -56,7 +60,7 @@ can be traced to a dated snapshot.
   Recorded on each record as `CC-BY-SA-4.0`.
 - **Used for:** lemmas, part of speech, gender, plural, inflection tables,
   English glosses, verb principal parts.
-- **Modifications:** filtered from 371,261 entries to the 3,000 the course
+- **Modifications:** filtered from 371,261 entries to the 3,277 the course
   teaches; form tables trimmed to the forms the drills use (see below); no text
   rewritten. Each lemma's `sourceUrl` points at its Wiktionary page.
 - **Share-alike:** satisfied by `data/LICENSE` (CC BY-SA 4.0).
@@ -88,7 +92,7 @@ What was dropped from the form tables, and why:
   its tokens resolves to a lemma by Wiktionary form-table lookup (233,563 of
   780,494 German sentences did); its length is close to a per-level target;
   sentences by contributors who declare German as a native language are
-  preferred (8,268 of the 8,286 kept are native-authored).
+  preferred (8,232 of the 8,434 kept are native-authored).
 
 ### Wikibooks: German
 
@@ -120,23 +124,36 @@ from them is copied into this repository.
 - DWDS — <https://www.dwds.de/>
 - Duden — <https://www.duden.de/>
 
-## Excluded on purpose
+## Bundled outside the allowlist, by the owner's decision
 
 ### Goethe-Institut Wortlisten (A1 / A2 / B1)
 
 - **URL:** <https://www.goethe.de/de/spr/kup/prf/prf.html>
-- **Licence:** copyrighted compilations. **Not redistributable.**
-- **Therefore:** no Goethe-derived file is committed to this repository or
-  served from GitHub Pages, in any form — not the PDFs, not an extracted word
-  list, not a lemma→level mapping.
-- **How levels work instead:** see below. The learner may download the PDFs
-  themselves and run `npm run data:goethe` locally; the output
-  `goethe-levels.json` is gitignored and is loaded into IndexedDB on that
-  device through the *Import level list* screen.
-- **Enforcement:** `.gitignore` blocks the filenames, and
-  `validate-data.ts` fails the build if a committed lemma carries
-  `levelSource: "goethe-import"` or if a `goethe-levels.json` appears in
-  `data/`.
+- **Licence:** copyrighted compilations. The Goethe-Institut publishes the
+  Wortlisten free of charge but grants **no redistribution licence** for them.
+- **What is bundled:** `data/goethe-levels.json` — 3,277 headwords mapped to
+  A1 / A2 / B1 (A1 700, A2 691, B1 1,886), extracted from the three published
+  PDFs (Goethe-Zertifikat A1 Fit 1, A2 and B1 Wortliste). Only the headword and
+  its level are taken. The glosses, example phrases, thematic groupings,
+  layout and editorial matter of the lists are not copied.
+- **Why it is here:** the repository owner directed that the extraction be
+  committed rather than re-run by each learner, and took the copyright
+  question as theirs. That is an owner decision, not a licence finding —
+  nothing about the Goethe-Institut's terms changed, and the earlier position
+  in this file (that no Goethe-derived file would ever be committed) no longer
+  holds.
+- **If you fork this:** the file carries no redistribution licence to you.
+  Delete `data/goethe-levels.json` and re-run `npm run data:build` to fall
+  back to frequency-approximate levels, or get your own permission.
+- **How it is applied:** a lemma the mapping covers carries
+  `levelSource: "goethe-wortliste"` (2,798 lemmas); the rest fall back to
+  `levelSource: "frequency-approx"` (479 lemmas), described below.
+  `validate-data.ts` checks the mapping is well-formed and reports the split.
+- **Regenerating it:** `npm run data:goethe -- A1.pdf A2.pdf B1.pdf` against
+  the published PDFs. The PDFs themselves stay gitignored and are never
+  committed.
+
+## Excluded on purpose
 
 ### CEFR descriptors and Goethe exam specifications
 
@@ -145,15 +162,24 @@ level. No text is copied.
 
 ## How levels were decided, and how good they are
 
-No German frequency list was found whose licence clearly permits
-redistribution, so — as agreed — ordering falls back to **corpus frequency over
-the Tatoeba German sentences**, which are CC BY data already bundled here.
-Every lemma carries `levelSource: "frequency-approx"` and `freqRank`, and the
-app labels these levels **approximate**.
+Levels come from two places, in this order:
 
-Bands are sized to match the scale of the Goethe Wortlisten so that importing a
-real list later moves words between levels rather than changing the course
-size: **A1** ranks 1–650, **A2** 651–1650, **B1** 1651–3000.
+1. **The Goethe Wortlisten**, for the 2,798 lemmas they cover. These lemmas
+   carry `levelSource: "goethe-wortliste"` and the app shows their level as
+   exam-list level, not an estimate.
+2. **Corpus frequency over the Tatoeba German sentences** — CC BY data already
+   bundled here — for the remaining 479. No German frequency list was found
+   whose licence clearly permits redistribution, so ordering falls back to
+   counting. These lemmas carry `levelSource: "frequency-approx"` and
+   `freqRank`, and the app labels their level **approximate**.
+
+Frequency bands are sized to match the scale of the Wortlisten, so the two
+sources produce a comparable course size: **A1** ranks 1–650, **A2** 651–1650,
+**B1** 1651–3000.
+
+The lemma set itself is also chosen Goethe-first: every word on a Wortliste
+that Wiktionary can supply forms and glosses for is included, then the highest-
+frequency remaining lemmas fill the rest.
 
 Scoring is a deterministic count, not a model:
 
@@ -176,5 +202,6 @@ model-generated data, so the ambiguity is left in rather than guessed at.
 The clearest surviving artefact: **`einen` ("to unite") ranks far higher than
 its real frequency**, because every form it has is also a form of the article
 `ein`. It is a real German verb with a real Wiktionary entry — just much rarer
-than its rank suggests. Importing a Goethe list corrects orderings like this,
-which is what that feature is for.
+than its rank suggests. It is one of the 479 lemmas outside the Wortlisten, so
+nothing corrects its rank; where a word *is* on a Wortliste, that level wins
+over frequency.

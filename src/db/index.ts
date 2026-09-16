@@ -89,7 +89,7 @@ export async function saveSettings(patch: Partial<Settings>): Promise<Settings> 
   return next;
 }
 
-/** Wipes learner state. `keepLevelList` spares the on-device Goethe import. */
+/** Wipes learner state. `keepLevelList` spares an imported level-list override. */
 export async function resetAll(keepLevelList = true): Promise<void> {
   const db = await getDB();
   const stores: StoreName[] = keepLevelList

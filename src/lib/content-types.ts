@@ -61,8 +61,13 @@ export interface Lemma extends Provenance {
   };
   separable?: boolean;
   level?: Level;
-  /** How `level` was decided. Goethe levels only ever exist on-device. */
-  levelSource?: 'goethe-import' | 'frequency-approx';
+  /**
+   * How `level` was decided. `goethe-wortliste` comes from the bundled
+   * Goethe-Institut lists; `goethe-import` from a list the learner loaded on
+   * their own device; `frequency-approx` from corpus frequency, for words no
+   * list covers.
+   */
+  levelSource?: 'goethe-wortliste' | 'goethe-import' | 'frequency-approx';
   /** Rank in the frequency list used for the approximate ordering. */
   freqRank?: number;
 }

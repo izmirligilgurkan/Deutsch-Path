@@ -36,8 +36,10 @@ A few things worth knowing:
   write `ae oe ue ss` and it is accepted; tests are strict.
 - **Answers are case-sensitive** by default, because German capitalises nouns.
   Turn that off in Settings if you would rather not.
-- **Importing a Goethe word list is optional and needs a computer.** Skip it —
-  the app works fully without one.
+- **Levels come from the Goethe Wortlisten.** 2,798 of the 3,277 words are
+  tagged A1 / A2 / B1 from the official exam lists; the rest are estimated from
+  corpus frequency and labelled *approximate*. Nothing to import — it ships
+  with the app.
 - **Four ways to study:** a unit's drills, the spaced-repetition review queue,
   a 10-item daily test weighted toward your recent mistakes, and a 60-item
   level test at the end of each level. Anything you get wrong in a test is
@@ -113,7 +115,7 @@ scripts/
   build-exercises.ts   templates × lexicon × sentences             ✅
   validate-data.ts     fails CI if any sourcing rule is broken     ✅
   make-icons.mjs       regenerates public/icons/*.png              ✅
-  import-goethe.ts     learner-only, local; → goethe-levels.json   [phase 6]
+  build-goethe.ts      Wortliste PDFs → data/goethe-levels.json    ✅
 ```
 
 Run the whole thing (the kaikki dump is ~1 GB, so the fetch takes a while):
@@ -127,12 +129,13 @@ What it currently produces:
 
 | Output | Contents |
 |---|---|
-| `data/lexicon.json` | 3,000 lemmas with gender, plural, forms, glosses, provenance |
-| `data/sentences.json` | 8,286 sentences, 99.8% native-authored, 100% lemma coverage |
+| `data/lexicon/*.json` | 3,277 lemmas with gender, plural, forms, glosses, provenance |
+| `data/sentences/*.json` | 8,434 sentences, 97.6% native-authored, 97.4% lemma coverage |
 | `data/grammar/*.md` | 69 topics — 42 excerpted from Wikibooks, 27 honest stubs |
-| `data/exercises/*.json` | 4,139 items across 35 units, 12 exercise types |
+| `data/exercises/*.json` | 4,113 items across 35 units, 12 exercise types |
+| `data/goethe-levels.json` | 3,277 words tagged A1 / A2 / B1 from the Goethe Wortlisten |
 
-Total 10.6 MB, against the 15 MB budget.
+Total 10.8 MB, against the 15 MB budget.
 
 Sources: [kaikki.org](https://kaikki.org/dictionary/German/) (Wiktionary,
 CC BY-SA), [Tatoeba](https://tatoeba.org/en/downloads) (CC BY 2.0 FR / CC0),
@@ -144,55 +147,52 @@ sentence that cannot be fully lemmatised is dropped rather than guessed at.
 
 ## Goethe level lists
 
-The Goethe-Institut Wortlisten are the best public standard for which words
-belong to A1, A2 and B1 — and they are **copyrighted compilations**. So:
+Which words belong to A1, A2 and B1 comes from the **Goethe-Institut
+Wortlisten** — the published vocabulary lists for the Goethe-Zertifikat exams.
+`data/goethe-levels.json` maps 3,277 headwords to a level (A1 700, A2 691,
+B1 1,886), extracted from the three official PDFs. It is committed, so the app
+ships with real exam levels and there is nothing for you to import.
 
-1. You download the Wortlisten PDFs yourself from
-   [goethe.de](https://www.goethe.de/de/spr/kup/prf/prf.html).
-2. In a clone of this repo, install the dependencies **once** — the importer
-   runs through `tsx`, which lives in `node_modules`:
-   ```bash
-   npm install
-   ```
-3. Run the importer on your own machine:
-   ```bash
-   npm run data:goethe -- A1.pdf A2.pdf B1.pdf
-   ```
-   Pass all three lists if you have them. The B1 Wortliste repeats the A1 and
-   A2 vocabulary, so importing it alone marks every word B1; with all three,
-   each word takes the lowest level it appears at.
+Only headwords and levels are taken — no glosses, example phrases or layout
+from the lists. 2,798 of the course's lemmas match an entry and carry
+`levelSource: "goethe-wortliste"`. The remaining 479 fall back to corpus
+frequency over the Tatoeba German sentences and carry
+`levelSource: "frequency-approx"`; the app labels those levels **approximate**.
 
-   It writes `goethe-levels.json`, which is gitignored. Useful flags:
+The Wortlisten are copyrighted compilations and the Goethe-Institut grants no
+redistribution licence. Bundling the extraction here was the repository owner's
+decision, recorded in
+[DATA_LICENSES.md](DATA_LICENSES.md#goethe-institut-wortlisten-a1--a2--b1). If
+you fork this repository, that decision does not transfer: delete
+`data/goethe-levels.json` and re-run `npm run data:build` to fall back to
+frequency levels.
 
-   | Flag | What it does |
-   |---|---|
-   | `--preview` | Report what it found, write nothing |
-   | `--level B1` | Set the level when the filename doesn't say |
-   | `--out <path>` | Write somewhere other than the repo root |
-   | `--text` | Dump the raw PDF lines, to debug a layout it misreads |
+### Rebuilding the mapping
 
-4. In the app, open **Settings → Import level list** and load that file. It
-   goes into IndexedDB on that device and is never uploaded anywhere. Levels
-   across the app — unit vocabulary, the words-known counts, the dictionary —
-   switch from approximate to the imported ones immediately.
+```bash
+npm install                                    # once — the script runs via tsx
+npm run data:goethe -- A1.pdf A2.pdf B1.pdf    # → data/goethe-levels.json
+```
 
-The parser does not assume a fixed page layout, since the PDFs cannot be
-checked in as fixtures. It measures the document, scores each column by how
-often the word at that position is a lemma the course already knows, and picks
-the columns that actually look like a word list — then reports the match rate
-and a sample so you can check it before trusting the result. If it gets a
-layout wrong, `--text` shows the raw lines.
+Pass all three lists. The B1 Wortliste repeats the A1 and A2 vocabulary, so
+importing it alone marks every word B1; with all three, each word takes the
+lowest level it appears at. The PDFs themselves stay gitignored.
 
-Nothing Goethe-derived is committed to this repository or served from Pages.
-`.gitignore` blocks the filenames and `validate-data.ts` fails the build if a
-committed lemma carries `levelSource: "goethe-import"`.
+The parser measures the page rather than assuming a layout: it finds the text
+columns by x-position, keeps the ones whose lines are alphabetically ordered
+(the headword columns, recovered with a longest-increasing-subsequence pass so
+that continuation lines do not break the run), and reads the whole entry line
+rather than its first token — `die Ansage, -n` is the word *Ansage*, not *die*.
+Thematic groups that are not alphabetical are picked up separately by their
+`der/die/das` entries. It reports per-level counts against the published list
+sizes so a bad read is visible. `--preview` reports without writing, `--text`
+dumps raw lines.
 
-**Without a list**, vocabulary is ordered by frequency over the Tatoeba German
-corpus — CC BY data already bundled here — and the app labels levels
-**approximate**. No openly licensed German frequency list was found whose
-terms clearly permit redistribution, so none is bundled. The scoring method
-and its one known artefact are written up in
-[DATA_LICENSES.md](DATA_LICENSES.md#how-levels-were-decided-and-how-good-they-are).
+### Overriding on a device
+
+**Settings → Import level list** still accepts a `goethe-levels.json` on the
+device, which overrides the bundled mapping in IndexedDB. It is there if you
+want to re-level the course yourself; the app is complete without it.
 
 ## Your data
 
@@ -200,14 +200,14 @@ Everything the app knows about you lives in IndexedDB on your device: review
 history, unit progress, mistakes, settings. There is nowhere else for it to go.
 
 **Settings → Export progress** writes a JSON backup; **Import progress**
-restores it. The backup deliberately excludes the Goethe level list, so it can
-move between devices without carrying copyrighted material along.
+restores it. The backup holds your progress only — not the word lists, which
+ship with the app.
 
 ## Tech
 
 Vite + TypeScript + Preact, plain CSS with custom properties, `ts-fsrs` for
 scheduling, `idb` for storage, `vite-plugin-pwa` for offline. Vitest and
-Playwright for tests. The production bundle is ~16 kB gzipped.
+Playwright for tests. The app shell is ~39 kB gzipped.
 
 Preact over React: same API, a fraction of the bytes, and this app runs on a
 phone.
@@ -231,3 +231,6 @@ See [SYLLABUS.md](SYLLABUS.md) for the 35 units and their grammar topic ids.
 - **Code:** MIT — see [LICENSE](LICENSE).
 - **`data/`:** CC BY-SA 4.0, as share-alike requires — see
   [data/LICENSE](data/LICENSE) and [DATA_LICENSES.md](DATA_LICENSES.md).
+- **`data/goethe-levels.json` is the exception**: extracted from the
+  copyrighted Goethe-Institut Wortlisten and carrying no redistribution
+  licence. Delete it if you fork this and want a cleanly licensed `data/`.

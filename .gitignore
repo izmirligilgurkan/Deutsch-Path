@@ -6,12 +6,12 @@ dist-ssr/
 # Raw source dumps: large, and re-fetchable from their dated manifest.
 raw/
 
-# Goethe word lists are copyrighted. Neither the PDFs nor anything derived
-# from them may ever be committed (spec §3.1).
-goethe-levels.json
-**/goethe-levels.json
+# The source PDFs stay out of the repository; the extracted level list in
+# data/goethe-levels.json is committed deliberately — see DATA_LICENSES.md.
 *Wortliste*.pdf
 *wortliste*.pdf
+# A list a learner extracts for themselves, at the repository root.
+/goethe-levels.json
 
 # Test output
 playwright-report/

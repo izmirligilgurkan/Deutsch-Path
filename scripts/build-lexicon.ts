@@ -10,11 +10,13 @@
  * clearly permits redistribution, so rank comes from how often a lemma's forms
  * occur across the Tatoeba German corpus — CC-BY data we already bundle. Levels
  * derived this way are marked `levelSource: 'frequency-approx'` and the UI
- * labels them approximate. Importing a Goethe list on-device overrides them.
+ * labels them approximate. Words the bundled Goethe Wortlisten cover take
+ * their level from there instead, marked `goethe-wortliste`. Importing a Goethe list on-device overrides them.
  *
  *   npm run data:lexicon
  */
 import { existsSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { Form, Lemma } from '../src/lib/content-types.ts';
 import { formKey, words } from '../src/lib/tokenize.ts';
@@ -45,6 +47,23 @@ const LICENSE = 'CC-BY-SA-4.0';
  * Wortlisten (roughly 650 / 1300 / 2400 cumulative) so that importing a real
  * list later shifts words between levels rather than changing the course size.
  */
+/**
+ * The Goethe levels, when data/goethe-levels.json has been built. Words it
+ * covers take their level from it; the frequency bands below only decide the
+ * rest.
+ */
+const goethePath = join(DATA_DIR, 'goethe-levels.json');
+const goetheLevels: Record<string, 'A1' | 'A2' | 'B1'> = existsSync(goethePath)
+  ? (JSON.parse(await readFile(goethePath, 'utf8')) as Record<string, 'A1' | 'A2' | 'B1'>)
+  : {};
+// German capitalisation is semantic, so "essen" and "Essen" are looked up
+// separately; the folded map is only a fallback for a spelling difference.
+const goetheFolded = new Map(
+  Object.entries(goetheLevels).map(([word, level]) => [formKey(word), level]),
+);
+const goetheLevelFor = (word: string): 'A1' | 'A2' | 'B1' | undefined =>
+  goetheLevels[word] ?? goetheFolded.get(formKey(word));
+
 const BANDS: { level: 'A1' | 'A2' | 'B1'; upTo: number }[] = [
   { level: 'A1', upTo: 650 },
   { level: 'A2', upTo: 1650 },
@@ -278,9 +297,17 @@ const byScore = [...candidates.values()]
   .filter(isTeachable)
   .sort((a, b) => b.score - a.score || a.word.localeCompare(b.word, 'de'));
 
+/**
+ * Selection prefers the Goethe vocabulary: every listed word the data
+ * describes completely is taken, and frequency only fills the rest. Without
+ * this the course would teach whatever is frequent and merely *label* it with
+ * Goethe levels.
+ */
 const keptPerWord = new Map<string, { top: number; count: number }>();
 const ranked: Candidate[] = [];
-for (const c of byScore) {
+const target = Math.max(TOTAL_LEMMAS, Object.keys(goetheLevels).length);
+const inGoethe = (c: Candidate) => goetheLevelFor(c.word) !== undefined;
+for (const c of [...byScore.filter(inGoethe), ...byScore.filter((x) => !inGoethe(x))]) {
   const key = formKey(c.word);
   const seen = keptPerWord.get(key);
   if (!seen) {
@@ -295,7 +322,7 @@ for (const c of byScore) {
     continue;
   }
   ranked.push(c);
-  if (ranked.length >= TOTAL_LEMMAS) break;
+  if (ranked.length >= target) break;
 }
 
 function bandFor(rank: number): 'A1' | 'A2' | 'B1' {
@@ -311,8 +338,8 @@ const lexicon: Lemma[] = ranked.map((c, i) => {
     pos: c.pos,
     forms: c.forms,
     glosses: c.glosses,
-    level: bandFor(rank),
-    levelSource: 'frequency-approx',
+    level: goetheLevelFor(c.word) ?? bandFor(rank),
+    levelSource: goetheLevelFor(c.word) ? 'goethe-wortliste' : 'frequency-approx',
     freqRank: rank,
     source: SOURCE_NAME,
     sourceUrl: wiktionaryUrl(c.word),
@@ -380,6 +407,11 @@ for (const l of lexicon) {
 }
 console.log(`\n✓ data/lexicon.json — ${lexicon.length.toLocaleString()} lemmas`);
 console.log(`  by level: ${[...byLevel].map(([k, v]) => `${k} ${v}`).join(', ')}`);
+const fromGoethe = lexicon.filter((l) => l.levelSource === 'goethe-wortliste').length;
+console.log(
+  `  levels:   ${fromGoethe} from the Goethe lists, ` +
+    `${lexicon.length - fromGoethe} from corpus frequency`,
+);
 console.log(
   `  by pos:   ${[...byPos].sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(', ')}`,
 );

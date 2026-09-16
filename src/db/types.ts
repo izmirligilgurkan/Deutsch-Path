@@ -77,7 +77,7 @@ export interface TestResult {
   wrongExerciseIds: string[];
 }
 
-/** Lemma -> CEFR level, imported on-device from the learner's own Goethe PDFs. */
+/** Lemma -> CEFR level, imported on-device to override the bundled levels. */
 export interface LevelListEntry {
   lemma: string;
   level: Level;

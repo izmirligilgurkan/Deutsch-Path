@@ -3,96 +3,158 @@ import type { Level } from '../../src/lib/content-types.ts';
 /**
  * Parsing for the Goethe-Institut Wortlisten.
  *
- * These PDFs are copyrighted, so this code never sees one in this repository
- * and never runs in CI — it runs on the learner's machine against a file they
- * downloaded themselves, and its output is gitignored.
+ * The lists are laid out in fixed columns: a headword column and, beside it,
+ * an example column; larger lists put two such pairs side by side on a page.
+ * So the parser builds a column model of the document first and reads each
+ * headword column whole. Reading only a line's first token — which is what an
+ * earlier version did — turns every noun entry ("die Ansage, -n") into its
+ * article and silently loses every noun in the list.
  *
- * Because the layout cannot be checked in as a fixture, nothing here is tuned
- * to a fixed position on the page. The parser measures the document, picks the
- * columns whose first words actually look like German lemmas, and reports what
- * it decided so the learner can check it before anything is written.
+ * Within a headword column the entries are alphabetical, while the foreword,
+ * the principal-part lines that sit under a verb ("gibt ab", "hat abgegeben")
+ * and hyphenation fragments are not. The longest ascending run is therefore
+ * the list, and everything else falls away.
  */
 
-/** One rendered line of text, with where it starts on the page. */
-export interface PdfLine {
-  text: string;
-  /** Left edge, in PDF points. Headwords sit at a column margin. */
+/** One text item as the PDF places it. */
+export interface PdfItem {
   x: number;
+  y: number;
+  text: string;
   page: number;
-  font: string;
+}
+
+/** One line of a single column. */
+export interface ColumnLine {
+  column: number;
+  text: string;
+  page: number;
 }
 
 export function levelFromFilename(filename: string): Level | null {
-  // "Goethe-Zertifikat_B1_Wortliste.pdf", "start deutsch 1 a1 wortliste.pdf".
-  // Separators are normalised to spaces first: an underscore counts as a word
-  // character, so \b would not see a boundary in "_B1_" — which is exactly how
-  // the published filenames are written.
+  // Separators are normalised first: an underscore is a word character, so \b
+  // sees no boundary in "_B1_", which is how the published names are written.
   const name = filename.toUpperCase().replace(/[^A-Z0-9]+/g, ' ');
-  if (/\bA1\b|\bSTART DEUTSCH 1\b/.test(name)) return 'A1';
+  if (/\bA1\b|\bFIT1\b|\bSTART DEUTSCH 1\b/.test(name)) return 'A1';
   if (/\bA2\b/.test(name)) return 'A2';
   if (/\bB1\b/.test(name)) return 'B1';
   return null;
 }
 
-/** Grammatical annotations a Wortliste attaches to its headwords. */
-const TRAILING_NOISE = [
-  /\s*\(.*$/, // "(sich)", "(Präp. + Dat.)"
-  /\s*,.*$/, // ", der, -e"  — plural and gender markers
-  /\s*[;:].*$/,
-  /[*†‡¹²³⁰-⁹]+$/, // footnote markers
-];
+/**
+ * Column starts, taken from where text actually begins on the page.
+ *
+ * A position carrying a real share of the document's items is a column; the
+ * rest is incidental.
+ *
+ * Starts only merge when they are within a couple of points, i.e. the same
+ * column with sub-point jitter. The small indent the lists use for sub-entries
+ * — "arbeiten" at 143, "die Arbeit, -en" at 148 — is a column of its own:
+ * merged into the main one its entries interleave, and since "Arbeit" sorts
+ * before "arbeiten" the ascending run has to drop one of them. Read apart,
+ * both are kept.
+ */
+export function detectColumns(
+  items: PdfItem[],
+  { minShare = 0.015, mergeWithin = 2 }: { minShare?: number; mergeWithin?: number } = {},
+): number[] {
+  const counts = new Map<number, number>();
+  for (const item of items) {
+    const x = Math.round(item.x);
+    counts.set(x, (counts.get(x) ?? 0) + 1);
+  }
 
+  const threshold = items.length * minShare;
+  const candidates = [...counts.entries()]
+    .filter(([, n]) => n >= threshold)
+    .map(([x]) => x)
+    .sort((a, b) => a - b);
+
+  const columns: number[] = [];
+  for (const x of candidates) {
+    const last = columns[columns.length - 1];
+    if (last === undefined || x - last > mergeWithin) columns.push(x);
+  }
+  return columns;
+}
+
+/** Groups items into one line of text per (row, column). */
+export function toColumnLines(items: PdfItem[], columns: number[]): ColumnLine[] {
+  if (columns.length === 0) return [];
+
+  const columnOf = (x: number): number => {
+    let chosen = columns[0]!;
+    for (const start of columns) if (x >= start - 2) chosen = start;
+    return chosen;
+  };
+
+  const rows = new Map<string, PdfItem[]>();
+  for (const item of items) {
+    const key = `${item.page}|${item.y}`;
+    const row = rows.get(key);
+    if (row) row.push(item);
+    else rows.set(key, [item]);
+  }
+
+  const lines: ColumnLine[] = [];
+  for (const row of rows.values()) {
+    row.sort((a, b) => a.x - b.x);
+    const byColumn = new Map<number, string[]>();
+    for (const item of row) {
+      const column = columnOf(item.x);
+      const parts = byColumn.get(column);
+      if (parts) parts.push(item.text);
+      else byColumn.set(column, [item.text]);
+    }
+    for (const [column, parts] of byColumn) {
+      lines.push({
+        column,
+        page: row[0]!.page,
+        text: parts.join(' ').replace(/\s+/g, ' ').trim(),
+      });
+    }
+  }
+  return lines;
+}
+
+/** Leading markers the lists attach before a headword. */
+const LEADING_MARKER = /^\((?:sich|etwas|jemanden?|jdn?|jdm?|etw)\.?\)\s*/i;
 const LEADING_ARTICLE = /^(?:der|die|das)\s+/i;
 
 /**
- * Reduces a raw line to the lemma it announces, or null when the line is not
- * a headword at all. Selection and trimming only — no word is altered.
+ * Reduces one headword line to the lemma it announces, or null.
+ *
+ * Selection and trimming only: the article, the gender and plural markers
+ * after the comma, and any parenthesised note are removed, and nothing is
+ * rewritten.
  */
-export function normalizeHeadword(raw: string): string | null {
-  let word = raw.trim();
-  if (word.length === 0) return null;
+export function normalizeHeadword(line: string): string | null {
+  // A digit anywhere means page furniture or a numbered example, never a
+  // headword — checked before trimming, so "Seite 12" cannot become "Seite".
+  if (/\d/.test(line)) return null;
 
+  let word = line.trim();
+  word = word.replace(LEADING_MARKER, '');
   word = word.replace(LEADING_ARTICLE, '');
-  for (const pattern of TRAILING_NOISE) word = word.replace(pattern, '');
-  word = word.replace(/^[^A-Za-zÄÖÜäöüß]+/, '').replace(/[^A-Za-zÄÖÜäöüß)]+$/, '');
+  // ", -n" / ", der, -e" / "; …" / "(Präp. + Dat.)"
+  word = word.replace(/\s*[,;:(].*$/, '');
+  word = word.replace(/[*†‡¹²³⁰-⁹]+$/, '');
   word = word.trim();
 
-  if (word.length < 2) return null; // alphabet section headers: "A", "B", …
-  // Checked against the raw line, not the cleaned word: "Seite 12" in a page
-  // footer would otherwise reduce to "Seite", which is a real German noun and
-  // would be accepted.
-  if (/\d/.test(raw)) return null;
-  // Separable verbs are one word in the infinitive, so a space here means the
-  // line is a phrase or an example sentence, not a headword.
-  if (/\s/.test(word)) return null;
-  if (word.length > 30) return null;
-  if (!/^[A-Za-zÄÖÜäöüß][A-Za-zÄÖÜäöüß'-]*$/.test(word)) return null;
-
+  if (word.length < 2) return null;
+  // The lists write derived stems as "all-", "ander-", "Lieblings-"; those are
+  // real entries, so a trailing hyphen is kept.
+  if (!/^[A-Za-zÄÖÜäöüß][A-Za-zÄÖÜäöüß'’\- ]*$/.test(word)) return null;
+  if (word.length > 40) return null;
   return word;
 }
 
-/** The first whitespace-delimited token of a line. */
-export function firstToken(line: string): string {
-  return line.trim().split(/\s+/)[0] ?? '';
-}
-
-/** German collation, built once: it is called a lot inside the search below. */
 const collator = new Intl.Collator('de', { sensitivity: 'base' });
 
 /**
- * Indices of the longest strictly increasing run of words, in document order.
+ * Indices of the longest strictly increasing run, in document order.
  *
- * This is what actually recovers the headwords. A column in these lists is not
- * a clean list of them: an entry occupies several lines at the same position
- * and in the same face — the headword, then its principal parts, then an
- * example ("abschreiben", "schrieb", "hat", "das", "Matura"). Only the first
- * line of each entry is a headword, and nothing local distinguishes it.
- *
- * What does distinguish it is global: the headwords ascend through the whole
- * document and the continuation lines do not, so the headwords are the longest
- * increasing subsequence and the rest is noise around it.
- *
- * Strictly increasing, so a column of one repeated word cannot score.
+ * Strict, so a column of one repeated word cannot score.
  */
 export function longestIncreasingSubsequence(words: string[]): number[] {
   if (words.length === 0) return [];
@@ -101,7 +163,6 @@ export function longestIncreasingSubsequence(words: string[]): number[] {
   const parent = new Array<number>(words.length).fill(-1);
 
   for (let i = 0; i < words.length; i++) {
-    // First tail whose word is not less than this one.
     let lo = 0;
     let hi = tails.length;
     while (lo < hi) {
@@ -123,128 +184,79 @@ export function longestIncreasingSubsequence(words: string[]): number[] {
   return out.reverse();
 }
 
-export interface ColumnGroup {
-  x: number;
-  font: string;
+export interface ColumnReport {
+  column: number;
   lines: number;
-  /** Lines whose first token could be a headword at all. */
-  words: number;
-  /** Length of the ascending run — the headwords this column yields. */
+  candidates: number;
   headwords: number;
-  /** headwords / words. Near 0.5 for a real column, near 0.02 for prose. */
   ratio: number;
-  /** Share of the headwords the course knows. Informational only. */
-  knownRate: number;
-  /** The headwords themselves, in document order. */
-  extracted: string[];
+  kept: boolean;
   sample: string[];
-}
-
-export interface ColumnChoice {
-  keys: Set<string>;
-  /** Headwords found across the accepted columns. */
-  headwords: number;
-  diagnostics: ColumnGroup[];
-}
-
-export function groupKey(x: number, font: string): string {
-  return `${Math.round(x)}|${font}`;
+  extracted: string[];
 }
 
 /**
- * Picks the columns the headwords are in.
+ * Reads every column and keeps the ones that hold a word list.
  *
- * Scoring is by how long an ascending run the column contains, not by how much
- * of it the course knows and not by how well sorted it is overall. The lists
- * run to thousands of entries, most outside a 3,000-lemma course vocabulary,
- * so overlap picked example sentences instead; and because entries span
- * several lines, even a true headword column is only about 60% ordered, which
- * is too close to the 50% that sentences reach by chance.
- *
- * An ascending run separates them cleanly: a headword column of 1,567 lines
- * yields around 780 ascending words, while an example column of 1,940 yields
- * about 24 — the square-root behaviour of a random sequence.
+ * A headword column yields an ascending run over most of its candidates; an
+ * example column yields the square-root-sized run of a random sequence. On the
+ * published lists the two sit at 65-80% against 10-17%, so the cut is wide.
  */
-export function chooseHeadwordColumns(
-  lines: PdfLine[],
-  isKnownLemma: (word: string) => boolean,
-  {
-    // Low enough to keep the indented sub-entry columns, which the A1 foreword
-    // states are part of the required vocabulary. The ratio guard below is
-    // what rejects noise, not this floor.
-    minHeadwords = 30,
-    minRatio = 0.15,
-  }: { minHeadwords?: number; minRatio?: number } = {},
-): ColumnChoice {
-  const groups = new Map<string, PdfLine[]>();
-  for (const line of lines) {
-    const key = groupKey(line.x, line.font);
-    const bucket = groups.get(key);
-    if (bucket) bucket.push(line);
-    else groups.set(key, [line]);
-  }
+export function readColumns(
+  lines: ColumnLine[],
+  columns: number[],
+  // Low enough to keep a sub-entry column, which is short but genuine; the
+  // ratio is what rejects example columns, not the size.
+  { minHeadwords = 25, minRatio = 0.35 }: { minHeadwords?: number; minRatio?: number } = {},
+): ColumnReport[] {
+  return columns.map((column) => {
+    const raw = lines.filter((l) => l.column === column).map((l) => l.text);
+    const candidates = raw
+      .map((text) => normalizeHeadword(text))
+      .filter((w): w is string => w !== null);
 
-  const diagnostics: ColumnGroup[] = [];
-  for (const [key, group] of groups) {
-    const [xPart, ...fontParts] = key.split('|');
-    const words: string[] = [];
-    for (const line of group) {
-      const word = normalizeHeadword(firstToken(line.text));
-      if (word) words.push(word);
-    }
-    if (words.length === 0) continue;
+    const extracted = longestIncreasingSubsequence(candidates).map((i) => candidates[i]!);
+    const ratio = candidates.length > 0 ? extracted.length / candidates.length : 0;
+    const kept = extracted.length >= minHeadwords && ratio >= minRatio;
 
-    const extracted = longestIncreasingSubsequence(words).map((i) => words[i]!);
-    const matched = extracted.filter((w) => isKnownLemma(w)).length;
-
-    diagnostics.push({
-      x: Number(xPart),
-      font: fontParts.join('|'),
-      lines: group.length,
-      words: words.length,
+    return {
+      column,
+      lines: raw.length,
+      candidates: candidates.length,
       headwords: extracted.length,
-      ratio: extracted.length / words.length,
-      knownRate: extracted.length > 0 ? matched / extracted.length : 0,
-      extracted,
-      sample: extracted.slice(0, 6),
-    });
-  }
-
-  // Ranked by how many headwords they yield, which is the thing being looked
-  // for; ranking by rate buried the real columns under tiny perfect groups.
-  diagnostics.sort((a, b) => b.headwords - a.headwords);
-
-  const accepted = diagnostics.filter(
-    (d) => d.headwords >= minHeadwords && d.ratio >= minRatio,
-  );
-
-  return {
-    keys: new Set(accepted.map((d) => groupKey(d.x, d.font))),
-    headwords: accepted.reduce((n, d) => n + d.headwords, 0),
-    diagnostics,
-  };
+      ratio,
+      kept,
+      sample: extracted.slice(0, 5),
+      extracted: kept ? extracted : [],
+    };
+  });
 }
 
-/** Merges the accepted columns' headwords, deduplicated, in document order. */
-export function extractHeadwords(
-  choice: ColumnChoice,
-  isKnownLemma: (word: string) => boolean,
-): { known: string[]; unknown: string[] } {
-  const known: string[] = [];
-  const unknown: string[] = [];
-  const seen = new Set<string>();
+/**
+ * A line that is exactly an article and one noun, with an optional plural
+ * marker: "der Tag, -e", "das Wochenende", "die Woche, -e".
+ *
+ * The lists open with a Wortgruppenliste — days, months, seasons, times —
+ * laid out as a grid of these rather than alphabetically, so the ascending run
+ * cannot see them. That section holds core vocabulary (Tag, Jahr, Montag,
+ * Januar), and leaving it out pushed those words to whichever later list did
+ * catch them.
+ *
+ * Being an exact match, this cannot swallow an example sentence: "Die Kinder
+ * spielen auf der Straße." has more than one word after its article.
+ */
+const ARTICLE_ENTRY = /^(?:der|die|das)\s+([A-ZÄÖÜ][A-Za-zÄÖÜäöüß-]*)\s*(?:,.*)?$/;
 
-  for (const group of choice.diagnostics) {
-    if (!choice.keys.has(groupKey(group.x, group.font))) continue;
-    for (const word of group.extracted) {
-      const key = word.toLocaleLowerCase('de-DE');
-      if (seen.has(key)) continue;
-      seen.add(key);
-      (isKnownLemma(word) ? known : unknown).push(word);
-    }
+/** Article-and-noun entries anywhere in the document, in order of appearance. */
+export function extractArticleEntries(lines: ColumnLine[]): string[] {
+  const out: string[] = [];
+  for (const line of lines) {
+    if (/\d/.test(line.text)) continue;
+    const match = ARTICLE_ENTRY.exec(line.text.trim());
+    const word = match?.[1];
+    if (word && word.length >= 2) out.push(word);
   }
-
-  return { known, unknown };
+  return out;
 }
 
 const LEVEL_ORDER: Record<Level, number> = { A1: 0, A2: 1, B1: 2 };
@@ -252,9 +264,8 @@ const LEVEL_ORDER: Record<Level, number> = { A1: 0, A2: 1, B1: 2 };
 /**
  * Merges the lists.
  *
- * The B1 Wortliste repeats the A1 and A2 vocabulary, so a word present in
- * several lists takes the lowest level it appears at — that is the level it is
- * actually introduced.
+ * They are cumulative — the B1 Wortliste repeats the A1 and A2 vocabulary — so
+ * a word belongs to the lowest level it appears at.
  */
 export function mergeLevels(entries: { lemma: string; level: Level }[]): Record<string, Level> {
   const out: Record<string, Level> = {};

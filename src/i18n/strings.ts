@@ -39,7 +39,7 @@ export const en = {
     placement: 'Placement test',
     placementHint: 'About 30 adaptive items. Unlocks units up to your level.',
     importList: 'Import level list',
-    importListHint: 'Optional. Load a Goethe word list you generated yourself.',
+    importListHint: 'Goethe levels already ship with the app. Load your own list to override them.',
   },
 
   common: {

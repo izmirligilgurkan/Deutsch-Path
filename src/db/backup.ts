@@ -5,9 +5,9 @@ import { DB_VERSION } from './schema.ts';
 /**
  * Export / import of learner progress (spec §4.8).
  *
- * The Goethe level list is deliberately *excluded*: it is derived from
- * copyrighted material and must stay on the device that imported it, so a
- * backup file can be moved between devices without carrying it along.
+ * An imported level list is deliberately *excluded*: the app already ships the
+ * Goethe levels, so a backup carries progress only and stays small. Re-import
+ * the list on the new device if you were overriding them.
  */
 
 export const BACKUP_FORMAT = 'deutsch-path-backup';

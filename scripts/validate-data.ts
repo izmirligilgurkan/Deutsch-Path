@@ -110,9 +110,15 @@ async function validateLexicon(): Promise<Map<string, AnyRecord>> {
       }
     }
 
-    // A Goethe level must never reach the repo; only on-device imports may set it.
-    if (lemma['levelSource'] === 'goethe-import') {
-      fail(where, 'Goethe-derived level found in committed data — this must stay on-device only');
+    // Levels are either from the bundled Goethe lists, from a learner's own
+    // on-device import, or from corpus frequency. Anything else is a bug in
+    // the build rather than a licensing problem.
+    const levelSource = lemma['levelSource'];
+    if (
+      levelSource !== undefined &&
+      !['goethe-wortliste', 'goethe-import', 'frequency-approx'].includes(String(levelSource))
+    ) {
+      fail(where, `unknown levelSource "${String(levelSource)}"`);
     }
 
     const level = String(lemma['level']);
@@ -252,13 +258,32 @@ async function validateGrammar(): Promise<void> {
   }
 }
 
-async function checkNoGoetheData(): Promise<void> {
-  // Belt and braces: the import output must never be committed.
-  for (const name of ['goethe-levels.json', 'goethe.json']) {
-    if (existsSync(join(DATA_DIR, name))) {
-      fail(`data/${name}`, 'Goethe-derived file must never be committed');
-    }
+/**
+ * The bundled Goethe level list.
+ *
+ * It is committed deliberately — see DATA_LICENSES.md — so what is checked
+ * here is that it is well formed, not that it is absent.
+ */
+async function checkGoetheLevels(): Promise<void> {
+  const path = join(DATA_DIR, 'goethe-levels.json');
+  const levels = await readJson<Record<string, unknown>>(path);
+  if (!levels) {
+    notes.push('data/goethe-levels.json not present — levels fall back to corpus frequency.');
+    return;
   }
+  if (typeof levels !== 'object' || Array.isArray(levels)) {
+    fail('goethe-levels.json', 'expected a JSON object mapping word → level');
+    return;
+  }
+
+  let bad = 0;
+  for (const [word, level] of Object.entries(levels)) {
+    if (!['A1', 'A2', 'B1'].includes(String(level))) {
+      if (bad++ < 5) fail('goethe-levels.json', `"${word}" has level "${String(level)}"`);
+    }
+    if (word.trim().length === 0) fail('goethe-levels.json', 'empty key');
+  }
+  notes.push(`data/goethe-levels.json holds ${Object.keys(levels).length} words.`);
 }
 
 async function checkSize(): Promise<void> {
@@ -284,7 +309,7 @@ const lemmas = await validateLexicon();
 const sentences = await validateSentences();
 await validateExercises(lemmas, sentences);
 await validateGrammar();
-await checkNoGoetheData();
+await checkGoetheLevels();
 await checkSize();
 
 for (const note of notes) console.log(`note  ${note}`);

@@ -47,7 +47,7 @@ export interface DeutschPathDB extends DBSchema {
     value: TestResult;
     indexes: { 'by-ts': number; 'by-kind': string };
   };
-  /** Goethe import lives here and nowhere else. Never committed, never served. */
+  /** A learner-imported level list, overriding the bundled Goethe levels. */
   levelList: {
     key: string;
     value: LevelListEntry;

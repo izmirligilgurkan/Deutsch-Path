@@ -1,4 +1,4 @@
-The contents of this directory are licensed under
+Everything in this directory EXCEPT goethe-levels.json is licensed under
 
     Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
     https://creativecommons.org/licenses/by-sa/4.0/
@@ -10,7 +10,7 @@ They are derived from openly licensed sources, principally:
     https://kaikki.org/dictionary/German/
 
   * The Tatoeba Project — CC BY 2.0 FR, with some sentences under CC0 1.0.
-    Per-sentence ids and authors are retained in sentences.json.
+    Per-sentence ids and authors are retained in sentences/*.json.
     https://tatoeba.org/en/downloads
 
   * Wikibooks: German — CC BY-SA 4.0.
@@ -23,5 +23,9 @@ Each record carries its own `source`, `sourceUrl`/`sourceId` and `license`
 fields. See DATA_LICENSES.md in the repository root for the full register and
 the modifications made to each source.
 
-NOT INCLUDED: the Goethe-Institut Wortlisten are copyrighted compilations and
-are never redistributed here, in any form. See DATA_LICENSES.md.
+EXCEPTION — goethe-levels.json: this file maps 3,277 headwords to A1 / A2 / B1
+and is extracted from the Goethe-Institut Wortlisten, which are copyrighted
+compilations carrying no redistribution licence. It is NOT covered by the
+CC BY-SA 4.0 grant above and is bundled by the repository owner's decision, not
+under any licence from the Goethe-Institut. See DATA_LICENSES.md. Delete it and
+re-run `npm run data:build` for a directory that is wholly CC BY-SA 4.0.

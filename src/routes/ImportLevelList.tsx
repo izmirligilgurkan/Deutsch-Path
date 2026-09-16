@@ -8,12 +8,12 @@ import type { LevelListEntry } from '~/db/types.ts';
 import { t } from '~/i18n/strings.ts';
 
 /**
- * On-device import of the learner's own Goethe word list (spec §3.1).
+ * On-device override of the bundled Goethe levels.
  *
- * The Goethe Wortlisten are copyrighted compilations. They are never committed
- * to the repo and never served from Pages: the learner runs
- * scripts/import-goethe.ts locally against PDFs they downloaded themselves,
- * then loads the resulting JSON here, into IndexedDB on their own device.
+ * The app ships data/goethe-levels.json, so nothing needs importing. This
+ * screen stays for the learner who wants to re-level the course from their own
+ * extraction: the JSON they load goes into IndexedDB on this device only and
+ * takes precedence over the bundled mapping.
  */
 
 const LEVELS = new Set<Level>(['A1', 'A2', 'B1']);
@@ -56,7 +56,7 @@ export function ImportLevelList() {
       invalidateCourseLexicon();
       setStatus({
         kind: 'ok',
-        text: `Imported ${entries.length} words. Your levels now come from the Goethe list.`,
+        text: `Imported ${entries.length} words. Your levels now come from this list.`,
       });
     } catch (err) {
       setStatus({ kind: 'bad', text: `Import failed: ${String(err instanceof Error ? err.message : err)}` });
@@ -68,40 +68,38 @@ export function ImportLevelList() {
     await db.clear('levelList');
     await updateSettings({ levelListImportedAt: null });
     invalidateCourseLexicon();
-    setStatus({ kind: 'ok', text: 'Level list cleared. Back to approximate levels.' });
+    setStatus({ kind: 'ok', text: 'Level list cleared. Back to the bundled Goethe levels.' });
   }
 
   return (
     <Screen title={t.settings.importLevelList} subtitle="Stays on this device">
       <div class="notice">
         <p class="small" style="margin:0">
-          <strong>Optional, and it needs a computer.</strong> The app works fully without it —
-          levels are then ordered by corpus frequency and labelled approximate. Skip this unless
-          you want the official Goethe levels.
+          <strong>You do not need this.</strong> The app already ships the Goethe-Institut
+          A1 / A2 / B1 word lists — 3,277 words. This screen is only for replacing them with a
+          list of your own.
         </p>
       </div>
 
       <div class="card">
         <p class="small">
-          The Goethe-Institut Wortlisten are the best public standard for which words belong to
-          A1, A2 and B1 — but they are copyrighted compilations, so this app never ships them.
+          Words outside the Goethe lists are ordered by corpus frequency and their level is
+          labelled “approximate”. Loading your own list re-levels the whole course.
         </p>
         <ol class="small" style="padding-left:18px">
-          <li>Download the Wortlisten PDFs yourself from goethe.de.</li>
           <li>
-            In a clone of the repo, run <code class="mono">npm install</code> once, then{' '}
-            <code class="mono">npm run data:goethe -- A1.pdf A2.pdf B1.pdf</code>. It writes{' '}
-            <code class="mono">goethe-levels.json</code>, which is gitignored.
+            The file is a JSON object mapping word → level, e.g.{' '}
+            <code class="mono">{'{"Haus":"A1","Vertrag":"B1"}'}</code>.
           </li>
           <li>
-            Pass all three lists if you have them — the B1 Wortliste repeats the A1 and A2
-            vocabulary, so on its own everything comes out as B1.
+            To rebuild it from the Wortliste PDFs, run{' '}
+            <code class="mono">npm run data:goethe -- A1.pdf A2.pdf B1.pdf</code> in a clone of
+            the repo.
           </li>
-          <li>Load that file below. It is written to IndexedDB and never uploaded anywhere.</li>
+          <li>Load it below. It goes into IndexedDB on this device and is never uploaded.</li>
         </ol>
         <p class="small muted">
-          Without a list, vocabulary is ordered by corpus frequency and levels are labelled
-          “approximate”.
+          Clearing the list brings back the bundled levels.
         </p>
       </div>
 
@@ -118,10 +116,10 @@ export function ImportLevelList() {
         <p class="small muted" style="margin:0">
           {settings.levelListImportedAt
             ? `Last imported ${new Date(settings.levelListImportedAt).toLocaleString()}.`
-            : 'No list imported on this device.'}
+            : 'Using the bundled Goethe levels.'}
         </p>
         <label class="btn btn-primary btn-block" style="cursor:pointer">
-          Choose goethe-levels.json
+          Choose a level list
           <input
             type="file" accept="application/json,.json" class="visually-hidden"
             onChange={(e) => { void onFile(e); }}

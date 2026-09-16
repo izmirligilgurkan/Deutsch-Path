@@ -18,7 +18,7 @@
     "data:sentences": "tsx scripts/build-sentences.ts",
     "data:grammar": "tsx scripts/build-grammar.ts",
     "data:exercises": "tsx scripts/build-exercises.ts",
-    "data:goethe": "tsx scripts/import-goethe.ts",
+    "data:goethe": "tsx scripts/build-goethe.ts",
     "data:validate": "tsx scripts/validate-data.ts",
     "data:build": "npm run data:lexicon && npm run data:sentences && npm run data:grammar && npm run data:exercises && npm run data:validate"
   },

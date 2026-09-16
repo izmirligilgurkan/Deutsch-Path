@@ -1,22 +1,24 @@
 import { describe, expect, it } from 'vitest';
 import {
-  chooseHeadwordColumns,
-  longestIncreasingSubsequence,
-  extractHeadwords,
-  firstToken,
-  groupKey,
+  detectColumns,
+  extractArticleEntries,
   levelFromFilename,
+  longestIncreasingSubsequence,
   mergeLevels,
   normalizeHeadword,
-  type PdfLine,
+  readColumns,
+  toColumnLines,
+  type ColumnLine,
+  type PdfItem,
 } from '../../scripts/lib/goethe-parse.ts';
 
 describe('levelFromFilename', () => {
   it('reads the level out of the published filenames', () => {
+    // Underscores are word characters, so \b sees no boundary in "_B1_".
     expect(levelFromFilename('Goethe-Zertifikat_B1_Wortliste.pdf')).toBe('B1');
     expect(levelFromFilename('Goethe-Zertifikat_A2_Wortliste.pdf')).toBe('A2');
+    expect(levelFromFilename('Goethe-Zertifikat_A1_Fit1_Wortliste.pdf')).toBe('A1');
     expect(levelFromFilename('Start_Deutsch_1_Wortliste.pdf')).toBe('A1');
-    expect(levelFromFilename('goethe a1 wortliste.pdf')).toBe('A1');
   });
 
   it('says so when the name carries no level, rather than guessing', () => {
@@ -25,172 +27,167 @@ describe('levelFromFilename', () => {
 });
 
 describe('normalizeHeadword', () => {
-  it('drops the article a list prints with a noun', () => {
-    expect(normalizeHeadword('der Abend')).toBe('Abend');
-    expect(normalizeHeadword('die Brücke')).toBe('Brücke');
+  it('reads the whole entry, not just its first word', () => {
+    // The bug this replaced: taking the first token turned every noun entry
+    // into its article, losing every noun in the list.
+    expect(normalizeHeadword('die Ansage, -n')).toBe('Ansage');
+    expect(normalizeHeadword('der Arbeitsplatz, -ä, e')).toBe('Arbeitsplatz');
+    expect(normalizeHeadword('das Wochenende')).toBe('Wochenende');
   });
 
-  it('drops gender and plural markers', () => {
-    expect(normalizeHeadword('Abend, der, -e')).toBe('Abend');
-    expect(normalizeHeadword('Haus, das, ¨-er')).toBe('Haus');
+  it('drops the reflexive marker the lists print before a verb', () => {
+    expect(normalizeHeadword('(sich) anziehen')).toBe('anziehen');
   });
 
-  it('drops grammatical annotations in brackets', () => {
+  it('drops a grammatical note in brackets', () => {
     expect(normalizeHeadword('ab (Präp. + Dat.)')).toBe('ab');
-    expect(normalizeHeadword('freuen (sich)')).toBe('freuen');
   });
 
-  it('keeps a separable verb whole', () => {
-    expect(normalizeHeadword('anfangen')).toBe('anfangen');
+  it('keeps a derived stem, which the lists write with a trailing hyphen', () => {
+    expect(normalizeHeadword('all-')).toBe('all-');
+    expect(normalizeHeadword('Lieblings-')).toBe('Lieblings-');
   });
 
-  it('rejects the alphabet section headers', () => {
-    expect(normalizeHeadword('A')).toBeNull();
-    expect(normalizeHeadword('B')).toBeNull();
-  });
-
-  it('rejects page furniture and anything with digits', () => {
+  it('rejects anything carrying a digit, before trimming could hide it', () => {
+    // "Seite 12" in a footer would otherwise reduce to the real noun "Seite".
     expect(normalizeHeadword('Seite 12')).toBeNull();
-    expect(normalizeHeadword('2024')).toBeNull();
+    expect(normalizeHeadword('0.03 Uhr = null Uhr drei')).toBeNull();
   });
 
-  it('rejects a phrase, which is not a headword', () => {
-    expect(normalizeHeadword('Am Abend gehe ich')).toBeNull();
+  it('rejects a section header and an empty line', () => {
+    expect(normalizeHeadword('A')).toBeNull();
+    expect(normalizeHeadword('   ')).toBeNull();
   });
 
-  it('keeps umlauts and eszett intact', () => {
+  it('keeps umlauts and eszett', () => {
+    expect(normalizeHeadword('die Tür, -en')).toBe('Tür');
     expect(normalizeHeadword('groß')).toBe('groß');
-    expect(normalizeHeadword('Tür')).toBe('Tür');
   });
 });
 
-describe('firstToken', () => {
-  it('takes the leading word', () => {
-    expect(firstToken('  Abend, der, -e  ')).toBe('Abend,');
-    expect(firstToken('')).toBe('');
+describe('detectColumns', () => {
+  const items = (xs: number[]): PdfItem[] =>
+    xs.map((x, i) => ({ x, y: i, text: 'w', page: 1 }));
+
+  it('finds the positions text actually starts at', () => {
+    const list = items([
+      ...Array.from({ length: 100 }, () => 143),
+      ...Array.from({ length: 100 }, () => 237),
+      12, 99, // incidental
+    ]);
+    expect(detectColumns(list)).toEqual([143, 237]);
+  });
+
+  it('keeps the sub-entry indent as its own column', () => {
+    // "arbeiten" at 143 and "die Arbeit, -en" at 148 interleave when merged,
+    // and since "Arbeit" sorts before "arbeiten" the ascending run has to drop
+    // one of them.
+    const list = items([
+      ...Array.from({ length: 100 }, () => 143),
+      ...Array.from({ length: 40 }, () => 148),
+    ]);
+    expect(detectColumns(list)).toEqual([143, 148]);
+  });
+
+  it('still merges sub-point jitter', () => {
+    const list = items([
+      ...Array.from({ length: 100 }, () => 143),
+      ...Array.from({ length: 100 }, () => 144),
+    ]);
+    expect(detectColumns(list)).toEqual([143]);
   });
 });
 
-describe('chooseHeadwordColumns', () => {
-  const known = new Set(['Abend', 'Brücke', 'Haus', 'Kind', 'Wasser', 'gehen']);
-  const isKnown = (w: string) => known.has(w);
+describe('toColumnLines', () => {
+  it('splits a row into one line per column', () => {
+    const items: PdfItem[] = [
+      { x: 143, y: 500, text: 'die Ansage, -n', page: 1 },
+      { x: 237, y: 500, text: 'Hören Sie die Ansagen.', page: 1 },
+    ];
+    const lines = toColumnLines(items, [143, 237]);
+    expect(lines).toHaveLength(2);
+    expect(lines.find((l) => l.column === 143)?.text).toBe('die Ansage, -n');
+    expect(lines.find((l) => l.column === 237)?.text).toBe('Hören Sie die Ansagen.');
+  });
 
-  /** 900 sorted pseudo-headwords, letters only. */
-  const headwords = Array.from({ length: 900 }, (_, i) => {
-    const a = String.fromCharCode(97 + Math.floor(i / 900 ** (1 / 2)) % 26);
-    return `${a}${String.fromCharCode(97 + (i % 26))}wort${'x'.repeat(i % 5)}`;
-  }).sort((a, b) => a.localeCompare(b, 'de'));
+  it('joins items that belong to the same column', () => {
+    const items: PdfItem[] = [
+      { x: 143, y: 500, text: '(sich)', page: 1 },
+      { x: 166, y: 500, text: 'anziehen', page: 1 },
+    ];
+    expect(toColumnLines(items, [143])[0]!.text).toBe('(sich) anziehen');
+  });
+});
 
-  /**
-   * A column as the real lists build one: the headword, then continuation
-   * lines of its entry at the same position and in the same face.
-   */
-  function entryColumn(words: string[], { x = 35, font = 'F3' } = {}): PdfLine[] {
-    const noise = ['schrieb', 'hat', 'das', 'Matura', 'gibt', 'ist'];
-    const lines: PdfLine[] = [];
-    words.forEach((word, i) => {
-      lines.push({ text: `${word}, der, -e`, x, page: 1, font });
-      lines.push({ text: noise[i % noise.length]!, x, page: 1, font });
+describe('readColumns', () => {
+  const headwords = Array.from({ length: 300 }, (_, i) =>
+    `${String.fromCharCode(97 + Math.floor(i / 26))}${String.fromCharCode(97 + (i % 26))}wort`,
+  ).sort((a, b) => a.localeCompare(b, 'de'));
+
+  function lines(): ColumnLine[] {
+    const out: ColumnLine[] = [];
+    headwords.forEach((w, i) => {
+      out.push({ column: 143, text: `die ${w[0]!.toUpperCase()}${w.slice(1)}, -n`, page: 1 });
+      // The example beside it, and a principal-part line under the entry.
+      out.push({ column: 237, text: `Ein Satz über ${w} und mehr.`, page: 1 });
+      if (i % 3 === 0) out.push({ column: 143, text: 'hat gemacht', page: 1 });
     });
-    return lines;
+    return out;
   }
 
-  it('recovers the headwords from a column of multi-line entries', () => {
-    // The real shape: only the first line of each entry is a headword, and
-    // nothing local marks it. This was scoring ~60% ordered and being rejected.
-    const choice = chooseHeadwordColumns(entryColumn(headwords), isKnown);
-    expect(choice.keys.size).toBe(1);
-    // Not every one survives: the generator repeats a few at base collation,
-    // and a continuation word occasionally fits the chain. The point is that
-    // the bulk of the column is recovered and the noise is not.
-    expect(choice.headwords).toBeGreaterThan(headwords.length * 0.8);
-    const picked = choice.diagnostics[0]!;
-    expect(picked.extracted).not.toContain('schrieb');
-    expect(picked.extracted).not.toContain('Matura');
+  it('keeps the headword column and drops the example column', () => {
+    const reports = readColumns(lines(), [143, 237]);
+    const head = reports.find((r) => r.column === 143)!;
+    const example = reports.find((r) => r.column === 237)!;
+    expect(head.kept).toBe(true);
+    expect(example.kept).toBe(false);
+    expect(head.headwords).toBeGreaterThan(headwords.length * 0.9);
   });
 
-  it('rejects a column of example sentences', () => {
-    // A random sequence yields an ascending run of about 2*sqrt(n) — far
-    // below anything a word list produces.
-    const openers = ['Ich', 'Wir', 'Er', 'Sie', 'Das', 'Ein', 'Am', 'Heute',
-      'Bitte', 'Wo', 'Wann', 'Meine', 'Der', 'Die', 'Es', 'Auf', 'In', 'Nach'];
-    let seed = 7;
-    const lines: PdfLine[] = Array.from({ length: 1900 }, () => {
-      seed = (seed * 1103515245 + 12345) % 2147483648;
-      return { text: `${openers[seed % openers.length]!} sagte etwas.`, x: 142, page: 1, font: 'F3' };
-    });
-    expect(chooseHeadwordColumns(lines, isKnown).keys.size).toBe(0);
+  it('drops the principal-part lines that sit inside an entry', () => {
+    const head = readColumns(lines(), [143, 237]).find((r) => r.column === 143)!;
+    expect(head.extracted).not.toContain('gemacht');
   });
 
-  it('rejects a running header repeated on every page', () => {
-    const lines: PdfLine[] = Array.from({ length: 200 }, () => ({
-      text: 'WORTLISTE', x: 35, page: 1, font: 'F1',
-    }));
-    expect(chooseHeadwordColumns(lines, isKnown).keys.size).toBe(0);
+  it('reports every column, kept or not', () => {
+    expect(readColumns(lines(), [143, 237])).toHaveLength(2);
   });
+});
 
-  it('rejects running prose', () => {
-    const prose: PdfLine[] = Array.from({ length: 400 }, (_, i) => ({
-      text: `Die vorliegende Publikation enthält Satz ${i}.`, x: 143, page: 1, font: 'F2',
-    }));
-    expect(chooseHeadwordColumns(prose, isKnown).keys.size).toBe(0);
-  });
-
-  it('takes both columns of a two-column list', () => {
-    const lines = [
-      ...entryColumn(headwords.slice(0, 450), { x: 35 }),
-      ...entryColumn(headwords.slice(450), { x: 315 }),
+describe('extractArticleEntries', () => {
+  it('reads the thematic word groups, which are not alphabetical', () => {
+    // Days, months and times are laid out as a grid, so the ascending run
+    // cannot see them — and they hold core vocabulary.
+    const lines: ColumnLine[] = [
+      { column: 143, text: 'der Tag, -e', page: 7 },
+      { column: 258, text: 'das Jahr, -e', page: 7 },
+      { column: 143, text: 'der Montag', page: 7 },
     ];
-    expect([...chooseHeadwordColumns(lines, isKnown).keys].sort())
-      .toEqual([groupKey(35, 'F3'), groupKey(315, 'F3')].sort());
+    expect(extractArticleEntries(lines)).toEqual(['Tag', 'Jahr', 'Montag']);
   });
 
-  it('finds a list even when it shares a margin with the foreword', () => {
-    // The A1 layout: the foreword prose and the word list both sit at x=143.
-    const prose: PdfLine[] = Array.from({ length: 60 }, (_, i) => ({
-      text: `Die vorliegende Publikation enthält Satz ${i}.`, x: 143, page: 1, font: 'F2',
-    }));
-    const choice = chooseHeadwordColumns(
-      [...prose, ...entryColumn(headwords, { x: 143, font: 'F2' })], isKnown,
-    );
-    expect(choice.keys.size).toBe(1);
-    expect(choice.headwords).toBeGreaterThan(headwords.length * 0.85);
+  it('does not swallow an example sentence that opens with an article', () => {
+    const lines: ColumnLine[] = [
+      { column: 237, text: 'Die Kinder spielen auf der Straße.', page: 1 },
+      { column: 237, text: 'Der Kurs hört in einer Woche auf.', page: 1 },
+    ];
+    expect(extractArticleEntries(lines)).toEqual([]);
   });
 
-  it('picks a column the course barely knows', () => {
-    const choice = chooseHeadwordColumns(entryColumn(headwords), () => false);
-    expect(choice.keys.size).toBe(1);
-  });
-
-  it('ignores a short sorted run', () => {
-    const short: PdfLine[] = ['Aufgabe', 'Beispiel', 'Lösung', 'Prüfung'].map((w) => ({
-      text: w, x: 237, page: 1, font: 'F2',
-    }));
-    expect(chooseHeadwordColumns(short, isKnown).keys.size).toBe(0);
+  it('skips anything with a digit', () => {
+    expect(extractArticleEntries([{ column: 143, text: 'der Januar 2024', page: 1 }])).toEqual([]);
   });
 });
 
 describe('longestIncreasingSubsequence', () => {
   it('returns the ascending run, dropping what breaks it', () => {
     const words = ['ab', 'schrieb', 'aber', 'hat', 'abfahren', 'Abend'];
-    const picked = longestIncreasingSubsequence(words).map((i) => words[i]!);
-    expect(picked).toEqual(['ab', 'aber', 'abfahren']);
-  });
-
-  it('takes the longest chain, even one that runs through a later letter', () => {
-    // "das" sorts after "abfahren", so it genuinely extends the run.
-    const words = ['ab', 'schrieb', 'aber', 'hat', 'abfahren', 'das'];
-    expect(longestIncreasingSubsequence(words)).toHaveLength(4);
+    expect(longestIncreasingSubsequence(words).map((i) => words[i]!))
+      .toEqual(['ab', 'aber', 'abfahren']);
   });
 
   it('is strict, so a repeated word cannot inflate it', () => {
-    expect(longestIncreasingSubsequence(['die', 'die', 'die', 'die'])).toHaveLength(1);
-  });
-
-  it('uses German collation', () => {
-    const words = ['Apfel', 'Äpfel', 'Banane'];
-    // Base sensitivity makes the first two equal, so only one of them counts.
-    expect(longestIncreasingSubsequence(words)).toHaveLength(2);
+    expect(longestIncreasingSubsequence(['die', 'die', 'die'])).toHaveLength(1);
   });
 
   it('copes with an empty column', () => {
@@ -198,41 +195,8 @@ describe('longestIncreasingSubsequence', () => {
   });
 });
 
-describe('extractHeadwords', () => {
-  const known = new Set(['Haus', 'Abend']);
-  // An unambiguous ascending column, so the expected run is not a coin flip
-  // between two chains of equal length.
-  const lines: PdfLine[] = [
-    { text: 'Abend, der, -e', x: 56, page: 1, font: 'b' },
-    { text: 'Im Abend ist es warm.', x: 72, page: 1, font: 'i' },
-    { text: 'Brücke, die, -n', x: 56, page: 1, font: 'b' },
-    { text: 'Haus, das, ¨-er', x: 56, page: 1, font: 'b' },
-    { text: 'Quatschwort', x: 56, page: 1, font: 'b' },
-    { text: 'Abend, der, -e', x: 56, page: 2, font: 'b' },
-  ];
-  const isKnown = (w: string) => known.has(w);
-  const choice = chooseHeadwordColumns(lines, isKnown, { minHeadwords: 1, minRatio: 0 });
-
-  it('takes only the chosen group, and splits known from unknown', () => {
-    const { known: hits, unknown } = extractHeadwords(choice, isKnown);
-    // The course teaches Haus and Abend; Brücke and Quatschwort are real
-    // entries it does not teach, so they are found but reported as skipped.
-    // (These thresholds are deliberately permissive to exercise the merge, so
-    // the example column is admitted too and contributes "Im".)
-    expect(hits).toEqual(['Abend', 'Haus']);
-    expect(unknown).toContain('Brücke');
-    expect(unknown).toContain('Quatschwort');
-  });
-
-  it('deduplicates a word repeated across pages', () => {
-    const all = [...extractHeadwords(choice, isKnown).known,
-                 ...extractHeadwords(choice, isKnown).unknown];
-    expect(new Set(all).size).toBe(all.length);
-  });
-});
-
 describe('mergeLevels', () => {
-  it('keeps the lowest level, since the B1 list repeats A1 and A2', () => {
+  it('keeps the lowest level, since the lists are cumulative', () => {
     expect(
       mergeLevels([
         { lemma: 'Haus', level: 'B1' },
@@ -242,9 +206,9 @@ describe('mergeLevels', () => {
     ).toEqual({ Haus: 'A1', Brücke: 'A2' });
   });
 
-  it('is order-independent', () => {
-    const a = mergeLevels([{ lemma: 'x', level: 'A1' }, { lemma: 'x', level: 'B1' }]);
-    const b = mergeLevels([{ lemma: 'x', level: 'B1' }, { lemma: 'x', level: 'A1' }]);
-    expect(a).toEqual(b);
+  it('treats a verb and its noun as different words', () => {
+    // German capitalisation is semantic: "essen" and "Essen" are both taught.
+    expect(mergeLevels([{ lemma: 'essen', level: 'A1' }, { lemma: 'Essen', level: 'A1' }]))
+      .toEqual({ essen: 'A1', Essen: 'A1' });
   });
 });

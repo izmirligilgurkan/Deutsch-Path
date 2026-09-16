@@ -29,7 +29,7 @@ export const SOURCES: SourceEntry[] = [
     licenseUrl: 'https://en.wiktionary.org/wiki/Wiktionary:Copyrights',
     used: 'Lemmas, part of speech, gender, plural, inflection tables, English glosses.',
     modifications:
-      'Filtered from 371,261 entries to the 3,000 this course teaches; form tables trimmed to the forms the drills use. No text rewritten.',
+      'Filtered from 371,261 entries to the 3,277 this course teaches; form tables trimmed to the forms the drills use. No text rewritten.',
     bundled: true,
   },
   {
@@ -58,12 +58,12 @@ export const SOURCES: SourceEntry[] = [
     id: 'goethe-wortlisten',
     name: 'Goethe-Institut Wortlisten (A1 / A2 / B1)',
     url: 'https://www.goethe.de/de/spr/kup/prf/prf.html',
-    license: 'Copyrighted — not redistributed',
+    license: 'Copyrighted — no redistribution licence',
     licenseUrl: 'https://www.goethe.de/de/spr/kup/prf/prf.html',
-    used: 'Optional CEFR level tagging, imported on the learner’s own device only.',
+    used: 'CEFR level for 3,277 words (A1, A2, B1) — the level shown for most of the course.',
     modifications:
-      'Never committed to this repository and never served from GitHub Pages. See the “Import level list” screen.',
-    bundled: false,
+      'Headwords and their level extracted from the published Wortliste PDFs; glosses, example phrases and layout not copied. Bundled by the repository owner’s decision, not under a licence from the Goethe-Institut — see DATA_LICENSES.md.',
+    bundled: true,
   },
   {
     id: 'cefr',

@@ -4,11 +4,11 @@ import { formKey } from '~/lib/tokenize.ts';
 import type { Lemma, Level } from '~/lib/content-types.ts';
 
 /**
- * Applies the learner's own Goethe level list over the bundled levels.
+ * Applies a learner-imported level list over the bundled levels.
  *
- * The levels that ship with the app come from corpus frequency and are marked
- * approximate. A learner who imports the real Wortlisten on their own device
- * should get those levels instead — that is the whole point of the import, so
+ * The app already ships the Goethe A1/A2/B1 levels, with corpus frequency as
+ * the fallback for words the lists do not cover. This is the override path for
+ * a learner who wants to re-level the course from their own extraction, so
  * every screen reads the lexicon through here rather than straight from the
  * data file.
  */
