@@ -169,7 +169,10 @@ export function chooseHeadwordColumns(
   lines: PdfLine[],
   isKnownLemma: (word: string) => boolean,
   {
-    minHeadwords = 100,
+    // Low enough to keep the indented sub-entry columns, which the A1 foreword
+    // states are part of the required vocabulary. The ratio guard below is
+    // what rejects noise, not this floor.
+    minHeadwords = 30,
     minRatio = 0.15,
   }: { minHeadwords?: number; minRatio?: number } = {},
 ): ColumnChoice {

@@ -141,6 +141,7 @@ async function readPdfLines(path: string): Promise<PdfLine[]> {
 // ── Run ────────────────────────────────────────────────────────────────────
 
 const collected: { lemma: string; level: Level }[] = [];
+const perFileFound: { level: Level; found: number }[] = [];
 let sawTrouble = false;
 
 for (const file of files) {
@@ -216,6 +217,10 @@ for (const file of files) {
     console.error('  ! that looks too low — check the sample above before trusting it.');
   }
 
+  // Counted before the course filter: coverage is about how much of the
+  // published list was read, not how much of it this course happens to teach.
+  perFileFound.push({ level, found: known.length + unknown.length });
+
   for (const word of known) {
     // Store the course's own spelling, which is what the app matches on.
     collected.push({ lemma: byKey.get(formKey(word)) ?? word, level });
@@ -232,6 +237,42 @@ console.log(
   `\n${Object.keys(merged).length.toLocaleString()} words total — ` +
     `A1 ${counts.A1}, A2 ${counts.A2}, B1 ${counts.B1}`,
 );
+
+/**
+ * The published lists are cumulative: the B1 Wortliste repeats the A1 and A2
+ * vocabulary. A word's level is therefore the lowest list it appears in — so
+ * when extraction misses a word in the A1 file but catches it in the B1 file,
+ * it comes out labelled B1 rather than A1.
+ *
+ * The A1 foreword states its list holds about 650 words, A2 about 1,300 and
+ * B1 about 2,400. Comparing against those says how much of each list was read,
+ * which is what decides whether the levels can be trusted.
+ */
+const EXPECTED: Record<Level, number> = { A1: 650, A2: 1300, B1: 2400 };
+const coverage = perFileFound.map(
+  (f) => ({ ...f, share: f.found / EXPECTED[f.level] }),
+);
+if (coverage.length > 0) {
+  console.log('\ncoverage against the published list sizes:');
+  for (const c of coverage) {
+    console.log(
+      `  ${c.level}  ${String(c.found).padStart(5)} of ~${EXPECTED[c.level]}  ` +
+        `${(c.share * 100).toFixed(0).padStart(3)}%`,
+    );
+  }
+  const weakest = Math.min(...coverage.map((c) => c.share));
+  if (weakest < 0.85) {
+    console.log(
+      '\n! These lists are cumulative — the B1 list repeats A1 and A2 — so a\n' +
+        '  level is only as good as the *lower* list it was checked against.\n' +
+        '  With a lower list partly read, some words that belong to it come out\n' +
+        '  one or two levels too high, which would place common words late in\n' +
+        '  the course. The levels the app already uses come from corpus\n' +
+        '  frequency; importing this trades one approximation for another.\n' +
+        '  You can clear an imported list at any time from the same screen.',
+    );
+  }
+}
 
 if (Object.keys(merged).length === 0) {
   console.error('\nNothing to write. See the notes above.');
