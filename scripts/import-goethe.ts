@@ -175,16 +175,16 @@ for (const file of files) {
   if (choice.keys.size === 0) {
     sawTrouble = true;
     console.error(
-      '  ✗ no group of lines looked like a word list, so nothing was taken from\n' +
-        '    this file. A headword column should score near 100%; anything much\n' +
-        '    lower is example sentences, whose first word is often a known word\n' +
-        '    too. The strongest candidates were:',
+      '  ✗ no column looked like an alphabetical word list, so nothing was\n' +
+        '    taken from this file. Candidates, by how well sorted they are:',
     );
-    for (const d of choice.diagnostics.slice(0, 8)) {
+    console.error('      x     font           words   a-z  uniq  known  sample');
+    for (const d of choice.diagnostics.slice(0, 10)) {
       console.error(
-        `      x=${String(d.x).padStart(4)} ${d.font.padEnd(14)} ` +
-          `lines=${String(d.lines).padStart(5)} ${(d.rate * 100).toFixed(0).padStart(3)}%  ` +
-          `${d.sample.slice(0, 5).join(', ')}`,
+        `      ${String(d.x).padStart(4)}  ${d.font.padEnd(13)} ` +
+          `${String(d.words).padStart(5)}  ${(d.alphabetical * 100).toFixed(0).padStart(3)}%  ` +
+          `${(d.distinct * 100).toFixed(0).padStart(3)}%  ` +
+          `${(d.knownRate * 100).toFixed(0).padStart(4)}%  ${d.sample.slice(0, 5).join(', ')}`,
       );
     }
     console.error(
@@ -197,7 +197,7 @@ for (const file of files) {
   const { known, unknown } = extractHeadwords(lines, choice.keys, isKnownLemma);
   console.log(
     `  ${choice.keys.size} headword column(s), ` +
-      `${(choice.matchRate * 100).toFixed(0)}% of their first words are known lemmas`,
+      `${(choice.alphabetical * 100).toFixed(0)}% alphabetically ordered`,
   );
   console.log(`  ${known.length.toLocaleString()} words matched the course vocabulary`);
   console.log(

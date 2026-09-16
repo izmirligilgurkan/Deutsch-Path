@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  alphabeticalRate,
   chooseHeadwordColumns,
+  distinctRatio,
   extractHeadwords,
   firstToken,
   groupKey,
@@ -71,64 +73,123 @@ describe('firstToken', () => {
 });
 
 describe('chooseHeadwordColumns', () => {
-  const known = new Set(['Haus', 'Abend', 'Brücke', 'gehen', 'Wasser', 'Kind']);
+  const known = new Set(['Abend', 'Brücke', 'Haus', 'Kind', 'Wasser', 'gehen']);
   const isKnown = (w: string) => known.has(w);
 
-  /** Headwords at the margin, example sentences indented. */
-  function page(): PdfLine[] {
+  /** Alphabetical headwords at the margin, example sentences beside them. */
+  function wordList(words: string[], { x = 56, font = 'Bold' } = {}): PdfLine[] {
     const lines: PdfLine[] = [];
-    for (let i = 0; i < 30; i++) {
-      const word = [...known][i % known.size]!;
-      lines.push({ text: `${word}, der, -e`, x: 56, page: 1, font: 'bold' });
-      lines.push({ text: `Beispielsatz mit ${word} darin.`, x: 72, page: 1, font: 'italic' });
+    for (const word of words) {
+      lines.push({ text: `${word}, der, -e`, x, page: 1, font });
+      // The example sits on the same row, further right, in another face.
+      lines.push({ text: `Und dann sagte ${word} etwas.`, x: x + 110, page: 1, font: 'Roman' });
     }
     return lines;
   }
 
-  it('finds the column the headwords are in, not the examples', () => {
-    const choice = chooseHeadwordColumns(page(), isKnown);
-    expect([...choice.keys]).toEqual([groupKey(56, 'bold')]);
-    expect(choice.matchRate).toBeGreaterThan(0.9);
+  /**
+   * 200 sorted pseudo-words, letters only — a headword with a digit in it is
+   * rejected as page furniture, which is correct but makes a poor fixture.
+   */
+  const sorted = Array.from({ length: 200 }, (_, i) => {
+    const a = String.fromCharCode(97 + Math.floor(i / 26));
+    const b = String.fromCharCode(97 + (i % 26));
+    return `${a}${b}wort`;
   });
 
-  it('reports every candidate so a bad guess can be seen', () => {
-    const choice = chooseHeadwordColumns(page(), isKnown);
-    expect(choice.diagnostics.map((d) => d.x).sort((a, b) => a - b)).toEqual([56, 72]);
-    expect(choice.diagnostics[0]!.sample.length).toBeGreaterThan(0);
+  it('picks the alphabetical column, not the example sentences', () => {
+    const choice = chooseHeadwordColumns(wordList(sorted), isKnown);
+    expect([...choice.keys]).toEqual([groupKey(56, 'Bold')]);
+    expect(choice.alphabetical).toBeGreaterThan(0.95);
   });
 
-  it('handles a two-column layout', () => {
-    const lines = [...page(), ...page().map((l) => ({ ...l, x: l.x + 300 }))];
-    const keys = [...chooseHeadwordColumns(lines, isKnown).keys].sort();
-    expect(keys).toEqual([groupKey(356, 'bold'), groupKey(56, 'bold')].sort());
+  it('picks a headword column even when the course knows almost none of it', () => {
+    // The real case: the published lists run to thousands of words, most of
+    // them outside a 3,000-lemma course vocabulary. Scoring by "known" put
+    // these columns last.
+    const choice = chooseHeadwordColumns(wordList(sorted), () => false);
+    expect([...choice.keys]).toEqual([groupKey(56, 'Bold')]);
+    const picked = choice.diagnostics.find((d) => d.x === 56)!;
+    expect(picked.knownRate).toBe(0);
   });
 
-  it('chooses nothing rather than guessing when no column looks like a word list', () => {
-    const prose: PdfLine[] = Array.from({ length: 50 }, (_, i) => ({
-      text: `Dies ist ein Satz Nummer ${i}.`, x: 56, page: 1, font: 'roman',
+  it('rejects a column of sentences whose first words are common and known', () => {
+    // These scored ~60% under the old rule and were accepted.
+    const lines: PdfLine[] = Array.from({ length: 120 }, (_, i) => ({
+      text: ['Ich gehe nach Hause.', 'Wir sind da.', 'Er hat ein Haus.', 'Auf dem Tisch.'][i % 4]!,
+      x: 56, page: 1, font: 'Roman',
+    }));
+    expect(chooseHeadwordColumns(lines, isKnown).keys.size).toBe(0);
+  });
+
+  it('rejects running prose, such as the foreword', () => {
+    const prose: PdfLine[] = Array.from({ length: 120 }, (_, i) => ({
+      text: `Die vorliegende Publikation enthält Satz ${i}.`, x: 143, page: 1, font: 'F2',
     }));
     expect(chooseHeadwordColumns(prose, isKnown).keys.size).toBe(0);
   });
 
-  it('separates headwords from examples that share a margin, by typeface', () => {
-    // The real lists indent little or not at all; the face is what differs.
-    const lines: PdfLine[] = [];
-    for (let i = 0; i < 30; i++) {
-      const word = [...known][i % known.size]!;
-      lines.push({ text: word, x: 56, page: 1, font: 'Bold' });
-      lines.push({ text: `Und dann sagte jemand etwas.`, x: 56, page: 1, font: 'Roman' });
-    }
-    const choice = chooseHeadwordColumns(lines, isKnown);
-    expect([...choice.keys]).toEqual([groupKey(56, 'Bold')]);
+  it('takes both columns of a two-column list', () => {
+    // The alphabet runs down column one and on into column two, so each
+    // column on its own is still increasing.
+    const lines = [
+      ...wordList(sorted.slice(0, 100), { x: 35 }),
+      ...wordList(sorted.slice(100), { x: 315 }),
+    ];
+    const keys = [...chooseHeadwordColumns(lines, isKnown).keys].sort();
+    expect(keys).toEqual([groupKey(35, 'Bold'), groupKey(315, 'Bold')].sort());
   });
 
-  it('rejects a column of example sentences that often start with a known word', () => {
-    // This is what produced a 60%-scoring "headword column" on the real PDFs.
-    const lines: PdfLine[] = Array.from({ length: 60 }, (_, i) => ({
-      text: i % 2 === 0 ? 'Haus und Garten sind schön.' : 'Dann ging er fort.',
-      x: 56, page: 1, font: 'Roman',
+  it('ignores a short run that happens to be sorted', () => {
+    // "Aufgabe, Beispiel, Lösung, Prüfung" in the exam instructions is sorted
+    // by luck; a word list is long.
+    const short: PdfLine[] = ['Aufgabe', 'Beispiel', 'Lösung', 'Prüfung'].map((w) => ({
+      text: w, x: 237, page: 1, font: 'F2',
     }));
-    expect(chooseHeadwordColumns(lines, isKnown).keys.size).toBe(0);
+    expect(chooseHeadwordColumns(short, isKnown).keys.size).toBe(0);
+  });
+
+  it('reports every candidate with its ordering, so a wrong pick is visible', () => {
+    const choice = chooseHeadwordColumns(wordList(sorted), isKnown);
+    expect(choice.diagnostics.length).toBeGreaterThan(1);
+    expect(choice.diagnostics[0]!.sample.length).toBeGreaterThan(0);
+  });
+});
+
+describe('distinctRatio', () => {
+  it('is near zero for prose that repeats its opening word', () => {
+    expect(distinctRatio(['Die', 'Die', 'Die', 'Die'])).toBe(0.25);
+  });
+
+  it('is 1 for a list of distinct entries', () => {
+    expect(distinctRatio(['ab', 'aber', 'abfahren'])).toBe(1);
+  });
+
+  it('ignores case, so a word is not counted twice', () => {
+    expect(distinctRatio(['Haus', 'haus'])).toBe(0.5);
+  });
+});
+
+describe('alphabeticalRate', () => {
+  it('is 1 for a sorted list and about half for shuffled text', () => {
+    expect(alphabeticalRate(['ab', 'abbiegen', 'aber', 'abfahren'])).toBe(1);
+    expect(alphabeticalRate(['Wir', 'Ab', 'Zu', 'Er'])).toBeLessThan(0.7);
+  });
+
+  it('tolerates a repeated entry, which a real list has', () => {
+    expect(alphabeticalRate(['ab', 'ab', 'aber'])).toBe(1);
+  });
+
+  it('ignores case, so a capitalised noun still follows a lower-case verb', () => {
+    expect(alphabeticalRate(['abend', 'Apfel', 'auto', 'Bier'])).toBe(1);
+  });
+
+  it('treats an umlaut variant as equal to its base letter, and allows it', () => {
+    expect(alphabeticalRate(['Apfel', 'Äpfel', 'Banane'])).toBe(1);
+  });
+
+  it('is 0 for a list too short to judge', () => {
+    expect(alphabeticalRate(['Haus'])).toBe(0);
   });
 });
 

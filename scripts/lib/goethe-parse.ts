@@ -79,20 +79,25 @@ export function firstToken(line: string): string {
 export interface ColumnGroup {
   /** Rounded x of the column margin. */
   x: number;
-  /** PDF font name. A Wortliste sets its headwords in a different face. */
+  /** PDF font name. */
   font: string;
   lines: number;
-  matched: number;
-  rate: number;
-  /** A few words from this group, so a wrong pick is obvious in the report. */
+  /** Lines in this group whose first token looks like a headword at all. */
+  words: number;
+  /** Share of consecutive words in alphabetical order. The real signal. */
+  alphabetical: number;
+  /** Share of the words that are distinct, which rejects repeated prose. */
+  distinct: number;
+  /** Share that are lemmas the course knows. Informational only. */
+  knownRate: number;
   sample: string[];
 }
 
 export interface ColumnChoice {
   /** Accepted groups, as `${x}|${font}` keys. */
   keys: Set<string>;
-  /** Share of lines in the accepted groups whose first word is a known lemma. */
-  matchRate: number;
+  /** Weighted alphabetical rate across the accepted groups. */
+  alphabetical: number;
   /** Every candidate, best first, for the report. */
   diagnostics: ColumnGroup[];
 }
@@ -102,27 +107,63 @@ export function groupKey(x: number, font: string): string {
 }
 
 /**
- * How far apart two accepted positions in the same face must be to count as
- * separate columns rather than a margin and the indent beneath it.
+ * Share of consecutive words in alphabetical order.
+ *
+ * A column of headwords approaches 1: a Wortliste is alphabetical, and the
+ * alphabet runs forward through the whole document, so one column of it is a
+ * subsequence of an increasing sequence and stays increasing. A column of
+ * example sentences sits near 0.5, because their first words are in no
+ * particular order.
+ *
+ * Non-decreasing rather than strictly increasing, because a real list repeats
+ * words legitimately — an entry split across lines, a word listed for two
+ * parts of speech, an umlaut variant that German collation treats as equal to
+ * its base letter. Requiring a strict increase penalised all of those. The
+ * degenerate case this leaves open — a column whose lines all begin with the
+ * same word — is caught by `distinctRatio` instead.
  */
-const COLUMN_REGION = 60;
+export function alphabeticalRate(words: string[]): number {
+  if (words.length < 2) return 0;
+  let ordered = 0;
+  for (let i = 1; i < words.length; i++) {
+    if (words[i - 1]!.localeCompare(words[i]!, 'de', { sensitivity: 'base' }) <= 0) ordered += 1;
+  }
+  return ordered / (words.length - 1);
+}
+
+/**
+ * Share of the words that are distinct.
+ *
+ * Running prose is trivially "in order" when every line opens with the same
+ * word ("Die …", "Die …"), and so is a repeated label or a page header. A word
+ * list is mostly distinct entries; those are not.
+ */
+export function distinctRatio(words: string[]): number {
+  if (words.length === 0) return 0;
+  return new Set(words.map((w) => w.toLocaleLowerCase('de-DE'))).size / words.length;
+}
 
 /**
  * Picks the columns the headwords are in.
  *
- * Grouping is by position *and* typeface. A Wortliste sets its headwords in
- * bold and its examples in roman or italic, often starting at the same margin,
- * so position alone cannot separate them — scoring x on its own picks up
- * example sentences, whose first word is frequently a known lemma too.
+ * Scoring is by alphabetical order, not by how many words the course already
+ * knows. The published lists run to thousands of words, most of them outside a
+ * 3,000-lemma course vocabulary, so a genuine headword column matches the
+ * course only about a third of the time — measuring that picked example
+ * sentences instead, whose first words are common and therefore "known".
  *
- * Each group is scored by how often the word at that position is a lemma the
- * course already knows. A real headword column scores near 100%; a column of
- * example sentences scores far lower, which is what the threshold rejects.
+ * Being sorted is the property that actually distinguishes a word list from
+ * running text, and it does not depend on how much of the list we happen to
+ * teach.
  */
 export function chooseHeadwordColumns(
   lines: PdfLine[],
   isKnownLemma: (word: string) => boolean,
-  { minLines = 20, minRate = 0.8 }: { minLines?: number; minRate?: number } = {},
+  {
+    minWords = 50,
+    minAlphabetical = 0.9,
+    minDistinct = 0.5,
+  }: { minWords?: number; minAlphabetical?: number; minDistinct?: number } = {},
 ): ColumnChoice {
   const groups = new Map<string, PdfLine[]>();
   for (const line of lines) {
@@ -134,44 +175,38 @@ export function chooseHeadwordColumns(
 
   const diagnostics: ColumnGroup[] = [];
   for (const [key, group] of groups) {
-    if (group.length < minLines) continue;
     const [xPart, ...fontParts] = key.split('|');
-    let matched = 0;
-    const sample: string[] = [];
+    const words: string[] = [];
     for (const line of group) {
       const word = normalizeHeadword(firstToken(line.text));
-      if (word && isKnownLemma(word)) {
-        matched += 1;
-        if (sample.length < 6) sample.push(word);
-      }
+      if (word) words.push(word);
     }
+    if (words.length === 0) continue;
+
+    const matched = words.filter((w) => isKnownLemma(w)).length;
     diagnostics.push({
       x: Number(xPart),
       font: fontParts.join('|'),
       lines: group.length,
-      matched,
-      rate: matched / group.length,
-      sample,
+      words: words.length,
+      alphabetical: alphabeticalRate(words),
+      distinct: distinctRatio(words),
+      knownRate: matched / words.length,
+      sample: words.slice(0, 6),
     });
   }
-  diagnostics.sort((a, b) => b.rate - a.rate || b.lines - a.lines);
+  diagnostics.sort((a, b) => b.alphabetical - a.alphabetical || b.words - a.words);
 
-  // Within one face, a headword margin and the indent under it both score;
-  // the headwords are the leftmost position, so drop the indents.
-  const accepted: ColumnGroup[] = [];
-  for (const group of diagnostics.filter((d) => d.rate >= minRate)) {
-    const shadowed = accepted.some(
-      (a) => a.font === group.font && Math.abs(a.x - group.x) < COLUMN_REGION && a.x <= group.x,
-    );
-    if (!shadowed) accepted.push(group);
-  }
+  const accepted = diagnostics.filter(
+    (d) => d.words >= minWords && d.alphabetical >= minAlphabetical && d.distinct >= minDistinct,
+  );
 
-  const totalLines = accepted.reduce((n, d) => n + d.lines, 0);
-  const totalMatched = accepted.reduce((n, d) => n + d.matched, 0);
+  const totalWords = accepted.reduce((n, d) => n + d.words, 0);
+  const weighted = accepted.reduce((n, d) => n + d.alphabetical * d.words, 0);
 
   return {
     keys: new Set(accepted.map((d) => groupKey(d.x, d.font))),
-    matchRate: totalLines > 0 ? totalMatched / totalLines : 0,
+    alphabetical: totalWords > 0 ? weighted / totalWords : 0,
     diagnostics,
   };
 }
